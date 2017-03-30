@@ -20,6 +20,7 @@ import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.sequenceiq.cloudbreak.cloud.aws.view.AwsCredentialView;
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
@@ -84,6 +85,14 @@ public class AwsClient {
         AmazonAutoScalingClient client = isRoleAssumeRequired(awsCredential)
                 ? new AmazonAutoScalingClient(credentialClient.retrieveCachedSessionCredentials(awsCredential))
                 : new AmazonAutoScalingClient(createAwsCredentials(awsCredential));
+        client.setRegion(RegionUtils.getRegion(regionName));
+        return client;
+    }
+
+    public AmazonS3Client createS3Client(AwsCredentialView awsCredential, String regionName) {
+        AmazonS3Client client = isRoleAssumeRequired(awsCredential)
+                ? new AmazonS3Client(credentialClient.retrieveCachedSessionCredentials(awsCredential))
+                : new AmazonS3Client(createAwsCredentials(awsCredential));
         client.setRegion(RegionUtils.getRegion(regionName));
         return client;
     }

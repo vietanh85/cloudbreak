@@ -53,4 +53,8 @@ public class AwsNetworkView {
     public String getExistingVPC() {
         return network.getStringParameter(VPC);
     }
+
+    public String getSubnetCidr() {
+        return network.getSubnet().getCidr();
+    }
 }

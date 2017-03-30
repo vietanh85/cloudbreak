@@ -87,8 +87,9 @@ public class AwsMetadataCollector implements MetadataCollector {
 
         List<CloudVmMetaDataStatus> cloudVmMetaDataStatuses = new ArrayList<>();
 
-        String asGroupName = cloudFormationStackUtil.getAutoscalingGroupName(ac, amazonCFClient, groupName);
-        List<String> instanceIds = cloudFormationStackUtil.getInstanceIds(amazonASClient, asGroupName);
+        //String asGroupName = cloudFormationStackUtil.getAutoscalingGroupName(ac, amazonCFClient, groupName);
+        //List<String> instanceIds = cloudFormationStackUtil.getInstanceIds(amazonASClient, asGroupName);
+        List<String> instanceIds = cloudFormationStackUtil.getInstanceIds(ac, amazonEC2Client, groupName);
 
         DescribeInstancesRequest instancesRequest = cloudFormationStackUtil.createDescribeInstancesRequest(instanceIds);
         DescribeInstancesResult instancesResult = amazonEC2Client.describeInstances(instancesRequest);

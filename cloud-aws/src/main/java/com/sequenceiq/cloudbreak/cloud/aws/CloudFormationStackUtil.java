@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.cloud.aws;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -16,7 +17,10 @@ import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.cloudformation.AmazonCloudFormationClient;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourceRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourceResult;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
+import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.Filter;
 import com.google.common.base.Splitter;
 import com.sequenceiq.cloudbreak.cloud.aws.view.AwsCredentialView;
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
@@ -60,6 +64,16 @@ public class CloudFormationStackUtil {
             }
         }
         return instanceIds;
+    }
+
+    public List<String> getInstanceIds(AuthenticatedContext ac, AmazonEC2Client amazonEC2Client, String groupName) {
+        String cfStackName = getCfStackName(ac);
+        Filter filter1 = new Filter().withName("tag:aws:cloudformation:stack-name").withValues(cfStackName);
+        Filter filter2 = new Filter().withName("tag:instanceGroup").withValues(groupName);
+        DescribeInstancesRequest describeInstancesRequest = new DescribeInstancesRequest().withFilters(filter1, filter2);
+        DescribeInstancesResult describeInstancesResult = amazonEC2Client.describeInstances(describeInstancesRequest);
+        return describeInstancesResult.getReservations().stream().flatMap(r -> r.getInstances().stream())
+                .map(inst -> inst.getInstanceId()).collect(Collectors.toList());
     }
 
     public DescribeInstancesRequest createDescribeInstancesRequest(Collection<String> instanceIds) {

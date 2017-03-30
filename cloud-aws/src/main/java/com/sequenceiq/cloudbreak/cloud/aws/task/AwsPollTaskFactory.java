@@ -51,6 +51,11 @@ public class AwsPollTaskFactory {
         return createPollTask(ASGroupStatusCheckerTask.NAME, authenticatedContext, asGroupName, requiredInstances, awsClient, cloudFormationStackUtil);
     }
 
+    public PollTask<Boolean> newASGroupInstancesCheckerTask(AuthenticatedContext authenticatedContext, String groupName, Integer requiredInstances,
+            AwsClient awsClient, CloudFormationStackUtil cloudFormationStackUtil) {
+        return createPollTask(ASGroupInstancesCheckerTask.NAME, authenticatedContext, groupName, requiredInstances, awsClient, cloudFormationStackUtil);
+    }
+
     @SuppressWarnings("unchecked")
     private <T> T createPollTask(String name, Object... args) {
         return (T) applicationContext.getBean(name, args);
