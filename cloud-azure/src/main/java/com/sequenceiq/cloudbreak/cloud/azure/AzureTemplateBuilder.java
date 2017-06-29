@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.api.model.InstanceGroupType;
+import com.sequenceiq.cloudbreak.cloud.azure.view.AzureStorageEncryptionView;
 import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
 import com.sequenceiq.cloudbreak.cloud.exception.CloudConnectorException;
 import com.sequenceiq.cloudbreak.cloud.azure.view.AzureCredentialView;
@@ -60,6 +61,7 @@ public class AzureTemplateBuilder {
                     azureStorage.getPersistentStorageName(cloudStack.getParameters()),
                     azureStorage.getArmAttachedStorageOption(cloudStack.getParameters()));
             AzureSecurityView armSecurityView = new AzureSecurityView(cloudStack.getGroups());
+            AzureStorageEncryptionView encryptionView = new AzureStorageEncryptionView(cloudStack.getParameters());
 
             model.put("storage_account_name", rootDiskStorage);
             model.put("image_storage_container_name", AzureStorage.IMAGES);
@@ -81,6 +83,18 @@ public class AzureTemplateBuilder {
             model.put("noPublicIp", azureUtils.isPrivateIp(network));
             model.put("noFirewallRules", azureUtils.isNoSecurityGroups(network));
             model.put("userDefinedTags", cloudStack.getTags());
+
+            model.put("encryptStorageAccount", encryptionView.getEncryptStorageAccount());
+
+            Boolean keyVaultRequired = encryptionView.getKeyVaultRequired();
+            model.put("keyVaultRequired", keyVaultRequired);
+            if (keyVaultRequired) {
+                model.put("keyVaultUrl", encryptionView.getKeyVaultUrl());
+                model.put("keyVaultName", encryptionView.getKeyVaultName());
+                model.put("keyName", encryptionView.getKeyName());
+                model.put("keyVersion", encryptionView.getKeyVersion());
+            }
+
             String generatedTemplate = processTemplateIntoString(getTemplate(cloudStack), model);
             LOGGER.debug("Generated Arm template: {}", generatedTemplate);
             return generatedTemplate;

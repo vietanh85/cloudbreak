@@ -20,6 +20,7 @@ import com.microsoft.azure.management.storage.StorageAccounts;
 import com.sequenceiq.cloudbreak.api.model.ArmAttachedStorageOption;
 import com.sequenceiq.cloudbreak.cloud.azure.client.AzureClient;
 import com.sequenceiq.cloudbreak.cloud.azure.view.AzureCredentialView;
+import com.sequenceiq.cloudbreak.cloud.azure.view.AzureStorageEncryptionView;
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
 //import com.sequenceiq.cloudbreak.cloud.scheduler.SyncPollingScheduler;
@@ -28,6 +29,10 @@ import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
 public class AzureStorage {
 
     public static final String IMAGES = "images";
+
+    public static final int KEYNAME_POSITION = 2;
+
+    public static final int KEYVERSION_POSITION = 3;
 
     public static final String STORAGE_BLOB_PATTERN = "https://%s.blob.core.windows.net/";
 
@@ -66,10 +71,13 @@ public class AzureStorage {
         return buildStorageName(armAttachedStorageOption, acv, vmId, cloudContext, storageType);
     }
 
-    public void createStorage(AuthenticatedContext ac, AzureClient client, String osStorageName, AzureDiskType storageType, String storageGroup, String region)
-            throws CloudException {
+    public void createStorage(AuthenticatedContext ac, AzureClient client, String osStorageName, AzureDiskType storageType, String storageGroup, String region,
+            Map<String, String> parameters) throws CloudException {
         if (!storageAccountExist(client, osStorageName)) {
-            client.createStorageAccount(storageGroup, osStorageName, region, SkuName.fromString(storageType.value()));
+            AzureStorageEncryptionView encryptionView = new AzureStorageEncryptionView(parameters);
+
+            client.createStorageAccount(storageGroup, osStorageName, region, SkuName.fromString(storageType.value()),
+                    encryptionView.getEncryptStorageAccount(), encryptionView.getKeyVaultUrl());
         }
     }
 
@@ -148,6 +156,7 @@ public class AzureStorage {
         }
         return false;
     }
+
 }
 
 

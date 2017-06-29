@@ -91,7 +91,7 @@ public class AzureResourceConnector implements ResourceConnector<Map<String, Map
             String region = ac.getCloudContext().getLocation().getRegion().value();
             Map<String, AzureDiskType> storageAccounts = azureStackView.getStorageAccounts();
             for (String name : storageAccounts.keySet()) {
-                azureStorage.createStorage(ac, client, name, storageAccounts.get(name), resourceGroupName, region);
+                azureStorage.createStorage(ac, client, name, storageAccounts.get(name), resourceGroupName, region, stack.getParameters());
             }
             if (!client.templateDeploymentExists(resourceGroupName, stackName)) {
                 Deployment templateDeployment = client.createTemplateDeployment(resourceGroupName, stackName, template, parameters);
@@ -201,7 +201,7 @@ public class AzureResourceConnector implements ResourceConnector<Map<String, Map
             String region = authenticatedContext.getCloudContext().getLocation().getRegion().value();
             Map<String, AzureDiskType> storageAccounts = azureStackView.getStorageAccounts();
             for (String name : storageAccounts.keySet()) {
-                azureStorage.createStorage(authenticatedContext, client, name, storageAccounts.get(name), resourceGroupName, region);
+                azureStorage.createStorage(authenticatedContext, client, name, storageAccounts.get(name), resourceGroupName, region, stack.getParameters());
             }
             Deployment templateDeployment = client.createTemplateDeployment(stackName, stackName, template, parameters);
             LOGGER.info("created template deployment for upscale: {}", templateDeployment.exportTemplate().template().toString());

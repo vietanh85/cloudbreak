@@ -33,6 +33,7 @@ import com.microsoft.azure.management.resources.DeploymentOperations;
 import com.microsoft.azure.management.resources.Deployments;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.ResourceGroups;
+import com.microsoft.azure.management.storage.Encryption;
 import com.microsoft.azure.management.storage.ProvisioningState;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -151,14 +152,21 @@ public class AzureClient {
         azure.storageAccounts().deleteByResourceGroup(resourceGroup, storageName);
     }
 
-    public StorageAccount createStorageAccount(String resourceGroup, String storageName, String storageLocation, SkuName accType) {
+    public StorageAccount createStorageAccount(String resourceGroup, String storageName, String storageLocation, SkuName accType,
+            Boolean encryptStorageAccount, String keyVaultUrl) {
 
-        return azure.storageAccounts()
+        StorageAccount.DefinitionStages.WithCreate storageAccountCreate = azure.storageAccounts()
                 .define(storageName)
                 .withRegion(storageLocation)
                 .withExistingResourceGroup(resourceGroup)
-                .withSku(accType)
-                .create();
+                .withSku(accType);
+
+        if (encryptStorageAccount) {
+            Encryption encryption = new Encryption();
+            encryption.withKeySource(keyVaultUrl);
+        }
+
+        return storageAccountCreate.create();
     }
 
     public List<StorageAccountKey> getStorageAccountKeys(String resourceGroup, String storageName) {
