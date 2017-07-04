@@ -50,6 +50,7 @@ import com.microsoft.azure.storage.blob.CloudPageBlob;
 import com.microsoft.azure.storage.blob.CopyState;
 import com.microsoft.azure.storage.blob.ListBlobItem;
 import com.microsoft.rest.LogLevel;
+import com.sequenceiq.cloudbreak.cloud.azure.view.AzureStorageEncryptionView;
 import com.sequenceiq.cloudbreak.cloud.exception.CloudConnectorException;
 
 public class AzureClient {
@@ -153,7 +154,7 @@ public class AzureClient {
     }
 
     public StorageAccount createStorageAccount(String resourceGroup, String storageName, String storageLocation, SkuName accType,
-            Boolean encryptStorageAccount, String keyVaultUrl) {
+            AzureStorageEncryptionView encryptionView) {
 
         StorageAccount.DefinitionStages.WithCreate storageAccountCreate = azure.storageAccounts()
                 .define(storageName)
@@ -161,9 +162,9 @@ public class AzureClient {
                 .withExistingResourceGroup(resourceGroup)
                 .withSku(accType);
 
-        if (encryptStorageAccount) {
+        if (encryptionView.getEncryptStorageAccount()) {
             Encryption encryption = new Encryption();
-            encryption.withKeySource(keyVaultUrl);
+            encryption.withKeySource(encryptionView.getKeyVaultUrl());
         }
 
         return storageAccountCreate.create();

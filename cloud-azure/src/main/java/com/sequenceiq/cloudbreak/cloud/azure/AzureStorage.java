@@ -23,6 +23,8 @@ import com.sequenceiq.cloudbreak.cloud.azure.view.AzureCredentialView;
 import com.sequenceiq.cloudbreak.cloud.azure.view.AzureStorageEncryptionView;
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
+import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
+import com.sequenceiq.cloudbreak.cloud.model.Group;
 //import com.sequenceiq.cloudbreak.cloud.scheduler.SyncPollingScheduler;
 
 @Service
@@ -72,12 +74,21 @@ public class AzureStorage {
     }
 
     public void createStorage(AuthenticatedContext ac, AzureClient client, String osStorageName, AzureDiskType storageType, String storageGroup, String region,
-            Map<String, String> parameters) throws CloudException {
+            CloudStack cloudStack) throws CloudException {
         if (!storageAccountExist(client, osStorageName)) {
-            AzureStorageEncryptionView encryptionView = new AzureStorageEncryptionView(parameters);
 
-            client.createStorageAccount(storageGroup, osStorageName, region, SkuName.fromString(storageType.value()),
-                    encryptionView.getEncryptStorageAccount(), encryptionView.getKeyVaultUrl());
+            AzureStorageEncryptionView encryptionView = null;
+            for (Group group : cloudStack.getGroups()) {
+                if (!group.getInstances().isEmpty()) {
+                    Map<String, Object> parameters = group.getInstances().get(0).getTemplate().getParameters();
+                    encryptionView = new AzureStorageEncryptionView(parameters);
+                    if (encryptionView.getEncryptStorageAccount().equals(Boolean.TRUE)) {
+                        break;
+                    }
+                }
+            }
+
+            client.createStorageAccount(storageGroup, osStorageName, region, SkuName.fromString(storageType.value()), encryptionView);
         }
     }
 

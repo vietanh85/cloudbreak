@@ -17,7 +17,7 @@ dependencies {
   compile project(':cloud-reactor')
 
   compile (group: 'com.microsoft.azure',        name: 'azure',                      version: azureSdkVersion) { exclude group: 'org.slf4j' }
-  compile (group: 'com.microsoft.azure',        name: 'azure-client-authentication',version: azureSdkVersion) {
+  compile (group: 'com.microsoft.azure',        name: 'azure-client-authentication',version: '1.0.4') {
     force = true
     exclude group: 'org.slf4j'
   }

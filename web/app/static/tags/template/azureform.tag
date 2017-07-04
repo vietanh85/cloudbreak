@@ -68,6 +68,22 @@
         <!-- .col-sm-9 -->
 
     </div>
+    <div class="form-group" ng-class="{ 'has-error': azureTemplateForm.azure_encrypt.$dirty && azureTemplateForm.azure_encrypt.$invalid }">
+        <label class="col-sm-3 control-label" for="azure_encrypt">{{msg.template_form_encrypt_enbaled_label}}</label>
+
+        <div class="col-sm-9">
+            <input type="checkbox" name="azure_encrypt" id="azure_encrypt" ng-model="azureTemp.parameters.encryptStorage">
+        </div>
+    </div>
+    <div class="form-group" ng-show="azureTemp.parameters.encryptStorage" ng-class="{ 'has-error': azureTemplateForm.azure_encrypt_url.$dirty && azureTemplateForm.azure_encrypt_url.$invalid }">
+        <label class="col-sm-3 control-label" for="azure_encrypt_url">{{msg.template_form_encrypt_url_enbaled_label}}</label>
+
+        <div class="col-sm-9">
+            <input type="text" name="azure_encrypt_url" class="form-control" id="azure_encrypt_url" ng-model="azureTemp.parameters.keyVaultUrl">
+        </div>
+    </div>
+
+
     <div class="form-group">
         <label class="col-sm-3 control-label" for="azure_publicInAccount">{{msg.public_in_account_label}}</label>
         <div class="col-sm-9">

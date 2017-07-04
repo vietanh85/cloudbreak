@@ -67,5 +67,20 @@
         </div>
         <!-- .col-sm-9 -->
     </div>
+    <div class="form-group" >
+        <label class="col-sm-3 control-label" for="azureebsencrypt">{{msg.template_form_encrypt_enbaled_label}}</label>
+
+        <div class="col-sm-9">
+            <i id="azureebsencrypt" ng-show="template.parameters.encryptStorage" class="form-control-static fa fa-check-circle fa-5" style="color: #4cb84c;"></i>
+            <i id="azureebsencrypt" ng-show="!template.parameters.encryptStorage" class="form-control-static fa fa-times-circle fa-5" style="color: #f9332f;"></i>
+        </div>
+    </div>
+    <div class="form-group" ng-show="template.parameters.keyVaultUrl">
+        <label class="col-sm-3 control-label" for="azure-enc-url">{{msg.template_form_encrypt_url_enbaled_label}}</label>
+
+        <div class="col-sm-9">
+            <p id="azure-enc-url" class="form-control-static">{{template.parameters.keyVaultUrl}}</p>
+        </div>
+    </div>
 
 </form>

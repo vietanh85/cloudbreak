@@ -76,7 +76,7 @@ public class AzureSetup implements Setup {
             if (!client.resourceGroupExists(imageResourceGroupName)) {
                 client.createResourceGroup(imageResourceGroupName, region);
             }
-            armStorage.createStorage(ac, client, imageStorageName, AzureDiskType.LOCALLY_REDUNDANT, imageResourceGroupName, region, stack.getParameters());
+            armStorage.createStorage(ac, client, imageStorageName, AzureDiskType.LOCALLY_REDUNDANT, imageResourceGroupName, region, stack);
             client.createContainerInStorage(imageResourceGroupName, imageStorageName, IMAGES);
             if (!storageContainsImage(client, imageResourceGroupName, imageStorageName, image.getImageName())) {
                 client.copyImageBlobInStorageContainer(imageResourceGroupName, imageStorageName, IMAGES, image.getImageName());

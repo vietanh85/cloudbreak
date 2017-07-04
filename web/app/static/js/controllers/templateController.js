@@ -172,6 +172,9 @@ angular.module('uluwatuControllers').controller('templateController', [
 
         $scope.createAzureTemplate = function() {
             $scope.azureTemp.cloudPlatform = "AZURE";
+            if ($scope.azureTemp.parameters.encryptStorage === false) {
+                delete $scope.azureTemp.parameters.keyVaultUrl;
+            }
             if ($scope.azureTemp.public) {
                 AccountTemplate.save($scope.azureTemp, function(result) {
                     handleAzureTemplateSuccess(result)
@@ -387,7 +390,10 @@ angular.module('uluwatuControllers').controller('templateController', [
                 volumeSize: 100,
                 volumeType: $rootScope.params.defaultDisks.AZURE,
                 instanceType: $rootScope.params.defaultVmTypes.AZURE,
-                parameters: {}
+                parameters: {
+                    encryptStorage: false,
+                    keyVaultUrl: ""
+                }
             }
             $scope.changeInstanceType($scope.azureTemp.instanceType, $scope.azureTemp.volumeType, "AZURE", $scope.azureTemp);
         }
