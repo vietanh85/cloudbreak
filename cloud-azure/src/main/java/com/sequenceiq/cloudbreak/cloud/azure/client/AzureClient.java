@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.microsoft.azure.AzureEnvironment;
 import com.microsoft.azure.PagedList;
 import com.microsoft.azure.credentials.ApplicationTokenCredentials;
+import com.microsoft.azure.credentials.AzureTokenCredentials;
 import com.microsoft.azure.management.Azure;
 import com.microsoft.azure.management.compute.AvailabilitySet;
 import com.microsoft.azure.management.compute.PowerState;
@@ -34,6 +35,8 @@ import com.microsoft.azure.management.resources.Deployments;
 import com.microsoft.azure.management.resources.ResourceGroup;
 import com.microsoft.azure.management.resources.ResourceGroups;
 import com.microsoft.azure.management.storage.Encryption;
+import com.microsoft.azure.management.storage.EncryptionService;
+import com.microsoft.azure.management.storage.EncryptionServices;
 import com.microsoft.azure.management.storage.ProvisioningState;
 import com.microsoft.azure.management.storage.SkuName;
 import com.microsoft.azure.management.storage.StorageAccount;
@@ -76,7 +79,7 @@ public class AzureClient {
     }
 
     private void connect() throws IOException {
-        ApplicationTokenCredentials creds = new ApplicationTokenCredentials(clientId, tenantId, secretKey, AzureEnvironment.AZURE)
+        AzureTokenCredentials creds = new ApplicationTokenCredentials(clientId, tenantId, secretKey, AzureEnvironment.AZURE)
                 .withDefaultSubscriptionId(subscriptionId);
         azure = Azure
                 .configure()
@@ -164,7 +167,15 @@ public class AzureClient {
 
         if (encryptionView.getEncryptStorageAccount()) {
             Encryption encryption = new Encryption();
-            encryption.withKeySource(encryptionView.getKeyVaultUrl());
+
+            EncryptionService encryptionService = new EncryptionService();
+            encryptionService.withEnabled(true);
+
+            EncryptionServices encryptionServices = new EncryptionServices();
+            encryptionServices.withBlob(encryptionService);
+
+            encryption.withServices(encryptionServices).withKeySource(encryptionView.getKeyVaultUrl());
+            storageAccountCreate.withEncryption(encryption);
         }
 
         return storageAccountCreate.create();

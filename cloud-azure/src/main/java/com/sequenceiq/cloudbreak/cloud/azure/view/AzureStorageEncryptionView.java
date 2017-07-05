@@ -30,14 +30,14 @@ public class AzureStorageEncryptionView {
     }
 
     public Boolean keyVaultRequired(Map<String, Object> parameters) {
-        if (Strings.isNullOrEmpty(parameters.get("keyVaultUrl").toString())) {
+        if (Strings.isNullOrEmpty(keyVaultUrl(parameters))) {
             return false;
         }
         return true;
     }
 
     public String keyVaultUrl(Map<String, Object> parameters) {
-        String keyVaultUrl = parameters.get("keyVaultUrl").toString();
+        String keyVaultUrl = parameters.get("keyVaultUrl") == null ? "" : parameters.get("keyVaultUrl").toString();
         if (Strings.isNullOrEmpty(keyVaultUrl)) {
             return "";
         } else {
@@ -77,7 +77,7 @@ public class AzureStorageEncryptionView {
     }
 
     public Boolean encryptStorageAccount(Map<String, Object> parameters) {
-        String encryptStorage = parameters.get("encryptStorage").toString();
+        String encryptStorage = parameters.get("encryptStorage") == null ? "" : parameters.get("encryptStorage").toString();
         if (Strings.isNullOrEmpty(encryptStorage)) {
             return false;
         }
