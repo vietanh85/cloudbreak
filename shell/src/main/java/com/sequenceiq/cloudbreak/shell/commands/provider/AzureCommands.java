@@ -412,7 +412,9 @@ public class AzureCommands implements CommandMarker {
             @CliOption(key = "clusterNameAsSubdomain", help = "Using the cluster name for subdomain", unspecifiedDefaultValue = "false",
                     specifiedDefaultValue = "true", mandatory = false) boolean clusterNameAsSubdomain,
             @CliOption(key = "hostgroupNameAsHostname", help = "Using the hostgroup names to create hostnames", unspecifiedDefaultValue = "false",
-                    specifiedDefaultValue = "true", mandatory = false) boolean hostgroupNameAsHostname) {
+                    specifiedDefaultValue = "true", mandatory = false) boolean hostgroupNameAsHostname,
+            @CliOption(key = "encryptStorage", help = "Encrypt Azure storage", unspecifiedDefaultValue = "false",
+                    specifiedDefaultValue = "false", mandatory = false) boolean encryptStorage) {
 
             orchestratorType = (orchestratorType == null) ? new ArmOrchestratorType(SALT) : orchestratorType;
             Map<String, String> params = new HashMap<>();
@@ -420,6 +422,7 @@ public class AzureCommands implements CommandMarker {
             if (diskPerStorage != null) {
                 params.put("diskPerStorage", diskPerStorage.toString());
             }
+            params.put("encryptStorage", String.valueOf(encryptStorage));
             if (attachedStorageOption != null && shellContext.isAzureActiveCredential()) {
                 params.put("attachedStorageOption", attachedStorageOption.name());
             } else if (shellContext.isAzureActiveCredential()) {
