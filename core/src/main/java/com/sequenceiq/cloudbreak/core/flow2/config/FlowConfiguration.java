@@ -6,7 +6,7 @@ import com.sequenceiq.cloudbreak.core.flow2.FlowTriggerCondition;
 import com.sequenceiq.cloudbreak.core.flow2.RestartAction;
 
 public interface FlowConfiguration<E extends FlowEvent> {
-    Flow createFlow(String flowId, Long stackId);
+    Flow createFlow(String flowId, long privateId, Long stackId);
 
     FlowTriggerCondition getFlowTriggerCondition();
 

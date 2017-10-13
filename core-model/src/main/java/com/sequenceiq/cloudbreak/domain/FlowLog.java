@@ -50,21 +50,25 @@ public class FlowLog {
     @Version
     private Long version;
 
+    private Long privateId;
+
     public FlowLog() {
 
     }
 
-    public FlowLog(Long stackId, String flowId, String currentState, Boolean finalized) {
+    public FlowLog(Long stackId, String flowId, long privateId, String currentState, Boolean finalized) {
         this.stackId = stackId;
         this.flowId = flowId;
+        this.privateId = privateId;
         this.currentState = currentState;
         this.finalized = finalized;
     }
 
-    public FlowLog(Long stackId, String flowId, String flowChainId, String nextEvent, String payload, Class<?> payloadType, String variables, Class<?> flowType,
-            String currentState) {
+    public FlowLog(Long stackId, String flowId, long privateId, String flowChainId, String nextEvent, String payload, Class<?> payloadType,
+                   String variables, Class<?> flowType, String currentState) {
         this.stackId = stackId;
         this.flowId = flowId;
+        this.privateId = privateId;
         this.flowChainId = flowChainId;
         this.nextEvent = nextEvent;
         this.payload = payload;
@@ -184,5 +188,13 @@ public class FlowLog {
 
     public void setVersion(Long version) {
         this.version = version;
+    }
+
+    public Long getPrivateId() {
+        return privateId;
+    }
+
+    public void setPrivateId(Long privateId) {
+        this.privateId = privateId;
     }
 }

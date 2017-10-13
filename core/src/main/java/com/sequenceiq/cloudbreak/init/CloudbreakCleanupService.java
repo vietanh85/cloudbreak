@@ -100,14 +100,14 @@ public class CloudbreakCleanupService implements ApplicationListener<ContextRefr
 
     private List<Stack> resetStackStatus(Collection<Long> excludeStackIds) {
         return stackRepository.findByStatuses(Arrays.asList(UPDATE_REQUESTED, UPDATE_IN_PROGRESS, WAIT_FOR_SYNC, START_IN_PROGRESS, STOP_IN_PROGRESS))
-                .stream().filter(s -> !excludeStackIds.contains(s.getId()) || WAIT_FOR_SYNC.equals(s.getStatus()))
-                .peek(s -> {
-                    if (!WAIT_FOR_SYNC.equals(s.getStatus())) {
-                        loggingStatusChange("Stack", s.getId(), s.getStatus(), WAIT_FOR_SYNC);
-                        stackUpdater.updateStackStatus(s.getId(), DetailedStackStatus.WAIT_FOR_SYNC, s.getStatusReason());
-                    }
-                    cleanInstanceMetaData(instanceMetaDataRepository.findAllInStack(s.getId()));
-                }).collect(Collectors.toList());
+            .stream().filter(s -> !excludeStackIds.contains(s.getId()) || WAIT_FOR_SYNC.equals(s.getStatus()))
+            .peek(s -> {
+                if (!WAIT_FOR_SYNC.equals(s.getStatus())) {
+                    loggingStatusChange("Stack", s.getId(), s.getStatus(), WAIT_FOR_SYNC);
+                    stackUpdater.updateStackStatus(s.getId(), DetailedStackStatus.WAIT_FOR_SYNC, s.getStatusReason());
+                }
+                cleanInstanceMetaData(instanceMetaDataRepository.findAllInStack(s.getId()));
+            }).collect(Collectors.toList());
     }
 
     private void cleanInstanceMetaData(Iterable<InstanceMetaData> metadataSet) {
@@ -121,12 +121,12 @@ public class CloudbreakCleanupService implements ApplicationListener<ContextRefr
 
     private List<Cluster> resetClusterStatus(Collection<Stack> stacksToSync, Collection<Long> excludeStackIds) {
         return clusterRepository.findByStatuses(Arrays.asList(UPDATE_REQUESTED, UPDATE_IN_PROGRESS, WAIT_FOR_SYNC, START_IN_PROGRESS, STOP_IN_PROGRESS))
-                .stream().filter(c -> !excludeStackIds.contains(c.getStack().getId()))
-                .peek(c -> {
-                    loggingStatusChange("Cluster", c.getId(), c.getStatus(), WAIT_FOR_SYNC);
-                    c.setStatus(WAIT_FOR_SYNC);
-                    clusterRepository.save(c);
-                }).filter(c -> !isStackToSyncContainsCluster(stacksToSync, c)).collect(Collectors.toList());
+            .stream().filter(c -> !excludeStackIds.contains(c.getStack().getId()))
+            .peek(c -> {
+                loggingStatusChange("Cluster", c.getId(), c.getStatus(), WAIT_FOR_SYNC);
+                c.setStatus(WAIT_FOR_SYNC);
+                clusterRepository.save(c);
+            }).filter(c -> !isStackToSyncContainsCluster(stacksToSync, c)).collect(Collectors.toList());
     }
 
     private boolean isStackToSyncContainsCluster(Collection<Stack> stacksToSync, Cluster cluster) {
@@ -161,13 +161,14 @@ public class CloudbreakCleanupService implements ApplicationListener<ContextRefr
             } else {
                 List<String> flowIds = unassignedFlowLogs.stream().map(FlowLog::getFlowId).distinct().collect(Collectors.toList());
                 for (String flowId : flowIds) {
-                    Long stackId = unassignedFlowLogs.stream().filter(f -> f.getFlowId().equalsIgnoreCase(flowId)).map(FlowLog::getStackId).findAny().get();
+                    FlowLog flowLog = unassignedFlowLogs.stream().filter(f -> f.getFlowId().equalsIgnoreCase(flowId)).findAny().get();
+                    Long stackId = flowLog.getStackId();
                     try {
-                        flow2Handler.restartFlow(flowId);
-                        stackIds.add(stackId);
+                        flow2Handler.restartFlow(flowLog.getFlowId(), flowLog.getPrivateId());
+                        stackIds.add(flowLog.getStackId());
                     } catch (RuntimeException e) {
-                        LOGGER.error(String.format("Failed to restart flow %s on stack %s", flowId, stackId), e);
-                        flowLogService.terminate(stackId, flowId);
+                        LOGGER.error(String.format("Failed to restart flow %s on stack %s", flowId, flowLog.getStackId()), e);
+                        flowLogService.terminate(stackId, flowId, flowLog.getPrivateId());
                     }
                 }
             }
@@ -200,14 +201,15 @@ public class CloudbreakCleanupService implements ApplicationListener<ContextRefr
             }
             List<String> flowIds = myFlowLogs.stream().map(FlowLog::getFlowId).distinct().collect(Collectors.toList());
             for (String flowId : flowIds) {
-                Long stackId = myFlowLogs.stream().filter(f -> f.getFlowId().equalsIgnoreCase(flowId)).map(FlowLog::getStackId).findAny().get();
+                FlowLog flowLog = myFlowLogs.stream().filter(f -> f.getFlowId().equalsIgnoreCase(flowId)).findAny().get();
+                Long stackId = flowLog.getStackId();
                 LOGGER.info("Restarting flow {}", flowId);
                 try {
-                    flow2Handler.restartFlow(flowId);
+                    flow2Handler.restartFlow(flowId, flowLog.getPrivateId());
                     stackIds.add(stackId);
                 } catch (RuntimeException e) {
                     LOGGER.error(String.format("Failed to restart flow %s on stack %s", flowId, stackId), e);
-                    flowLogService.terminate(stackId, flowId);
+                    flowLogService.terminate(stackId, flowId, flowLog.getPrivateId());
                 }
             }
         }
@@ -250,7 +252,7 @@ public class CloudbreakCleanupService implements ApplicationListener<ContextRefr
 
     private void fireEvent(Stack stack) {
         eventService.fireCloudbreakEvent(stack.getId(), UPDATE_IN_PROGRESS.name(),
-                "Couldn't retrieve the cluster's status, starting to sync.");
+            "Couldn't retrieve the cluster's status, starting to sync.");
     }
 }
 

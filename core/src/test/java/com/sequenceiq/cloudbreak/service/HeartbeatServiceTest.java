@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollection;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -142,7 +143,7 @@ public class HeartbeatServiceTest {
             assertEquals(MY_ID, updatedFlow.getCloudbreakNodeId());
         }
 
-        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture());
+        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture(), anyLong());
         List<String> allFlowIds = stringCaptor.getAllValues();
         assertEquals(5, allFlowIds.size());
         for (String flowId : suspendedFlows) {
@@ -195,7 +196,7 @@ public class HeartbeatServiceTest {
             assertEquals(MY_ID, updatedFlow.getCloudbreakNodeId());
         }
 
-        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture());
+        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture(), anyLong());
         List<String> allFlowIds = stringCaptor.getAllValues();
         assertEquals(5, allFlowIds.size());
         for (String flowId : suspendedFlows) {
@@ -262,7 +263,7 @@ public class HeartbeatServiceTest {
             }
         }
 
-        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture());
+        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture(), anyLong());
         List<String> allFlowIds = stringCaptor.getAllValues();
         assertEquals(5, allFlowIds.size());
         for (String flowId : suspendedFlows) {
@@ -323,7 +324,7 @@ public class HeartbeatServiceTest {
             assertEquals(MY_ID, updatedFlow.getCloudbreakNodeId());
         }
 
-        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture());
+        verify(flow2Handler, times(5)).restartFlow(stringCaptor.capture(), anyLong());
         List<String> allFlowIds = stringCaptor.getAllValues();
         assertEquals(5, allFlowIds.size());
         for (String flowId : suspendedFlows) {
@@ -366,7 +367,7 @@ public class HeartbeatServiceTest {
 
         heartbeatService.scheduledFlowDistribution();
 
-        verify(flow2Handler, times(2)).restartFlow(stringCaptor.capture());
+        verify(flow2Handler, times(2)).restartFlow(stringCaptor.capture(), anyLong());
         List<String> allFlowIds = stringCaptor.getAllValues();
         assertEquals(2, allFlowIds.size());
         for (FlowLog flowLog : myNewFlowLogs) {
@@ -407,7 +408,7 @@ public class HeartbeatServiceTest {
 
         heartbeatService.scheduledFlowDistribution();
 
-        verify(flow2Handler, times(1)).restartFlow(stringCaptor.capture());
+        verify(flow2Handler, times(1)).restartFlow(stringCaptor.capture(), anyLong());
         List<String> allFlowIds = stringCaptor.getAllValues();
         assertEquals(1, allFlowIds.size());
         for (FlowLog flowLog : myNewFlowLogs) {
@@ -489,7 +490,7 @@ public class HeartbeatServiceTest {
         long stackId = random.nextInt(5000) + from;
         for (int i = 0; i < flowCount; i++) {
             for (int j = 0; j < random.nextInt(99) + 1; j++) {
-                FlowLog flowLog = new FlowLog(stackId + i, "" + flowId + i, "RUNNING", false);
+                FlowLog flowLog = new FlowLog(stackId + i, "" + flowId + i, i, "RUNNING", false);
                 flowLog.setFlowType(StackCreationFlowConfig.class);
                 flows.add(flowLog);
             }

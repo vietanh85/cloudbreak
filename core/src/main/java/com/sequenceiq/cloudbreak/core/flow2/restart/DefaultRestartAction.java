@@ -25,7 +25,7 @@ public class DefaultRestartAction implements RestartAction {
     private ErrorHandlerAwareReactorEventFactory eventFactory;
 
     @Override
-    public void restart(String flowId, String flowChainId, String event, Object payload) {
+    public void restart(String flowId, long privateId, String flowChainId, String event, Object payload) {
         Map<String, Object> headers = new HashMap<>();
         headers.put(FLOW_ID, flowId);
         if (flowChainId != null) {

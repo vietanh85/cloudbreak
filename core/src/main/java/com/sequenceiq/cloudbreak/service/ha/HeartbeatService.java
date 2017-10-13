@@ -135,11 +135,14 @@ public class HeartbeatService {
             }
 
             String nodeId = cloudbreakNodeConfig.getId();
-            Set<String> allMyFlows = flowLogRepository.findAllByCloudbreakNodeId(nodeId).stream().map(FlowLog::getFlowId).distinct().collect(Collectors.toSet());
-            Set<String> newFlows = allMyFlows.stream().filter(f -> runningFlows.get(f) == null).collect(Collectors.toSet());
+            Set<FlowLog> allMyFlowLogs = flowLogRepository.findAllByCloudbreakNodeId(nodeId);
+            Set<String> allMyFlowIds = allMyFlowLogs.stream().map(FlowLog::getFlowId).distinct().collect(Collectors.toSet());
+            Set<String> newFlows = allMyFlowIds.stream().filter(f -> runningFlows.get(f) == null).collect(Collectors.toSet());
             for (String flow : newFlows) {
+                long privateId = allMyFlowLogs.stream().filter(fl -> fl.getFlowId().equalsIgnoreCase(flow))
+                    .map(FlowLog::getPrivateId).distinct().findFirst().get();
                 try {
-                    flow2Handler.restartFlow(flow);
+                    flow2Handler.restartFlow(flow, privateId);
                 } catch (RuntimeException e) {
                     LOGGER.error(String.format("Failed to restart flow: %s", flow), e);
                 }
@@ -152,14 +155,14 @@ public class HeartbeatService {
         List<CloudbreakNode> cloudbreakNodes = Lists.newArrayList(cloudbreakNodeRepository.findAll());
         long currentTimeMillis = clock.getCurrentTime();
         List<CloudbreakNode> failedNodes = cloudbreakNodes.stream()
-                .filter(node -> currentTimeMillis - node.getLastUpdated() > heartbeatThresholdRate).collect(Collectors.toList());
+            .filter(node -> currentTimeMillis - node.getLastUpdated() > heartbeatThresholdRate).collect(Collectors.toList());
         List<CloudbreakNode> activeNodes = cloudbreakNodes.stream().filter(c -> !failedNodes.contains(c)).collect(Collectors.toList());
         LOGGER.info("Active CB nodes: ({})[{}], failed CB nodes: ({})[{}]", activeNodes.size(), activeNodes, failedNodes.size(), failedNodes);
 
         List<FlowLog> failedFlowLogs = failedNodes.stream()
-                .map(node -> flowLogRepository.findAllByCloudbreakNodeId(node.getUuid()))
-                .flatMap(Set::stream)
-                .collect(Collectors.toList());
+            .map(node -> flowLogRepository.findAllByCloudbreakNodeId(node.getUuid()))
+            .flatMap(Set::stream)
+            .collect(Collectors.toList());
 
         if (!failedFlowLogs.isEmpty()) {
             LOGGER.info("The following flows will be distributed across the active nodes: {}", getFlowIds(failedFlowLogs));
@@ -172,10 +175,10 @@ public class HeartbeatService {
             Map<CloudbreakNode, List<String>> flowDistribution = flowDistributor.distribute(getFlowIds(failedFlowLogs), activeNodes);
             for (Entry<CloudbreakNode, List<String>> entry : flowDistribution.entrySet()) {
                 entry.getValue().forEach(flowId ->
-                        failedFlowLogs.stream().filter(flowLog -> flowLog.getFlowId().equalsIgnoreCase(flowId)).forEach(flowLog -> {
-                            flowLog.setCloudbreakNodeId(entry.getKey().getUuid());
-                            updatedFlowLogs.add(flowLog);
-                        }));
+                    failedFlowLogs.stream().filter(flowLog -> flowLog.getFlowId().equalsIgnoreCase(flowId)).forEach(flowLog -> {
+                        flowLog.setCloudbreakNodeId(entry.getKey().getUuid());
+                        updatedFlowLogs.add(flowLog);
+                    }));
             }
             flowLogRepository.save(updatedFlowLogs);
         }
@@ -190,8 +193,8 @@ public class HeartbeatService {
         if (failedNodes != null && !failedNodes.isEmpty()) {
             LOGGER.info("Cleanup node candidates: {}", failedNodes);
             List<CloudbreakNode> cleanupNodes = failedNodes.stream()
-                    .filter(node -> flowLogRepository.findAllByCloudbreakNodeId(node.getUuid()).isEmpty())
-                    .collect(Collectors.toList());
+                .filter(node -> flowLogRepository.findAllByCloudbreakNodeId(node.getUuid()).isEmpty())
+                .collect(Collectors.toList());
             LOGGER.info("Cleanup nodes from the DB: {}", cleanupNodes);
             cloudbreakNodeRepository.delete(cleanupNodes);
         }
@@ -229,12 +232,12 @@ public class HeartbeatService {
         Set<Long> stackIds = flowLogs.stream().map(FlowLog::getStackId).distinct().collect(Collectors.toSet());
         if (!stackIds.isEmpty()) {
             Set<Long> deletingStackIds = stackRepository.findStackStatuses(stackIds).stream()
-                    .filter(ss -> DELETE_STATUSES.contains(ss[1])).map(ss -> (Long) ss[0]).collect(Collectors.toSet());
+                .filter(ss -> DELETE_STATUSES.contains(ss[1])).map(ss -> (Long) ss[0]).collect(Collectors.toSet());
             if (!deletingStackIds.isEmpty()) {
                 return flowLogs.stream()
-                        .filter(fl -> deletingStackIds.contains(fl.getStackId()))
-                        .filter(fl -> !fl.getFlowType().equals(StackTerminationFlowConfig.class))
-                        .collect(Collectors.toList());
+                    .filter(fl -> deletingStackIds.contains(fl.getStackId()))
+                    .filter(fl -> !fl.getFlowType().equals(StackTerminationFlowConfig.class))
+                    .collect(Collectors.toList());
             }
         }
         return Collections.emptyList();

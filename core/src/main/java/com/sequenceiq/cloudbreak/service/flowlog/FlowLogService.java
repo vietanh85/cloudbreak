@@ -36,38 +36,38 @@ public class FlowLogService {
     @Qualifier("JsonWriterOptions")
     private Map<String, Object> writeOptions;
 
-    public FlowLog save(String flowId, String flowChanId, String key, Payload payload, Map<Object, Object> variables, Class<?> flowType,
-            FlowState currentState) {
+    public FlowLog save(String flowId, long privateId, String flowChanId, String key, Payload payload, Map<Object, Object> variables, Class<?> flowType,
+                        FlowState currentState) {
         String payloadJson = JsonWriter.objectToJson(payload, writeOptions);
         String variablesJson = JsonWriter.objectToJson(variables, writeOptions);
-        FlowLog flowLog = new FlowLog(payload.getStackId(), flowId, flowChanId, key, payloadJson, payload.getClass(), variablesJson, flowType,
-                currentState.toString());
+        FlowLog flowLog = new FlowLog(payload.getStackId(), flowId, privateId, flowChanId, key, payloadJson, payload.getClass(), variablesJson, flowType,
+            currentState.toString());
         flowLog.setCloudbreakNodeId(cloudbreakNodeConfig.getId());
         return flowLogRepository.save(flowLog);
     }
 
-    public FlowLog close(Long stackId, String flowId) {
-        return finalize(stackId, flowId, "FINISHED");
+    public void close(Long stackId, String flowId, long privateId) {
+        finalize(stackId, flowId, privateId, "FINISHED");
     }
 
-    public FlowLog cancel(Long stackId, String flowId) {
-        return finalize(stackId, flowId, "CANCELLED");
+    public void cancel(Long stackId, String flowId, long privateId) {
+        finalize(stackId, flowId, privateId, "CANCELLED");
     }
 
-    public FlowLog terminate(Long stackId, String flowId) {
-        return finalize(stackId, flowId, "TERMINATED");
+    public FlowLog terminate(Long stackId, String flowId, long privateId) {
+        return finalize(stackId, flowId, privateId, "TERMINATED");
     }
 
-    private FlowLog finalize(Long stackId, String flowId, String state) {
+    private FlowLog finalize(Long stackId, String flowId, long privateId, String state) {
         flowLogRepository.finalizeByFlowId(flowId);
-        FlowLog flowLog = new FlowLog(stackId, flowId, state, Boolean.TRUE);
+        FlowLog flowLog = new FlowLog(stackId, flowId, privateId, state, Boolean.TRUE);
         flowLog.setCloudbreakNodeId(cloudbreakNodeConfig.getId());
         return flowLogRepository.save(flowLog);
     }
 
-    public FlowChainLog saveChain(String flowChainId, String parentFlowChainId, Queue<Selectable> chain) {
+    public void saveChain(String flowChainId, String parentFlowChainId, Queue<Selectable> chain) {
         String chainJson = JsonWriter.objectToJson(chain);
         FlowChainLog chainLog = new FlowChainLog(flowChainId, parentFlowChainId, chainJson);
-        return flowChainLogRepository.save(chainLog);
+        flowChainLogRepository.save(chainLog);
     }
 }

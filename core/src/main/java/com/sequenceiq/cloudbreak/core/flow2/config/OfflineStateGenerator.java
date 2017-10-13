@@ -150,7 +150,7 @@ public class OfflineStateGenerator {
 
     private Flow initializeFlow() throws Exception {
         ((AbstractFlowConfiguration) flowConfiguration).init();
-        Flow flow = flowConfiguration.createFlow("", 0L);
+        Flow flow = flowConfiguration.createFlow("", 1, 0L);
         flow.initialize();
         return flow;
     }

@@ -24,10 +24,10 @@ public class WaitForSyncRestartAction extends DefaultRestartAction {
     private FlowLogService flowLogService;
 
     @Override
-    public void restart(String flowId, String flowChainId, String event, Object payload) {
+    public void restart(String flowId, long privateId, String flowChainId, String event, Object payload) {
         Payload stackPayload = (Payload) payload;
         Stack stack = stackService.getById(stackPayload.getStackId());
         stackUpdater.updateStackStatus(stack.getId(), DetailedStackStatus.WAIT_FOR_SYNC, stack.getStatusReason());
-        flowLogService.terminate(stackPayload.getStackId(), flowId);
+        flowLogService.terminate(stackPayload.getStackId(), flowId, privateId);
     }
 }

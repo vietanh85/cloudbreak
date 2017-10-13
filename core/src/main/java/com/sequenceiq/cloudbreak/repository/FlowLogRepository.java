@@ -15,9 +15,11 @@ public interface FlowLogRepository extends CrudRepository<FlowLog, Long> {
 
     FlowLog findFirstByFlowIdOrderByCreatedDesc(String flowId);
 
+    FlowLog findFirstByStackIdOrderByIdDesc(Long stackId);
+
     @Query("SELECT DISTINCT fl.flowId FROM FlowLog fl "
-            + "WHERE (fl.finalized IS NULL OR fl.finalized = false) AND fl.stackId = :stackId "
-            + "AND fl.flowType != 'com.sequenceiq.cloudbreak.core.flow2.stack.termination.StackTerminationFlowConfig'")
+        + "WHERE (fl.finalized IS NULL OR fl.finalized = false) AND fl.stackId = :stackId "
+        + "AND fl.flowType != 'com.sequenceiq.cloudbreak.core.flow2.stack.termination.StackTerminationFlowConfig'")
     Set<String> findAllRunningNonTerminationFlowIdsByStackId(@Param("stackId") Long stackId);
 
     @Query("SELECT DISTINCT fl.flowId, fl.stackId, fl.cloudbreakNodeId FROM FlowLog fl WHERE fl.finalized IS NULL OR fl.finalized = false")

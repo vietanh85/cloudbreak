@@ -13,6 +13,8 @@ import com.sequenceiq.cloudbreak.structuredevent.FlowStructuredEventHandler;
 public class FlowAdapter<S extends FlowState, E> implements Flow {
     private final String flowId;
 
+    private final long privateId;
+
     private final StateMachine<S, E> flowMachine;
 
     private final StateConverter<S> stateConverter;
@@ -27,9 +29,10 @@ public class FlowAdapter<S extends FlowState, E> implements Flow {
 
     private final FlowStructuredEventHandler flowStructuredEventHandler;
 
-    public FlowAdapter(String flowId, StateMachine<S, E> flowMachine, MessageFactory<E> messageFactory, StateConverter<S> stateConverter,
-            EventConverter<E> eventConverter, Class<? extends FlowConfiguration> flowConfigClass, FlowStructuredEventHandler flowStructuredEventHandler) {
+    public FlowAdapter(String flowId, long privateId, StateMachine<S, E> flowMachine, MessageFactory<E> messageFactory, StateConverter<S> stateConverter,
+                       EventConverter<E> eventConverter, Class<? extends FlowConfiguration> flowConfigClass, FlowStructuredEventHandler flowStructuredEventHandler) {
         this.flowId = flowId;
+        this.privateId = privateId;
         this.flowMachine = flowMachine;
         this.messageFactory = messageFactory;
         this.stateConverter = stateConverter;
@@ -45,7 +48,7 @@ public class FlowAdapter<S extends FlowState, E> implements Flow {
 
     @Override
     public void initialize(String stateRepresentation, Map<Object, Object> variables) {
-        S state  = stateConverter.convert(stateRepresentation);
+        S state = stateConverter.convert(stateRepresentation);
         List<? extends StateMachineAccess<S, E>> withAllRegions = flowMachine.getStateMachineAccessor().withAllRegions();
         for (StateMachineAccess<S, E> access : withAllRegions) {
             access.resetStateMachine(new DefaultStateMachineContext<>(state, null, null, null));
@@ -84,6 +87,11 @@ public class FlowAdapter<S extends FlowState, E> implements Flow {
     @Override
     public String getFlowId() {
         return flowId;
+    }
+
+    @Override
+    public long getPrivateId() {
+        return privateId;
     }
 
     @Override

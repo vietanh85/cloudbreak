@@ -100,7 +100,7 @@ public class EvenFlowDistributorTest {
         int flowId = random.nextInt(5000);
         long stackId = random.nextLong();
         for (int i = 0; i < flowCount; i++) {
-            flows.add(new FlowLog(stackId + i, "" + flowId + i, "RUNNING", false));
+            flows.add(new FlowLog(stackId + i, "" + flowId + i, i, "RUNNING", false));
         }
         return flows;
     }

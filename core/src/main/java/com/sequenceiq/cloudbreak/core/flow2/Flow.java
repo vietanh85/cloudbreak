@@ -19,6 +19,8 @@ public interface Flow {
 
     String getFlowId();
 
+    long getPrivateId();
+
     void setFlowFailed(Exception exception);
 
     boolean isFlowFailed();

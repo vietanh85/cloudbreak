@@ -21,10 +21,10 @@ public class StackStopRestartAction extends DefaultRestartAction {
     private StackUpdater stackUpdater;
 
     @Override
-    public void restart(String flowId, String flowChainId, String event, Object payload) {
+    public void restart(String flowId, long privateId, String flowChainId, String event, Object payload) {
         Payload stackPayload = (Payload) payload;
         Stack stack = stackService.getById(stackPayload.getStackId());
         stackUpdater.updateStackStatus(stack.getId(), DetailedStackStatus.STOP_REQUESTED, stack.getStatusReason());
-        super.restart(flowId, flowChainId, event, payload);
+        super.restart(flowId, privateId, flowChainId, event, payload);
     }
 }
