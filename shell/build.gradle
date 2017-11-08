@@ -23,7 +23,8 @@ apply plugin: 'info.solidsoft.pitest'
 
 dependencies {
 
-  compile project(':core-api')
+//  compile project(':core-api')
+  compile group: 'com.sequenceiq',                name: 'cloud-api',                    version: '2.1.0-dev.408'
 
   compile group: 'org.springframework.shell',     name: 'spring-shell',                 version: '1.2.0.RELEASE'
   compile group: 'org.springframework.boot',      name: 'spring-boot-starter',          version: springBootVersion
