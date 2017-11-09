@@ -108,27 +108,23 @@ public class ShellConfiguration {
             // Send the request
             cloudbreakClient.blueprintEndpoint().postPrivate(blueprintRequest);
 
-            // Create a credential to use AWS (the credential can be re-used later by referencing its name)
+            // Create a credential to use Azure (the credential can be re-used later by referencing its name)
             CredentialRequest credentialRequest = new CredentialRequest();
-            credentialRequest.setCloudPlatform("AWS");
-            credentialRequest.setName("awscredential");
+            credentialRequest.setCloudPlatform("AZURE");
+            credentialRequest.setName("azurecredential");
             Map<String, Object> credentialParameters = new HashMap<>();
-            credentialParameters.put("selector", "key-based"); // IAM role can be used as well with selector role-based and 1 property roleArn
-            credentialParameters.put("accessKey", "aws_access_key_id");
-            credentialParameters.put("secretKey", "aws_secret_access_key");
+            credentialParameters.put("subscriptionId", "value");
+            credentialParameters.put("tenantId", "value");
+            credentialParameters.put("secretKey", "value");
+            credentialParameters.put("accessKey", "value");
             credentialRequest.setParameters(credentialParameters);
+
             // Send the request
             cloudbreakClient.credentialEndpoint().postPrivate(credentialRequest);
 
             StackV2Request stackRequest = new StackV2Request();
             stackRequest.setName("dataplane-demo-cluster-1");
-            stackRequest.setAvailabilityZone("us-west-1a");
-            stackRequest.setRegion("us-west-1");
-
-            // To access S3 without access key and secret key you can use an instance profile
-            Map<String, String> parameters = new HashMap<>();
-            parameters.put("instanceProfileStrategy", "CREATE");
-            stackRequest.setParameters(parameters);
+            stackRequest.setRegion("West US 2");
 
             // Salt is the only option for public clouds
             OrchestratorRequest orchestrator = new OrchestratorRequest();
@@ -144,8 +140,8 @@ public class ShellConfiguration {
             TemplateV2Request masterTemplate = new TemplateV2Request();
             masterTemplate.setVolumeCount(2);
             masterTemplate.setVolumeSize(100);
-            masterTemplate.setVolumeType("gp2"); // SSD on Amazon
-            masterTemplate.setInstanceType("m3.xlarge");
+            masterTemplate.setVolumeType("Standard_LRS");
+            masterTemplate.setInstanceType("Standard_D3_v2");
             Map<String, Object> masterProperties = new HashMap<>();
             masterProperties.put("sshLocation", "0.0.0.0/0");
             masterProperties.put("encrypted", "false");
@@ -183,8 +179,8 @@ public class ShellConfiguration {
             TemplateV2Request workerTemplate = new TemplateV2Request();
             workerTemplate.setVolumeCount(2);
             workerTemplate.setVolumeSize(100);
-            workerTemplate.setVolumeType("gp2"); // SSD on Amazon
-            workerTemplate.setInstanceType("m3.xlarge");
+            workerTemplate.setVolumeType("Standard_LRS");
+            workerTemplate.setInstanceType("Standard_D3_v2");
             Map<String, Object> workerProperties = new HashMap<>();
             workerProperties.put("sshLocation", "0.0.0.0/0");
             workerProperties.put("encrypted", "false");
@@ -205,8 +201,8 @@ public class ShellConfiguration {
             TemplateV2Request computeTemplate = new TemplateV2Request();
             computeTemplate.setVolumeCount(2);
             computeTemplate.setVolumeSize(100);
-            computeTemplate.setVolumeType("gp2"); // SSD on Amazon
-            computeTemplate.setInstanceType("m3.xlarge");
+            computeTemplate.setVolumeType("Standard_LRS");
+            computeTemplate.setInstanceType("Standard_D3_v2");
             Map<String, Object> computeProperties = new HashMap<>();
             computeProperties.put("sshLocation", "0.0.0.0/0");
             computeProperties.put("encrypted", "false");
@@ -224,8 +220,7 @@ public class ShellConfiguration {
 
             // Configure SSH key for the instances
             StackAuthenticationRequest authentication = new StackAuthenticationRequest();
-            // authentication.setPublicKey("ssh-rsa AAAAB3NzaC1yc2EAAAADAQ.....");
-            authentication.setPublicKeyId("seq-master"); // You can provide the public SSH key as well, but on Amazon I use an existing key-pair
+            authentication.setPublicKey("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZiOMYPWpvLAVBlL8ElDgmCtXxvT0P4tNGg6nzUqYCM9Ie0UJjr0JDVwwlwYL/Y3yau42vaxnx16ZOpfaQoAQbafL5uqAZaASqgH02IJamIQ4HrQRv88awAmd6HewFrm4VXKMsVXAzBX+vc+MwknXSg7ucetUQTtCQrhrSWDmBKCk/4PndWM7KjcnftbZ4+Br2Vsr5OB3js4bDWu5I2zh2NV8IfVDobiK2JyqdoRmJ2r8HpUuCQwwWAlUpOA5YRMZ/FPQRoKFq5SL55A3ubDUDvqPiHR4hwbrSpl1D4yOTaXhDid/wQkLpPbHknoBmAnTwJnBqiyVlsMCdOS9N3woH");
             stackRequest.setStackAuthentication(authentication);
 
             // Configure the VPC for the cluster (create a new VPC with subnet CIDR)
@@ -234,13 +229,13 @@ public class ShellConfiguration {
             stackRequest.setNetwork(network);
 
             // Use the previously created credential
-            stackRequest.setCredentialName("awscredential");
+            stackRequest.setCredentialName("azurecredential");
 
-            // Use the AWS provided hostname and domain name (custom can be used as well)
+            // Use the Azure provided hostname and domain name (custom can be used as well)
             stackRequest.setClusterNameAsSubdomain(false);
             stackRequest.setHostgroupNameAsHostname(false);
 
-            // Configure the Ambari cluster on top of the created stack on AWS
+            // Configure the Ambari cluster on top of the created stack on Azure
             ClusterV2Request clusterRequest = new ClusterV2Request();
             clusterRequest.setExecutorType(ExecutorType.DEFAULT);
             AmbariV2Request ambari = new AmbariV2Request();
