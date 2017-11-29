@@ -60,6 +60,8 @@ public class BlueprintTemplateProcessorTest {
         Assert.assertTrue(result.contains("{{ zookeeper_quorum }}"));
         Assert.assertTrue(result.contains("{{default('/configurations/hadoop-env/hdfs_log_dir_prefix', '/var/log/hadoop')}}"));
         Assert.assertTrue(result.contains(cluster.getName()));
+        String expected = FileReaderUtils.readFileFromClasspath("blueprints/bp-mustache-test-processed.bp");
+        Assert.assertEquals(expected, result);
     }
 
     private Cluster cluster() {

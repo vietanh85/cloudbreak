@@ -1,0 +1,164 @@
+{
+  "inputs": [
+    {
+      "name": "S3_BUCKET",
+      "referenceConfiguration": "s3.bucket"
+    }
+  ],
+  "blueprint": {
+    "Blueprints": {
+      "blueprint_name": "hdp26-shared-services",
+      "stack_name": "HDP",
+      "stack_version": "2.6"
+    },
+    "settings": [
+      {
+        "recovery_settings": []
+      },
+      {
+        "service_settings": [
+          {
+            "name": "HIVE",
+            "credential_store_enabled": "false"
+          }
+        ]
+      },
+      {
+        "component_settings": []
+      }
+    ],
+    "configurations": [
+      {
+        "hive-site": {
+          "hive.metastore.warehouse.dir":"s3a://testbucket/dummyCluster/apps/hive/warehouse"
+        }
+      },
+      {
+        "admin-properties": {
+          "properties": {
+            "db_user": "heyitsme",
+            "zookeeper_quorum": "{{ zookeeper_quorum }}",
+            "db_password": "iamsoosecure",
+            "db_name": "ranger",
+            "db_host": "10.1.1.1:5432",
+            "DB_FLAVOR": "POSTGRES",
+            "exported-value": "{{default('/configurations/hadoop-env/hdfs_log_dir_prefix', '/var/log/hadoop')}}"
+          }
+        }
+      },
+      {
+        "ranger-env": {
+          "properties": {
+            "admin_password": "{{{rangerRds.properties.rangerAdminPassword}}}",
+            "ranger_admin_password": "{{{rangerRds.properties.rangerAdminPassword}}}",
+            "is_solrCloud_enabled": "true",
+            "ranger-hdfs-plugin-enabled": "No",
+            "ranger-hive-plugin-enabled": "No",
+            "ranger-yarn-plugin-enabled": "No",
+            "ranger_privelege_user_jdbc_url": "jdbc:postgresql://10.1.1.1:5432",
+            "ranger-atlas-plugin-enabled": "No",
+            "create_db_dbuser": "false",
+            "xasecure.audit.destination.hdfs": "true",
+            "xasecure.audit.destination.hdfs.dir": "s3a://testbucket/dummyCluster/apps/ranger/audit/dummyCluster",
+            "xasecure.audit.destination.solr": "true"
+          }
+        }
+      },
+      {
+        "ranger-ugsync-site": {
+          "ranger.usersync.enabled": "true",
+          "ranger.usersync.source.impl.class": "org.apache.ranger.ldapusersync.process.LdapUserGroupBuilder",
+          "ranger.usersync.ldap.url": "ldap:\/\/:\/\/localhost:389",
+          "ranger.usersync.ldap.binddn": "cn=admin,dc=example,dc=org",
+          "ranger.usersync.ldap.ldapbindpassword": "admin",
+          "ranger.usersync.ldap.user.nameattribute": "cn=admin,dc=example,dc=org",
+          "ranger.usersync.ldap.user.searchbase": "cn=users,dc=example,dc=org",
+          "ranger.usersync.group.searchenabled": "false"
+        }
+      },
+      {
+        "ranger-admin-site": {
+          "properties": {
+            "ranger.jpa.jdbc.driver": "org.postgresql.Driver",
+            "ranger.jpa.jdbc.url": "jdbc:postgresql://10.1.1.1:5432/ranger",
+            "ranger.audit.source.type": "solr",
+            "ranger.authentication.method": "ACTIVE_DIRECTORY",
+            "ranger.ldap.ad.user.searchfilter": "(cn=admin,dc=example,dc=org={0})",
+            "ranger.ldap.ad.domain": "ad.hdc.com",
+            "ranger.ldap.ad.base.dn": "cn=users,dc=example,dc=org"
+          }
+        }
+      },
+      {
+        "ranger-hive-plugin-properties": {
+          "ranger.service.config.param.enable.hive.metastore.lookup": "true",
+          "ranger.service.config.param.hive.site.file.path": "/etc/hive/conf/hive-site.xml"
+        }
+      }
+    ],
+    "host_groups": [
+      {
+        "name": "master",
+        "configurations": [
+        ],
+        "components": [
+          {
+            "name": "METRICS_COLLECTOR"
+          },
+          {
+            "name": "METRICS_MONITOR"
+          },
+          {
+            "name": "ZOOKEEPER_CLIENT"
+          },
+          {
+            "name": "ZOOKEEPER_SERVER"
+          },
+          {
+            "name": "INFRA_SOLR_CLIENT"
+          },
+          {
+            "name": "RANGER_TAGSYNC"
+          },
+          {
+            "name": "RANGER_USERSYNC"
+          },
+          {
+            "name": "RANGER_ADMIN"
+          },
+          {
+            "name": "INFRA_SOLR"
+          },
+          {
+            "name": "HIVE_METASTORE"
+          },
+          {
+            "name": "HIVE_CLIENT"
+          }
+        ],
+        "cardinality": "1"
+      },
+      {
+        "name": "worker",
+        "configurations": [
+        ],
+        "components": [
+          {
+            "name": "METRICS_MONITOR"
+          }
+        ],
+        "cardinality": "1+"
+      },
+      {
+        "name": "compute",
+        "configurations": [],
+        "components": [
+          {
+            "name": "METRICS_MONITOR"
+          }
+        ],
+        "cardinality": "1+"
+      }
+    ]
+  }
+}
