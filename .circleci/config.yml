@@ -34,6 +34,9 @@ jobs:
           name: stylecheck
           command: ./gradlew checkstyleMain checkstyleTest findbugsMain findbugsTest --stacktrace --max-workers 1
       - run:
+          name: coverage
+          command: gradle jacocoTestReport && bash <(curl -s https://codecov.io/bash)
+      - run:
           name: Save test results
           command: |
             mkdir -p ~/junit/

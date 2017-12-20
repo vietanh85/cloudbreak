@@ -207,6 +207,7 @@ subprojects {
   apply plugin: 'maven'
   apply plugin: 'checkstyle'
   apply plugin: 'findbugs'
+  apply plugin: "jacoco"
 
   sourceCompatibility = 1.8
   targetCompatibility = 1.8
@@ -215,6 +216,11 @@ subprojects {
     deployerJars
     all*.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
     all*.exclude group: 'com.google.guava', module: 'guava-jdk5'
+  }
+
+  jacoco {
+    toolVersion = "0.7.9"
+    reportsDir = file("$buildDir/reports/jacoco")
   }
 
   dependencies {
