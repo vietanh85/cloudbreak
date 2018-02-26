@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.service.stack.flow;
 import com.sequenceiq.cloudbreak.domain.Stack;
 import com.sequenceiq.cloudbreak.service.StackContext;
 
+import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 public class SshCheckerTaskContext extends StackContext {
@@ -13,17 +14,21 @@ public class SshCheckerTaskContext extends StackContext {
 
     private final int sshPort;
 
+    private final SSHClient sshClient;
+
     private final String user;
 
     private final String sshPrivateKey;
 
-    public SshCheckerTaskContext(Stack stack, HostKeyVerifier hostKeyVerifier, String publicIp, int sshPort, String user, String sshPrivateKey) {
+    public SshCheckerTaskContext(Stack stack, HostKeyVerifier hostKeyVerifier,
+        String publicIp, int sshPort, String user, String sshPrivateKey, SSHClient sshClient) {
         super(stack);
         this.hostKeyVerifier = hostKeyVerifier;
         this.publicIp = publicIp;
         this.sshPort = sshPort;
         this.user = user;
         this.sshPrivateKey = sshPrivateKey;
+        this.sshClient = sshClient;
     }
 
     public HostKeyVerifier getHostKeyVerifier() {
@@ -44,5 +49,9 @@ public class SshCheckerTaskContext extends StackContext {
 
     public String getUser() {
         return user;
+    }
+
+    public SSHClient getSshClient() {
+        return sshClient;
     }
 }

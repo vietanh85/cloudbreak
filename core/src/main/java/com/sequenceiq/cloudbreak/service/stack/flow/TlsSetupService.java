@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.service.stack.flow;
 
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.springframework.ui.freemarker.FreeMarkerTemplateUtils.processTemplateIntoString;
 
 import java.io.ByteArrayInputStream;
@@ -18,6 +19,7 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.google.common.io.BaseEncoding;
@@ -74,6 +76,31 @@ public class TlsSetupService {
     @Inject
     private InstanceMetaDataRepository instanceMetaDataRepository;
 
+    @Value("${http.proxyHost:}")
+    private String httpProxyHost;
+
+    @Value("${http.proxyPort:}")
+    private String httpProxyPort;
+
+    @Value("${http.proxyUser:}")
+    private String httpProxyUser;
+
+    @Value("${http.proxyPassword:}")
+    private String httpProxyPassword;
+
+    @Value("${https.proxyHost:}")
+    private String httpsProxyHost;
+
+    @Value("${https.proxyPort:}")
+    private String httpsProxyPort;
+
+    @Value("${https.proxyUser:}")
+    private String httpsProxyUser;
+
+    @Value("${https.proxyPassword:}")
+    private String httpsProxyPassword;
+
+
     public void setupTls(Stack stack, InstanceMetaData gwInstance, String user, Set<String> sshFingerprints) throws CloudbreakException {
         String publicIp = gatewayConfigService.getGatewayIp(stack, gwInstance);
         int sshPort = gwInstance.getSshPort();
@@ -81,11 +108,11 @@ public class TlsSetupService {
         if (publicIp == null) {
             throw new CloudbreakException("Failed to connect to host, IP address not defined.");
         }
-        SSHClient ssh = new SSHClient();
+        SSHClient ssh = getSshClient();
         Orchestrator orchestrator = stack.getOrchestrator();
         HostKeyVerifier hostKeyVerifier = new VerboseHostKeyVerifier(sshFingerprints);
         try {
-            waitForSsh(stack, publicIp, sshPort, hostKeyVerifier, user);
+            waitForSsh(stack, publicIp, sshPort, hostKeyVerifier, user, ssh);
             SecurityConfig securityConfig = stack.getSecurityConfig();
             setupTemporarySsh(ssh, publicIp, sshPort, hostKeyVerifier, user, securityConfig, stack);
             uploadTlsSetupScript(orchestrator, ssh, publicIp, stack);
@@ -104,8 +131,34 @@ public class TlsSetupService {
         }
     }
 
+    private SSHClient getSshClient() {
+        SSHClient sshClient = new SSHClient();
+        ProxySocketFactory proxySocketFactory = null;
+        if (isNoneBlank(httpsProxyHost) && isNoneBlank(httpsProxyPort)) {
+            proxySocketFactory = createSocketFactory(httpsProxyHost, httpsProxyPort, httpsProxyUser, httpsProxyPassword);
+        } else if (isNoneBlank(httpProxyHost) && isNoneBlank(httpProxyPort)) {
+            proxySocketFactory = createSocketFactory(httpProxyHost, httpProxyPort, httpProxyUser, httpProxyPassword);
+        }
+        if (proxySocketFactory != null) {
+            sshClient.setSocketFactory(proxySocketFactory);
+        }
+        return sshClient;
+    }
+
+    private ProxySocketFactory createSocketFactory(String host, String port, String username, String password) {
+        ProxySocketFactory proxySocketFactory;
+        if (isNoneBlank(username) && isNoneBlank(password)) {
+            LOGGER.info("Construct HTTP proxy for SSH, {}:{} with username: {}", host, port, username);
+            proxySocketFactory = new ProxySocketFactory(host, port, username, password);
+        } else {
+            LOGGER.info("Construct HTTP proxy for SSH, {}:{}", host, port);
+            proxySocketFactory = new ProxySocketFactory(host, port, null, null);
+        }
+        return proxySocketFactory;
+    }
+
     public void removeTemporarySShKey(Stack stack, String publicIp, int sshPort, String user, Set<String> sshFingerprints) throws CloudbreakException {
-        SSHClient ssh = new SSHClient();
+        SSHClient ssh = getSshClient();
         try {
             String privateKey = stack.getSecurityConfig().getCloudbreakSshPrivateKeyDecoded();
             HostKeyVerifier hostKeyVerifier = new VerboseHostKeyVerifier(sshFingerprints);
@@ -122,15 +175,15 @@ public class TlsSetupService {
         }
     }
 
-    private void waitForSsh(Stack stack, String publicIp, int sshPort, HostKeyVerifier hostKeyVerifier, String user) {
+    private void waitForSsh(Stack stack, String publicIp, int sshPort, HostKeyVerifier hostKeyVerifier, String user, SSHClient ssh) {
         sshCheckerTaskContextPollingService.pollWithTimeoutSingleFailure(
-                sshCheckerTask,
-                new SshCheckerTaskContext(stack, hostKeyVerifier, publicIp, sshPort, user, stack.getSecurityConfig().getCloudbreakSshPrivateKeyDecoded()),
-                SSH_POLLING_INTERVAL, SSH_MAX_ATTEMPTS_FOR_HOSTS);
+            sshCheckerTask,
+            new SshCheckerTaskContext(stack, hostKeyVerifier, publicIp, sshPort, user, stack.getSecurityConfig().getCloudbreakSshPrivateKeyDecoded(), ssh),
+            SSH_POLLING_INTERVAL, SSH_MAX_ATTEMPTS_FOR_HOSTS);
     }
 
     private void setupTemporarySsh(SSHClient ssh, String ip, int port, HostKeyVerifier hostKeyVerifier, String user,
-            SecurityConfig securityConfig, Stack stack) throws IOException, CloudbreakException {
+        SecurityConfig securityConfig, Stack stack) throws IOException, CloudbreakException {
         LOGGER.info("Setting up temporary ssh...");
         prepareSshConnection(ssh, ip, port, hostKeyVerifier, user, securityConfig.getCloudbreakSshPrivateKeyDecoded(), stack);
         String remoteTlsCertificatePath = "/tmp/cb-client.pem";
@@ -139,7 +192,7 @@ public class TlsSetupService {
     }
 
     private void prepareSshConnection(SSHClient ssh, String ip, int port, HostKeyVerifier hostKeyVerifier, String user,
-            String privateKeyString, Stack stack) throws CloudbreakException, IOException {
+        String privateKeyString, Stack stack) throws CloudbreakException, IOException {
         ssh.addHostKeyVerifier(hostKeyVerifier);
         ssh.connect(ip, port);
         if (stack.getStackAuthentication().passwordAuthenticationRequired()) {
@@ -156,13 +209,13 @@ public class TlsSetupService {
     }
 
     private void uploadTlsSetupScript(Orchestrator orchestrator, SSHClient ssh, String publicIp, Stack stack)
-            throws IOException, TemplateException, CloudbreakException {
+        throws IOException, TemplateException, CloudbreakException {
         LOGGER.info("Uploading tls-setup.sh to the gateway...");
         Map<String, Object> model = new HashMap<>();
         model.put("publicIp", publicIp);
         model.put("username", stack.getStackAuthentication().getLoginUserName());
         model.put("sudopre", stack.getStackAuthentication().passwordAuthenticationRequired()
-                ? String.format("echo '%s'|", stack.getStackAuthentication().getLoginPassword()) : "");
+            ? String.format("echo '%s'|", stack.getStackAuthentication().getLoginPassword()) : "");
         model.put("sudocheck", stack.getStackAuthentication().passwordAuthenticationRequired() ? "-S" : "");
         model.put("sslPort", stack.getGatewayPort().toString());
 
@@ -170,7 +223,7 @@ public class TlsSetupService {
         OrchestratorType type = orchestratorTypeResolver.resolveType(orchestrator.getType());
 
         String tls = processTemplateIntoString(
-                freemarkerConfiguration.getTemplate(String.format("init/%s/tls-setup.sh", type.name().toLowerCase()), "UTF-8"), model);
+            freemarkerConfiguration.getTemplate(String.format("init/%s/tls-setup.sh", type.name().toLowerCase()), "UTF-8"), model);
         InMemorySourceFile tlsFile = uploadParameterFile(tls, "tls-setup.sh");
         ssh.newSCPFileTransfer().upload(tlsFile, "/tmp/tls-setup.sh");
         LOGGER.info("tls-setup.sh uploaded to /tmp/tls-setup.sh. Content: {}", tls);

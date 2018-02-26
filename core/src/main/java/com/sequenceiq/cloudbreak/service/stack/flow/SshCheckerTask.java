@@ -22,7 +22,10 @@ public class SshCheckerTask extends StackBasedStatusCheckerTask<SshCheckerTaskCo
     @Override
     public boolean checkStatus(SshCheckerTaskContext sshCheckerTaskContext) {
         boolean ret = false;
-        try (SSHClient ssh = new SSHClient()) {
+        try {
+            SSHClient ssh = new SSHClient();
+            ProxySocketFactory proxySocketFactory = new ProxySocketFactory("192.168.99.100", "3128", "cloudbreak", "cloudbreak");
+            ssh.setSocketFactory(proxySocketFactory);
             ssh.addHostKeyVerifier(sshCheckerTaskContext.getHostKeyVerifier());
             String user = sshCheckerTaskContext.getUser();
             ssh.connect(sshCheckerTaskContext.getPublicIp(), sshCheckerTaskContext.getSshPort());
@@ -36,9 +39,9 @@ public class SshCheckerTask extends StackBasedStatusCheckerTask<SshCheckerTaskCo
             }
             ret = true;
         } catch (IOException e) {
-            LOGGER.info("Failed to disconnect from ssh: {}", e.getMessage());
+            LOGGER.error("Failed to disconnect from ssh:", e);
         } catch (Exception e) {
-            LOGGER.info("Failed to connect ssh: {}", e.getMessage());
+            LOGGER.error("Failed to connect ssh:", e);
         }
         return ret;
     }
