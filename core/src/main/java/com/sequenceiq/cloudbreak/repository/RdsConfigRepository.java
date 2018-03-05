@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.sequenceiq.cloudbreak.api.model.RdsType;
+import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 
 @EntityType(entityClass = RDSConfig.class)
@@ -24,9 +24,6 @@ public interface RdsConfigRepository extends CrudRepository<RDSConfig, Long> {
 
     @Query("SELECT r FROM RDSConfig r LEFT JOIN FETCH r.clusters WHERE r.owner= :owner and r.name= :name AND r.status <> 'DEFAULT_DELETED'")
     RDSConfig findByNameInUser(@Param("name") String name, @Param("owner") String owner);
-
-    @Query("SELECT r FROM RDSConfig r LEFT JOIN FETCH r.clusters WHERE r.name= :name and r.account= :account AND r.status <> 'DEFAULT_DELETED'")
-    RDSConfig findOneByName(@Param("name") String name, @Param("account") String account);
 
     @Query("SELECT r FROM RDSConfig r LEFT JOIN FETCH r.clusters WHERE  r.id= :id and r.account= :account AND r.status <> 'DEFAULT_DELETED'")
     RDSConfig findByIdInAccount(@Param("id") Long id, @Param("account") String account);
