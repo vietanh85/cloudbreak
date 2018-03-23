@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.service.proxy;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -65,12 +66,12 @@ public class ProxyConfigService {
     }
 
     public ProxyConfig get(Long id) {
-        ProxyConfig proxyConfig = proxyConfigRepository.findOne(id);
-        if (proxyConfig == null) {
+        Optional<ProxyConfig> proxyConfig = proxyConfigRepository.findById(id);
+        if (!proxyConfig.isPresent()) {
             throw new NotFoundException(String.format("Proxy configuration '%s' not found.", id));
         }
-        authorizationService.hasReadPermission(proxyConfig);
-        return proxyConfig;
+        authorizationService.hasReadPermission(proxyConfig.get());
+        return proxyConfig.get();
     }
 
     public void delete(Long id, IdentityUser user) {

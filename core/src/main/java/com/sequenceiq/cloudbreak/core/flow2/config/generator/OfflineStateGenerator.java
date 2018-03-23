@@ -391,17 +391,17 @@ public class OfflineStateGenerator {
         }
 
         @Override
-        public <S extends Stack> Iterable<S> save(Iterable<S> entities) {
+        public <S extends Stack> Iterable<S> saveAll(Iterable<S> entities) {
             return null;
         }
 
         @Override
-        public Stack findOne(Long aLong) {
-            return new Stack();
+        public Optional<Stack> findById(Long aLong) {
+            return Optional.of(new Stack());
         }
 
         @Override
-        public boolean exists(Long aLong) {
+        public boolean existsById(Long aLong) {
             return false;
         }
 
@@ -411,7 +411,7 @@ public class OfflineStateGenerator {
         }
 
         @Override
-        public Iterable<Stack> findAll(Iterable<Long> longs) {
+        public Iterable<Stack> findAllById(Iterable<Long> longs) {
             return null;
         }
 
@@ -421,7 +421,7 @@ public class OfflineStateGenerator {
         }
 
         @Override
-        public void delete(Long aLong) {
+        public void deleteById(Long aLong) {
 
         }
 
@@ -431,7 +431,7 @@ public class OfflineStateGenerator {
         }
 
         @Override
-        public void delete(Iterable<? extends Stack> entities) {
+        public void deleteAll(Iterable<? extends Stack> entities) {
 
         }
 

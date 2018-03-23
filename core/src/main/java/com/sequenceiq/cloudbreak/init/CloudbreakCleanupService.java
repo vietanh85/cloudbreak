@@ -182,7 +182,7 @@ public class CloudbreakCleanupService implements ApplicationListener<ContextRefr
             for (FlowLog flowLog : flowLogs) {
                 flowLog.setCloudbreakNodeId(nodeId);
             }
-            flowLogRepository.save(flowLogs);
+            flowLogRepository.saveAll(flowLogs);
         }
     }
 
@@ -222,7 +222,7 @@ public class CloudbreakCleanupService implements ApplicationListener<ContextRefr
     private Set<FlowLog> getMyFlowLogs() {
         Set<FlowLog> myFlowLogs = flowLogRepository.findAllByCloudbreakNodeId(cloudbreakNodeConfig.getId());
         myFlowLogs.forEach(fl -> fl.setCreated(fl.getCreated() + 1));
-        flowLogRepository.save(myFlowLogs);
+        flowLogRepository.saveAll(myFlowLogs);
         return myFlowLogs;
     }
 

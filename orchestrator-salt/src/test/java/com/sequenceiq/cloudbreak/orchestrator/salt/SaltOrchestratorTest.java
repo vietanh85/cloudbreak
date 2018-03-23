@@ -215,7 +215,7 @@ public class SaltOrchestratorTest {
 
         saltOrchestrator.tearDown(Collections.singletonList(gatewayConfig), privateIpsByFQDN);
 
-        verifyStatic();
+        verifyStatic(SaltStates.class);
         SaltStates.stopMinions(eq(saltConnector), eq(privateIpsByFQDN));
     }
 

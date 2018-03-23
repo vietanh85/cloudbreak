@@ -204,21 +204,21 @@ public class StackService {
     }
 
     public Stack get(Long id) {
-        Stack stack = stackRepository.findOne(id);
-        if (stack == null) {
+        Optional<Stack> stack = stackRepository.findById(id);
+        if (!stack.isPresent()) {
             throw new NotFoundException(String.format("Stack '%s' not found", id));
         }
-        authorizationService.hasReadPermission(stack);
-        return stack;
+        authorizationService.hasReadPermission(stack.get());
+        return stack.get();
     }
 
     @PreAuthorize("#oauth2.hasScope('cloudbreak.autoscale')")
     public Stack getForAutoscale(Long id) {
-        Stack stack = stackRepository.findOne(id);
-        if (stack == null) {
+        Optional<Stack> stack = stackRepository.findById(id);
+        if (!stack.isPresent()) {
             throw new NotFoundException(String.format("Stack '%s' not found", id));
         }
-        return stack;
+        return stack.get();
     }
 
     @PreAuthorize("#oauth2.hasScope('cloudbreak.autoscale')")
@@ -240,19 +240,19 @@ public class StackService {
     }
 
     public Stack getById(Long id) {
-        Stack retStack = stackRepository.findOne(id);
-        if (retStack == null) {
+        Optional<Stack> retStack = stackRepository.findById(id);
+        if (!retStack.isPresent()) {
             throw new NotFoundException(String.format("Stack '%s' not found", id));
         }
-        return retStack;
+        return retStack.get();
     }
 
     public StackView getByIdView(Long id) {
-        StackView retStack = stackViewRepository.findOne(id);
-        if (retStack == null) {
+        Optional<StackView> retStack = stackViewRepository.findById(id);
+        if (!retStack.isPresent()) {
             throw new NotFoundException(String.format("Stack '%s' not found", id));
         }
-        return retStack;
+        return retStack.get();
     }
 
     public StackStatus getCurrentStatusByStackId(long stackId) {
@@ -361,7 +361,7 @@ public class StackService {
             MDCBuilder.buildMdcContext(savedStack);
 
             start = System.currentTimeMillis();
-            instanceGroupRepository.save(savedStack.getInstanceGroups());
+            instanceGroupRepository.saveAll(savedStack.getInstanceGroups());
             LOGGER.info("Instance groups saved in {} ms for stack {}", System.currentTimeMillis() - start, stackName);
 
             start = System.currentTimeMillis();
@@ -656,7 +656,7 @@ public class StackService {
     }
 
     public void delete(Stack stack) {
-        stackRepository.delete(stack.getId());
+        stackRepository.deleteById(stack.getId());
     }
 
     private void delete(Stack stack, Boolean forced, Boolean deleteDependencies) {

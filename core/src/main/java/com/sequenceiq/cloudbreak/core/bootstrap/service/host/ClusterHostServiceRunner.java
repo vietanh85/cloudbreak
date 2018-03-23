@@ -29,6 +29,7 @@ import com.sequenceiq.cloudbreak.cloud.model.AmbariDatabase;
 import com.sequenceiq.cloudbreak.cloud.model.AmbariRepo;
 import com.sequenceiq.cloudbreak.cloud.model.component.StackRepoDetails;
 import com.sequenceiq.cloudbreak.cloud.scheduler.CancellationException;
+import com.sequenceiq.cloudbreak.controller.NotFoundException;
 import com.sequenceiq.cloudbreak.service.CloudbreakException;
 import com.sequenceiq.cloudbreak.domain.Cluster;
 import com.sequenceiq.cloudbreak.domain.ExposedServices;
@@ -201,17 +202,21 @@ public class ClusterHostServiceRunner {
     private void saveSharedRangerService(Stack stack, Map<String, SaltPillarProperties> servicePillar) {
         Long datalakeId = stack.getDatalakeId();
         if (datalakeId != null) {
-            Stack dataLakeStack = stackRepository.findOne(datalakeId);
-            Cluster dataLakeCluster = dataLakeStack.getCluster();
-            Set<String> groupNames = blueprintProcessorFactory.get(dataLakeCluster.getBlueprint().getBlueprintText()).getHostGroupsWithComponent("RANGER_ADMIN");
-            List<HostGroup> groups = dataLakeCluster.getHostGroups().stream().filter(hg -> groupNames.contains(hg.getName())).collect(Collectors.toList());
-            Set<String> hostNames = new HashSet<>();
-            groups.forEach(hg -> hostNames.addAll(hg.getHostMetadata().stream().map(HostMetadata::getHostName).collect(Collectors.toList())));
-            Map<String, Object> rangerMap = new HashMap<>();
-            rangerMap.put("servers", hostNames);
-            rangerMap.put("port", "6080");
-            servicePillar.put("datalake-services", new SaltPillarProperties("/datalake/init.sls",
-                    singletonMap("datalake-services", singletonMap("ranger", rangerMap))));
+            Optional<Stack> dataLakeStackOptional = stackRepository.findById(datalakeId);
+            if (dataLakeStackOptional.isPresent()) {
+                Cluster dataLakeCluster = dataLakeStackOptional.get().getCluster();
+                Set<String> groupNames = blueprintProcessorFactory.get(dataLakeCluster.getBlueprint().getBlueprintText()).getHostGroupsWithComponent("RANGER_ADMIN");
+                List<HostGroup> groups = dataLakeCluster.getHostGroups().stream().filter(hg -> groupNames.contains(hg.getName())).collect(Collectors.toList());
+                Set<String> hostNames = new HashSet<>();
+                groups.forEach(hg -> hostNames.addAll(hg.getHostMetadata().stream().map(HostMetadata::getHostName).collect(Collectors.toList())));
+                Map<String, Object> rangerMap = new HashMap<>();
+                rangerMap.put("servers", hostNames);
+                rangerMap.put("port", "6080");
+                servicePillar.put("datalake-services", new SaltPillarProperties("/datalake/init.sls",
+                        singletonMap("datalake-services", singletonMap("ranger", rangerMap))));
+            } else {
+                throw new NotFoundException("datalake not found: " + datalakeId);
+            }
         }
     }
 

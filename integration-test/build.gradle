@@ -16,7 +16,7 @@ jar {
 apply plugin: 'org.springframework.boot'
 
 springBoot {
-  mainClass = 'com.sequenceiq.it.IntegrationTestApp'
+  mainClassName = 'com.sequenceiq.it.IntegrationTestApp'
 }
 
 task runMockServer(type:JavaExec) {

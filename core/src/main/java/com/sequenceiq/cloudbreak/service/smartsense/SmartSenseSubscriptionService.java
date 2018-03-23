@@ -21,6 +21,7 @@ import com.sequenceiq.cloudbreak.api.model.SmartSenseSubscriptionJson;
 import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
 import com.sequenceiq.cloudbreak.common.type.APIResourceType;
 import com.sequenceiq.cloudbreak.controller.BadRequestException;
+import com.sequenceiq.cloudbreak.controller.NotFoundException;
 import com.sequenceiq.cloudbreak.domain.SmartSenseSubscription;
 import com.sequenceiq.cloudbreak.repository.FlexSubscriptionRepository;
 import com.sequenceiq.cloudbreak.repository.SmartSenseSubscriptionRepository;
@@ -90,7 +91,12 @@ public class SmartSenseSubscriptionService {
 
     public SmartSenseSubscription findById(Long id) {
         LOGGER.info("Looking for SmartSense subscription with id: {}", id);
-        return repository.findOne(id);
+        Optional<SmartSenseSubscription> smartSenseSubscriptionOptional = repository.findById(id);
+        if (smartSenseSubscriptionOptional.isPresent()) {
+            return smartSenseSubscriptionOptional.get();
+        } else {
+            throw new NotFoundException("smartsense subscription not found: " + id);
+        }
     }
 
     public SmartSenseSubscription findOneById(Long id) {

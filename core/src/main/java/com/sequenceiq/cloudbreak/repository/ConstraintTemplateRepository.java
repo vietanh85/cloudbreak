@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.Query;
@@ -10,9 +11,6 @@ import com.sequenceiq.cloudbreak.domain.ConstraintTemplate;
 
 @EntityType(entityClass = ConstraintTemplate.class)
 public interface ConstraintTemplateRepository extends CrudRepository<ConstraintTemplate, Long> {
-
-    @Override
-    ConstraintTemplate findOne(@Param("id") Long id);
 
     @Query("SELECT t FROM ConstraintTemplate t WHERE t.owner= :user AND deleted IS NOT TRUE AND t.status <> 'DEFAULT_DELETED'")
     Set<ConstraintTemplate> findForUser(@Param("user") String user);

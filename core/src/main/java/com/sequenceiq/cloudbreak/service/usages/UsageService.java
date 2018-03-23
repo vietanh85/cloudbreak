@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -56,7 +57,7 @@ public class UsageService {
             Integer instanceNum = ig.getNodeCount();
             usages.add(usageGeneratorService.openNewUsage(stack, instanceType, instanceNum, groupName, ldt));
         }
-        usageRepository.save(usages);
+        usageRepository.saveAll(usages);
     }
 
     public void closeUsagesForStack(Long stackId) {
@@ -122,12 +123,12 @@ public class UsageService {
             closeUsage(usage);
             usageRepository.save(usage);
         }
-        usageRepository.save(newUsages);
+        usageRepository.saveAll(newUsages);
     }
 
     private CloudbreakUsage closeUsageIfStackKilled(CloudbreakUsage usage) {
-        Stack s = stackRepository.findOne(usage.getStackId());
-        if (s == null || s.getStatus() == Status.DELETE_COMPLETED) {
+        Optional<Stack> stackOptional = stackRepository.findById(usage.getStackId());
+        if (!stackOptional.isPresent() || stackOptional.get().getStatus() == Status.DELETE_COMPLETED) {
             return closeUsage(usage);
         }
         return usage;

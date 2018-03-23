@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.service.topology;
 import static com.sequenceiq.cloudbreak.util.SqlUtil.getProperSqlErrorMessage;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
@@ -55,11 +56,11 @@ public class TopologyService {
     }
 
     public Topology getById(Long id) {
-        Topology topology = topologyRepository.findOne(id);
-        if (topology == null) {
-            throw new NotFoundException(String.format(TOPOLOGY_NOT_FOUND_MSG, id));
+        Optional<Topology> topology = topologyRepository.findById(id);
+        if (topology.isPresent()) {
+            return topology.get();
         } else {
-            return topology;
+            throw new NotFoundException(String.format(TOPOLOGY_NOT_FOUND_MSG, id));
         }
     }
 

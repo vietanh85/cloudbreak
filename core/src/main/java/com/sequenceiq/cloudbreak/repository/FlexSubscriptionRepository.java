@@ -1,6 +1,7 @@
 package com.sequenceiq.cloudbreak.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -14,7 +15,7 @@ import com.sequenceiq.cloudbreak.domain.SmartSenseSubscription;
 public interface FlexSubscriptionRepository extends CrudRepository<FlexSubscription, Long> {
 
     @PostAuthorize("hasPermission(returnObject,'read')")
-    FlexSubscription findById(Long id);
+    Optional<FlexSubscription> findById(Long id);
 
     @PostAuthorize("hasPermission(returnObject,'read')")
     FlexSubscription findByName(String name);

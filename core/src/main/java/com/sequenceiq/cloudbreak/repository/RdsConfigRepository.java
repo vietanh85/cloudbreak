@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.Query;
@@ -36,7 +37,7 @@ public interface RdsConfigRepository extends CrudRepository<RDSConfig, Long> {
     RDSConfig findByNameBasedOnAccount(@Param("name") String name, @Param("account") String account, @Param("owner") String owner);
 
     @Query("SELECT r FROM RDSConfig r LEFT JOIN FETCH r.clusters WHERE r.id= :id AND r.status <> 'DEFAULT_DELETED'")
-    RDSConfig findById(@Param("id") Long id);
+    Optional<RDSConfig> findById(@Param("id") Long id);
 
     @Query("SELECT r FROM RDSConfig r INNER JOIN r.clusters cluster LEFT JOIN FETCH r.clusters WHERE cluster.id= :clusterId "
             + "AND ((r.account= :account AND r.publicInAccount= true) OR r.owner= :user)")

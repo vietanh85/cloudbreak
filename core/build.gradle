@@ -5,7 +5,7 @@ buildscript {
     maven { url 'http://repo.spring.io/libs-release' }
     mavenCentral()
     jcenter()
-    maven { url "http://maven.sequenceiq.com/releases" }
+    maven { url "https://cloudbreak-maven.s3.amazonaws.com/releases" }
   }
   dependencies {
     classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
@@ -33,7 +33,7 @@ bootRun {
 }
 
 springBoot {
-  mainClass = 'com.sequenceiq.cloudbreak.CloudbreakApplication'
+  mainClassName = 'com.sequenceiq.cloudbreak.CloudbreakApplication'
 }
 
 jar {
@@ -43,7 +43,7 @@ jar {
 
 dependencies {
 
-
+    compile group: 'org.aspectj',                   name: 'aspectjweaver',                  version: '1.9.0.RC4'
     compile group: 'org.springframework.retry',     name: 'spring-retry',                   version: '1.2.0.RELEASE'
     compile group: 'org.springframework.boot',      name: 'spring-boot-starter',            version: springBootVersion
     compile group: 'org.springframework.boot',      name: 'spring-boot-starter-web',        version: springBootVersion
@@ -54,7 +54,7 @@ dependencies {
     compile group: 'org.springframework.boot',      name: 'spring-boot-starter-freemarker', version: springBootVersion
     compile group: 'org.springframework.boot',      name: 'spring-boot-starter-security',   version: springBootVersion
     compile group: 'org.springframework.boot',      name: 'spring-boot-starter-jersey',     version: springBootVersion
-    compile (group: 'org.springframework.statemachine', name: 'spring-statemachine-core', version: '1.0.1.RELEASE') { exclude group: 'org.springframework' }
+    compile (group: 'org.springframework.statemachine', name: 'spring-statemachine-core', version: springStateMachineVersion) { exclude group: 'org.springframework' }
     compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2',    version: springOauthVersion
     compile group: 'io.projectreactor',             name: 'reactor-core',                   version: eventBusVersion
     compile group: 'io.projectreactor',             name: 'reactor-bus',                    version: eventBusVersion
@@ -76,7 +76,7 @@ dependencies {
     compile group: 'io.springfox',                  name: 'springfox-swagger-ui',           version: '2.5.0'
 
 
-    compile group: 'org.springframework.kafka',     name: 'spring-kafka',                   version: '2.1.2.RELEASE'
+    compile group: 'org.springframework.kafka',     name: 'spring-kafka',                   version: '2.1.4.RELEASE'
     compile group: 'io.swagger',                    name: 'swagger-jersey2-jaxrs',          version: swaggerVersion
     compile group: 'com.google.http-client',        name: 'google-http-client-jackson2',    version: '1.22.0'
     compile (group: 'com.google.oauth-client',      name: 'google-oauth-client-jetty',      version: '1.22.0')   { exclude module: 'servlet-api' }

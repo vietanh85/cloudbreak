@@ -2,6 +2,7 @@ package com.sequenceiq.cloudbreak.service.ldapconfig;
 
 import static com.sequenceiq.cloudbreak.util.SqlUtil.getProperSqlErrorMessage;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -47,12 +48,12 @@ public class LdapConfigService {
     }
 
     public LdapConfig get(Long id) {
-        LdapConfig ldapConfig = ldapConfigRepository.findOne(id);
-        if (ldapConfig == null) {
+        Optional<LdapConfig> ldapConfig = ldapConfigRepository.findById(id);
+        if (!ldapConfig.isPresent()) {
             throw new NotFoundException(String.format("LdapConfig '%s' not found", id));
         }
-        authorizationService.hasReadPermission(ldapConfig);
-        return ldapConfig;
+        authorizationService.hasReadPermission(ldapConfig.get());
+        return ldapConfig.get();
     }
 
     public Set<LdapConfig> retrievePrivateConfigs(IdentityUser user) {

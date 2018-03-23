@@ -2,6 +2,7 @@ package com.sequenceiq.cloudbreak.service.securitygroup;
 
 import static com.sequenceiq.cloudbreak.util.SqlUtil.getProperSqlErrorMessage;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -53,12 +54,12 @@ public class SecurityGroupService {
     }
 
     public SecurityGroup get(Long id) {
-        SecurityGroup securityGroup = groupRepository.findById(id);
-        if (securityGroup == null) {
+        Optional<SecurityGroup> securityGroup = groupRepository.findById(id);
+        if (!securityGroup.isPresent()) {
             throw new NotFoundException(String.format("SecurityGroup '%s' not found", id));
         }
-        authorizationService.hasReadPermission(securityGroup);
-        return securityGroup;
+        authorizationService.hasReadPermission(securityGroup.get());
+        return securityGroup.get();
     }
 
     public SecurityGroup getPrivateSecurityGroup(String name, IdentityUser user) {

@@ -202,14 +202,6 @@ public class ImageCatalogService {
         return imageCatalog;
     }
 
-    public ImageCatalog get(Long id) {
-        ImageCatalog imageCatalog;
-        IdentityUser user = authenticatedUserService.getCbUser();
-        imageCatalog = imageCatalogRepository.findAllPublicInAccount(user.getAccount(), user.getUserId()).isEmpty() ? getCloudbreakDefaultImageCatalog()
-                : imageCatalogRepository.findOne(id);
-        return imageCatalog;
-    }
-
     public ImageCatalog setAsDefault(String name) {
 
         removeDefaultFlag();
@@ -239,7 +231,7 @@ public class ImageCatalogService {
 
     public ImageCatalog update(ImageCatalog source) {
 
-        ImageCatalog imageCatalog = imageCatalogRepository.findOne(source.getId());
+        ImageCatalog imageCatalog = imageCatalogRepository.findById(source.getId());
         checkImageCatalog(imageCatalog, source.getId());
         imageCatalog.setImageCatalogName(source.getImageCatalogName());
         imageCatalog.setImageCatalogUrl(source.getImageCatalogUrl());

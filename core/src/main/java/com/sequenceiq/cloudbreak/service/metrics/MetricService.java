@@ -1,12 +1,7 @@
 package com.sequenceiq.cloudbreak.service.metrics;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
-import org.springframework.boot.actuate.metrics.CounterService;
-import org.springframework.boot.actuate.metrics.GaugeService;
-import org.springframework.boot.actuate.metrics.writer.Delta;
-import org.springframework.boot.actuate.metrics.writer.MetricWriter;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.common.type.CloudConstants;
@@ -14,21 +9,14 @@ import com.sequenceiq.cloudbreak.common.type.MetricType;
 import com.sequenceiq.cloudbreak.domain.Stack;
 import com.sequenceiq.cloudbreak.domain.view.StackView;
 
+import io.micrometer.core.instrument.Metrics;
+
 @Service
 public class MetricService {
 
     private static final String METRIC_PREFIX = "cloudbreak.";
 
     private static final String JMX_COUNTER_TYPE = "counter.";
-
-    @Inject
-    private MetricWriter metricWriter;
-
-    @Inject
-    private CounterService counterService;
-
-    @Inject
-    private GaugeService gaugeService;
 
     @PostConstruct
     public void init() {
@@ -90,15 +78,15 @@ public class MetricService {
      * @param value  Metric value
      */
     public void submit(String metric, double value) {
-        gaugeService.submit(METRIC_PREFIX + metric.toLowerCase(), value);
+        Metrics.gauge(METRIC_PREFIX + metric.toLowerCase(), value);
     }
 
     private void incrementMetricCounter(String metric) {
-        counterService.increment(METRIC_PREFIX + metric.toLowerCase());
+        Metrics.counter(METRIC_PREFIX + metric.toLowerCase()).increment();
     }
 
     private void initJmxMetricCounter(String metric, String cloudPlatform) {
-        metricWriter.increment(new Delta<>(JMX_COUNTER_TYPE + METRIC_PREFIX + getMetricNameWithPlatform(metric, cloudPlatform), 0));
+        Metrics.counter(JMX_COUNTER_TYPE + METRIC_PREFIX + getMetricNameWithPlatform(metric, cloudPlatform)).increment(0);
     }
 
     private String getMetricNameWithPlatform(MetricType metric, String cloudPlatform) {

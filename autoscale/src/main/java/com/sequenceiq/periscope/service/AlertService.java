@@ -100,9 +100,9 @@ public class AlertService {
 
     public void deleteMetricAlert(Long clusterId, Long alertId) {
         metricAlertRepository.findByCluster(alertId, clusterId);
-        Cluster cluster = clusterRepository.findById(clusterId);
+        Cluster cluster = clusterService.find(clusterId);
         cluster.setMetricAlerts(removeMetricAlert(cluster, alertId));
-        metricAlertRepository.delete(alertId);
+        metricAlertRepository.deleteById(alertId);
         clusterRepository.save(cluster);
     }
 
@@ -146,7 +146,7 @@ public class AlertService {
         Cluster cluster = clusterService.findOneById(clusterId);
         timeAlertRepository.findByCluster(alertId, clusterId);
         cluster.setTimeAlerts(removeTimeAlert(cluster, alertId));
-        timeAlertRepository.delete(alertId);
+        timeAlertRepository.deleteById(alertId);
         clusterRepository.save(cluster);
     }
 
@@ -245,11 +245,11 @@ public class AlertService {
 
     public void deletePrometheusAlert(Long clusterId, Long alertId) {
         PrometheusAlert alert = prometheusAlertRepository.findByCluster(alertId, clusterId);
-        Cluster cluster = clusterRepository.findById(clusterId);
+        Cluster cluster = clusterService.find(clusterId);
         consulKeyValueService.deleteAlert(cluster, alert);
         Set<PrometheusAlert> alerts = cluster.getPrometheusAlerts().stream().filter(a -> a.getId() != alertId).collect(Collectors.toSet());
         cluster.setPrometheusAlerts(alerts);
-        prometheusAlertRepository.delete(alertId);
+        prometheusAlertRepository.deleteById(alertId);
         clusterRepository.save(cluster);
         LOGGER.info("Prometheus alert '{}' has been deleted for cluster 'ID:{}'", alert.getName(), cluster.getId());
     }

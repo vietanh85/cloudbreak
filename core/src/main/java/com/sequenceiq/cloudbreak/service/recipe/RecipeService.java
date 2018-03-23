@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.service.recipe;
 import static com.sequenceiq.cloudbreak.util.SqlUtil.getProperSqlErrorMessage;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -49,12 +50,12 @@ public class RecipeService {
     }
 
     public Recipe get(Long id) {
-        Recipe recipe = recipeRepository.findOne(id);
-        if (recipe == null) {
+        Optional<Recipe> recipe = recipeRepository.findById(id);
+        if (!recipe.isPresent()) {
             throw new NotFoundException(String.format("Recipe '%s' not found", id));
         }
-        authorizationService.hasReadPermission(recipe);
-        return recipe;
+        authorizationService.hasReadPermission(recipe.get());
+        return recipe.get();
     }
 
     public Set<Recipe> retrievePrivateRecipes(IdentityUser user) {

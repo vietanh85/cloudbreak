@@ -42,10 +42,10 @@ subprojects {
   apply plugin: 'java'
   apply plugin: 'maven'
   apply plugin: 'checkstyle'
-  apply plugin: 'findbugs'
+//  apply plugin: 'findbugs'
 
-  sourceCompatibility = 1.8
-  targetCompatibility = 1.8
+  sourceCompatibility = 10.0
+  targetCompatibility = 10.0
 
   configurations {
     deployerJars
@@ -71,17 +71,17 @@ subprojects {
     }
   }
 
-  findbugs {
-    toolVersion = "3.0.1"
-    excludeFilter = file("$rootProject.projectDir/config/findbugs/excludeFilter.xml")
-  }
-
-  tasks.withType(FindBugs) {
-    reports {
-        xml.enabled false
-        html.enabled true
-    }
-  }
+//  findbugs {
+//    toolVersion = "3.0.1"
+//    excludeFilter = file("$rootProject.projectDir/config/findbugs/excludeFilter.xml")
+//  }
+//
+//  tasks.withType(FindBugs) {
+//    reports {
+//        xml.enabled false
+//        html.enabled true
+//    }
+//  }
 
   checkstyle {
     toolVersion = "7.6"
@@ -114,6 +114,7 @@ subprojects {
     mavenCentral()
     maven { url "https://cloudbreak-maven.s3.amazonaws.com/releases" }
     maven { url "https://repo.spring.io/release" }
+    maven { url "https://repo.spring.io/milestone" }
     mavenLocal()
   }
 }

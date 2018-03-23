@@ -10,9 +10,6 @@ import com.sequenceiq.cloudbreak.domain.Resource;
 @EntityType(entityClass = Resource.class)
 public interface ResourceRepository extends CrudRepository<Resource, Long> {
 
-    @Override
-    Resource findOne(@Param("id") Long id);
-
     @Query("SELECT r FROM Resource r WHERE r.stack.id = :stackId AND r.resourceName = :name AND r.resourceType = :type")
     Resource findByStackIdAndNameAndType(@Param("stackId") Long stackId, @Param("name") String name, @Param("type") ResourceType type);
 

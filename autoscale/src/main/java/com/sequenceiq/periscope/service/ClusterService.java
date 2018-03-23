@@ -4,6 +4,7 @@ import static com.sequenceiq.periscope.api.model.ClusterState.RUNNING;
 import static org.springframework.util.StringUtils.isEmpty;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
@@ -107,7 +108,12 @@ public class ClusterService {
     }
 
     public Cluster find(Long clusterId) {
-        return clusterRepository.findById(clusterId);
+        Optional<Cluster> optionalCluster = clusterRepository.findById(clusterId);
+        if (optionalCluster.isPresent()) {
+            return optionalCluster.get();
+        } else {
+            throw new NotFoundException("cluster not found: " + clusterId);
+        }
     }
 
     public void removeOne(Long clusterId) {
@@ -164,11 +170,8 @@ public class ClusterService {
     }
 
     private PeriscopeUser createUserIfAbsent(PeriscopeUser user) {
-        PeriscopeUser periscopeUser = userRepository.findOne(user.getId());
-        if (periscopeUser == null) {
-            periscopeUser = userRepository.save(user);
-        }
-        return periscopeUser;
+        Optional<PeriscopeUser> periscopeUser = userRepository.findById(user.getId());
+        return periscopeUser.orElseGet(() -> userRepository.save(user));
     }
 
     private void addPrometheusAlertsToConsul(Cluster cluster) {

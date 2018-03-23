@@ -2,6 +2,7 @@ package com.sequenceiq.cloudbreak.service.stack.flow;
 
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.net.ssl.SSLContext;
@@ -63,9 +64,12 @@ public class TlsSetupService {
             nginxTarget.path("/").request().get();
             X509Certificate[] chain = x509TrustManager.getChain();
             String serverCert = PkiUtil.convert(chain[0]);
-            InstanceMetaData metaData = instanceMetaDataRepository.findOne(gwInstance.getId());
-            metaData.setServerCert(BaseEncoding.base64().encode(serverCert.getBytes()));
-            instanceMetaDataRepository.save(metaData);
+            Optional<InstanceMetaData> metaDataOptional = instanceMetaDataRepository.findById(gwInstance.getId());
+            if (metaDataOptional.isPresent()) {
+                InstanceMetaData metaData = metaDataOptional.get();
+                metaData.setServerCert(BaseEncoding.base64().encode(serverCert.getBytes()));
+                instanceMetaDataRepository.save(metaData);
+            }
         } catch (Exception e) {
             throw new CloudbreakException("Failed to retrieve the server's certificate", e);
         }

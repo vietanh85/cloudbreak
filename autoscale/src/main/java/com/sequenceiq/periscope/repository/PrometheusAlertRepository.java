@@ -1,5 +1,6 @@
 package com.sequenceiq.periscope.repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.repository.CrudRepository;
@@ -12,7 +13,7 @@ public interface PrometheusAlertRepository extends CrudRepository<PrometheusAler
 
     @PostAuthorize("hasPermission(returnObject,'read')")
     @Override
-    PrometheusAlert findOne(@Param("id") Long id);
+    Optional<PrometheusAlert> findById(@Param("id") Long id);
 
     @PostAuthorize("hasPermission(returnObject,'read')")
     PrometheusAlert findByCluster(@Param("alertId") Long alertId, @Param("clusterId") Long clusterId);

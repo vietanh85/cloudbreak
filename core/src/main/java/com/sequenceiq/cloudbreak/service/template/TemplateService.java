@@ -2,6 +2,7 @@ package com.sequenceiq.cloudbreak.service.template;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -52,12 +53,12 @@ public class TemplateService {
     }
 
     public Template get(Long id) {
-        Template template = templateRepository.findOne(id);
-        if (template == null) {
+        Optional<Template> template = templateRepository.findById(id);
+        if (!template.isPresent()) {
             throw new NotFoundException(String.format(TEMPLATE_NOT_FOUND_MSG, id));
         }
-        authorizationService.hasReadPermission(template);
-        return template;
+        authorizationService.hasReadPermission(template.get());
+        return template.get();
     }
 
     @Transactional(TxType.NEVER)

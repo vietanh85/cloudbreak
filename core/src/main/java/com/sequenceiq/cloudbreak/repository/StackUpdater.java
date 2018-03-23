@@ -1,5 +1,7 @@
 package com.sequenceiq.cloudbreak.repository;
 
+import java.util.Optional;
+
 import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
@@ -7,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.sequenceiq.cloudbreak.api.model.DetailedStackStatus;
 import com.sequenceiq.cloudbreak.api.model.Status;
 import com.sequenceiq.cloudbreak.cloud.store.InMemoryStateStore;
+import com.sequenceiq.cloudbreak.controller.NotFoundException;
 import com.sequenceiq.cloudbreak.converter.scheduler.StatusToPollGroupConverter;
 import com.sequenceiq.cloudbreak.domain.SecurityConfig;
 import com.sequenceiq.cloudbreak.domain.Stack;
@@ -42,20 +45,25 @@ public class StackUpdater {
     }
 
     private Stack doUpdateStackStatus(Long stackId, DetailedStackStatus detailedStatus, String statusReason) {
-        Stack stack = stackRepository.findOne(stackId);
+        Optional<Stack> stackOptional = stackRepository.findById(stackId);
         Status status = detailedStatus.getStatus();
-        if (!stack.isDeleteCompleted()) {
-            stack.setStackStatus(new StackStatus(stack, status, statusReason, detailedStatus));
-            if (status.isRemovableStatus()) {
-                InMemoryStateStore.deleteStack(stackId);
-                if (stack.getCluster() != null && stack.getCluster().getStatus().isRemovableStatus()) {
-                    InMemoryStateStore.deleteCluster(stack.getCluster().getId());
+        if (stackOptional.isPresent()) {
+            Stack stack = stackOptional.get();
+            if (!stack.isDeleteCompleted()) {
+                stack.setStackStatus(new StackStatus(stack, status, statusReason, detailedStatus));
+                if (status.isRemovableStatus()) {
+                    InMemoryStateStore.deleteStack(stackId);
+                    if (stack.getCluster() != null && stack.getCluster().getStatus().isRemovableStatus()) {
+                        InMemoryStateStore.deleteCluster(stack.getCluster().getId());
+                    }
+                } else {
+                    InMemoryStateStore.putStack(stackId, statusToPollGroupConverter.convert(status));
                 }
-            } else {
-                InMemoryStateStore.putStack(stackId, statusToPollGroupConverter.convert(status));
+                stack = stackRepository.save(stack);
             }
-            stack = stackRepository.save(stack);
+            return stack;
+        } else {
+            throw new NotFoundException("stack not found: " + stackId);
         }
-        return stack;
     }
 }

@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.repository;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.Query;
@@ -10,9 +11,6 @@ import com.sequenceiq.cloudbreak.domain.SecurityGroup;
 
 @EntityType(entityClass = SecurityGroup.class)
 public interface SecurityGroupRepository extends CrudRepository<SecurityGroup, Long> {
-
-    @Query("SELECT r FROM SecurityGroup r LEFT JOIN FETCH r.securityRules WHERE r.id= :id")
-    SecurityGroup findById(@Param("id") Long id);
 
     @Query("SELECT r FROM SecurityGroup r LEFT JOIN FETCH r.securityRules WHERE r.name= :name AND r.owner= :owner AND r.status <> 'DEFAULT_DELETED'")
     SecurityGroup findByNameForUser(@Param("name") String name, @Param("owner") String userId);
