@@ -42,6 +42,10 @@ public class JsonUtil {
         return MAPPER.readTree(content);
     }
 
+    public static String getAValue(String content, String fieldName) throws IOException {
+        return MAPPER.readTree(content).get(fieldName).asText();
+    }
+
     public static JsonNode createJsonTree(Map<String, Object> map) {
         ObjectNode rootNode = MAPPER.createObjectNode();
         map.forEach((key, value) -> rootNode.set(key, MAPPER.valueToTree(value)));

@@ -1,5 +1,7 @@
 package com.sequenceiq.cloudbreak.service.cluster.ambari;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,8 @@ import com.sequenceiq.cloudbreak.blueprint.kerberos.KerberosDetailService;
 import com.sequenceiq.cloudbreak.domain.Cluster;
 import com.sequenceiq.cloudbreak.domain.KerberosConfig;
 import com.sequenceiq.cloudbreak.util.JsonUtil;
+
+import groovyx.net.http.HttpResponseException;
 
 @Service
 public class AmbariClusterTemplateService {
@@ -52,6 +56,10 @@ public class AmbariClusterTemplateService {
                             ambariSecurityConfigProvider.getAmbariPassword(cluster), false, repositoryVersion);
                 }
                 LOGGER.info("Submitted cluster creation template: {}", JsonUtil.minify(clusterTemplate, Collections.singleton("credentials")));
+            } catch (HttpResponseException exception) {
+                String msg = extractMessage(exception);
+                LOGGER.error(msg, exception);
+                throw new AmbariServiceException(msg, exception);
             } catch (Exception exception) {
                 String msg = "Ambari client failed to apply cluster creation template.";
                 LOGGER.error(msg, exception);
@@ -60,5 +68,21 @@ public class AmbariClusterTemplateService {
         } else {
             LOGGER.info("Ambari cluster already exists: {}", clusterName);
         }
+    }
+
+    protected String extractMessage(HttpResponseException exception) {
+        StringReader reader = (StringReader) exception.getResponse().getData();
+        StringBuilder br = new StringBuilder();
+        String msg;
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.lines().forEach(br::append);
+            String orignalMsg = br.toString();
+            LOGGER.warn("Original error JSON from Ambari: {}", orignalMsg);
+            msg = JsonUtil.getAValue(orignalMsg, "message");
+        } catch (Exception e) {
+            LOGGER.warn("Failed read proper error message from Ambari: {}", e.getMessage());
+            msg = "Ambari client failed to apply cluster creation template with unknown error.";
+        }
+        return msg;
     }
 }
