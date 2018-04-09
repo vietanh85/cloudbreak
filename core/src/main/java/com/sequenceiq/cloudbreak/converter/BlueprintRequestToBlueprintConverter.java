@@ -62,6 +62,11 @@ public class BlueprintRequestToBlueprintConverter extends AbstractConversionServ
         } else {
             blueprint.setName(json.getName());
         }
+        if (Strings.isNullOrEmpty(json.getDisplayName())) {
+            blueprint.setDisplayName(blueprint.getName());
+        } else {
+            blueprint.setDisplayName(json.getDisplayName());
+        }
         blueprint.setDescription(json.getDescription());
         blueprint.setStatus(ResourceStatus.USER_MANAGED);
         prepareBlueprintInputs(json, blueprint);

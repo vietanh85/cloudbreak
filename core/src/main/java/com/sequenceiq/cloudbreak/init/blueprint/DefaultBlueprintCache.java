@@ -21,6 +21,7 @@ import com.sequenceiq.cloudbreak.domain.Blueprint;
 import com.sequenceiq.cloudbreak.domain.BlueprintInputParameters;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.service.blueprint.BlueprintUtils;
+import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 
 @Service
 public class DefaultBlueprintCache {
@@ -42,17 +43,18 @@ public class DefaultBlueprintCache {
     public void loadBlueprintsFromFile() {
         for (String blueprintStrings : blueprintArray) {
             try {
-                String[] split = blueprintStrings.split("=");
-                if (blueprintUtils.isBlueprintNamePreConfigured(blueprintStrings, split)) {
+                BlueprintNames names = new BlueprintNames(blueprintStrings);
+                if (names.isBlueprintNamePreConfigured()) {
                     LOGGER.info("Load default blueprint '{}'.", blueprintStrings);
                     BlueprintRequest blueprintJson = new BlueprintRequest();
-                    blueprintJson.setName(split[0].trim());
-                    JsonNode jsonNode = blueprintUtils.convertStringToJsonNode(blueprintUtils.readDefaultBlueprintFromFile(split));
+                    blueprintJson.setName(names.getName());
+                    blueprintJson.setDisplayName(names.getDisplayName());
+                    JsonNode jsonNode = blueprintUtils.convertStringToJsonNode(FileReaderUtils.readFileFromClasspath(names.getFileName()));
                     blueprintJson.setAmbariBlueprint(jsonNode.get("blueprint").toString());
                     Blueprint bp = converter.convert(blueprintJson);
                     JsonNode inputs = jsonNode.get("inputs");
                     JsonNode description = jsonNode.get("description");
-                    bp.setDescription(description == null ? split[0] : description.asText(split[0]));
+                    bp.setDescription(description == null ? names.getDisplayName() : description.asText(names.getDisplayName()));
                     BlueprintInputParameters inputParameters = new BlueprintInputParameters(blueprintUtils.prepareInputs(inputs));
                     bp.setInputParameters(new Json(inputParameters));
                     defaultBlueprints.put(bp.getName(), bp);
@@ -71,5 +73,48 @@ public class DefaultBlueprintCache {
 
     public List<String> blueprintArray() {
         return blueprintArray;
+    }
+
+    private static class BlueprintNames {
+        private String name;
+
+        private String displayName;
+
+        private int length;
+
+        private boolean empty;
+
+        BlueprintNames(String blueprintConfig) {
+            if (blueprintConfig.isEmpty()) {
+                empty = true;
+            } else {
+                String[] names = blueprintConfig.split("=");
+                length = names.length;
+                if (names.length == 1) {
+                    name = names[0].trim();
+                    displayName = names[0].trim();
+                }
+                if (names.length == 2) {
+                    name = names[1].trim();
+                    displayName = names[0].trim();
+                }
+            }
+        }
+
+        public String getFileName() {
+            return String.format("defaults/blueprints/%s.bp", name);
+        }
+
+        public boolean isBlueprintNamePreConfigured() {
+            return !empty && (length == 2 || length == 1) && !name.isEmpty();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
 }

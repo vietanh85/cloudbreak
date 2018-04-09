@@ -111,7 +111,7 @@ public class StackValidationRequestToStackValidationConverter extends AbstractCo
             Blueprint blueprint = blueprintService.get(stackValidationRequest.getBlueprintId());
             stackValidation.setBlueprint(blueprint);
         } else if (stackValidationRequest.getBlueprintName() != null) {
-            Blueprint blueprint = blueprintService.get(stackValidationRequest.getBlueprintName(), stackValidationRequest.getAccount());
+            Blueprint blueprint = blueprintService.getByNameOrDisplayName(stackValidationRequest.getBlueprintName(), stackValidationRequest.getAccount());
             stackValidation.setBlueprint(blueprint);
         } else if (stackValidationRequest.getBlueprint() != null) {
             Blueprint blueprint = conversionService.convert(stackValidationRequest.getBlueprint(), Blueprint.class);

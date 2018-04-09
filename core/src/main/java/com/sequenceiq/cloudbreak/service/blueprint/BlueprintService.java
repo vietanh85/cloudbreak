@@ -84,6 +84,15 @@ public class BlueprintService {
         return blueprint;
     }
 
+    public Blueprint getByNameOrDisplayName(String name, String account) {
+        Blueprint blueprint = blueprintRepository.findOneByNameOrDisplayName(name, account);
+        if (blueprint == null) {
+            throw new NotFoundException(String.format("Blueprint '%s' not found in %s account.", name, account));
+        }
+        authorizationService.hasReadPermission(blueprint);
+        return blueprint;
+    }
+
     @Transactional(TxType.NEVER)
     public Blueprint create(IdentityUser user, Blueprint blueprint, List<Map<String, Map<String, String>>> properties) {
         LOGGER.debug("Creating blueprint: [User: '{}', Account: '{}']", user.getUsername(), user.getAccount());

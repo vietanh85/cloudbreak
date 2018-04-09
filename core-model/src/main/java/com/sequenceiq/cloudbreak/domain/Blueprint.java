@@ -30,6 +30,9 @@ public class Blueprint implements ProvisionEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private String displayName;
+
     @Type(type = "encrypted_string")
     @Column(length = 1000000, columnDefinition = "TEXT", nullable = false)
     private String blueprintText;
@@ -72,6 +75,14 @@ public class Blueprint implements ProvisionEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public Long getId() {

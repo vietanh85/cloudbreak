@@ -4,6 +4,7 @@ public class ModelDescriptions {
 
     public static final String ID = "id of the resource";
     public static final String NAME = "name of the resource";
+    public static final String DISPLAY_NAME = "display name of the resource";
     public static final String DESCRIPTION = "description of the resource";
     public static final String PUBLIC_IN_ACCOUNT = "resource is visible in account";
     public static final String CLOUD_PLATFORM = "type of cloud provider";

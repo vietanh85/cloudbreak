@@ -13,6 +13,9 @@ public class BlueprintResponse extends BlueprintBase {
     @ApiModelProperty(value = ModelDescriptions.NAME, required = true)
     private String name;
 
+    @ApiModelProperty(value = ModelDescriptions.NAME, required = true)
+    private String displayName;
+
     @ApiModelProperty(ModelDescriptions.ID)
     private Long id;
 
@@ -47,6 +50,14 @@ public class BlueprintResponse extends BlueprintBase {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     @JsonProperty("public")

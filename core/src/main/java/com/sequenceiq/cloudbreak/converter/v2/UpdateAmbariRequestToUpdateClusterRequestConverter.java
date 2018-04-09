@@ -12,16 +12,15 @@ import com.sequenceiq.cloudbreak.api.model.HostGroupRequest;
 import com.sequenceiq.cloudbreak.api.model.ReinstallRequestV2;
 import com.sequenceiq.cloudbreak.api.model.UpdateClusterJson;
 import com.sequenceiq.cloudbreak.api.model.v2.InstanceGroupV2Request;
-import com.sequenceiq.cloudbreak.controller.BadRequestException;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
 import com.sequenceiq.cloudbreak.domain.Blueprint;
-import com.sequenceiq.cloudbreak.repository.BlueprintRepository;
+import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
 
 @Component
 public class UpdateAmbariRequestToUpdateClusterRequestConverter extends AbstractConversionServiceAwareConverter<ReinstallRequestV2, UpdateClusterJson> {
 
     @Inject
-    private BlueprintRepository blueprintRepository;
+    private BlueprintService blueprintService;
 
     @Override
     public UpdateClusterJson convert(ReinstallRequestV2 source) {
@@ -29,26 +28,22 @@ public class UpdateAmbariRequestToUpdateClusterRequestConverter extends Abstract
         updateStackJson.setValidateBlueprint(true);
         updateStackJson.setKerberosPassword(source.getKerberosPassword());
         updateStackJson.setKerberosPrincipal(source.getKerberosPrincipal());
-        Blueprint blueprint = blueprintRepository.findOneByName(source.getBlueprintName(), source.getAccount());
-        if (blueprint != null) {
-            updateStackJson.setBlueprintId(blueprint.getId());
-            updateStackJson.setAmbariStackDetails(source.getAmbariStackDetails());
-            Set<HostGroupRequest> hostgroups = new HashSet<>();
-            for (InstanceGroupV2Request instanceGroupV2Request : source.getInstanceGroups()) {
-                HostGroupRequest hostGroupRequest = new HostGroupRequest();
-                hostGroupRequest.setRecoveryMode(instanceGroupV2Request.getRecoveryMode());
-                hostGroupRequest.setRecipeNames(instanceGroupV2Request.getRecipeNames());
-                hostGroupRequest.setName(instanceGroupV2Request.getGroup());
-                ConstraintJson constraintJson = new ConstraintJson();
-                constraintJson.setHostCount(instanceGroupV2Request.getNodeCount());
-                constraintJson.setInstanceGroupName(instanceGroupV2Request.getGroup());
-                hostGroupRequest.setConstraint(constraintJson);
-                hostgroups.add(hostGroupRequest);
-            }
-            updateStackJson.setHostgroups(hostgroups);
-        } else {
-            throw new BadRequestException(String.format("Blueprint '%s' not available", source.getBlueprintName()));
+        Blueprint blueprint = blueprintService.getByNameOrDisplayName(source.getBlueprintName(), source.getAccount());
+        updateStackJson.setBlueprintId(blueprint.getId());
+        updateStackJson.setAmbariStackDetails(source.getAmbariStackDetails());
+        Set<HostGroupRequest> hostgroups = new HashSet<>();
+        for (InstanceGroupV2Request instanceGroupV2Request : source.getInstanceGroups()) {
+            HostGroupRequest hostGroupRequest = new HostGroupRequest();
+            hostGroupRequest.setRecoveryMode(instanceGroupV2Request.getRecoveryMode());
+            hostGroupRequest.setRecipeNames(instanceGroupV2Request.getRecipeNames());
+            hostGroupRequest.setName(instanceGroupV2Request.getGroup());
+            ConstraintJson constraintJson = new ConstraintJson();
+            constraintJson.setHostCount(instanceGroupV2Request.getNodeCount());
+            constraintJson.setInstanceGroupName(instanceGroupV2Request.getGroup());
+            hostGroupRequest.setConstraint(constraintJson);
+            hostgroups.add(hostGroupRequest);
         }
+        updateStackJson.setHostgroups(hostgroups);
         return updateStackJson;
     }
 }

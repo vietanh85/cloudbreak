@@ -480,6 +480,7 @@ public class TestUtil {
         blueprint.setId(1L);
         blueprint.setBlueprintText(blueprintText);
         blueprint.setName(name);
+        blueprint.setDisplayName(name);
         blueprint.setAmbariName("multi-node-yarn");
         blueprint.setStatus(ResourceStatus.DEFAULT);
         return blueprint;

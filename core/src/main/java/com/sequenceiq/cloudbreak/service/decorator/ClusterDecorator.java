@@ -92,7 +92,7 @@ public class ClusterDecorator {
                 newBlueprint = blueprintService.create(user, newBlueprint, new ArrayList<>());
                 subject.setBlueprint(newBlueprint);
             } else if (!Strings.isNullOrEmpty(request.getBlueprintName())) {
-                subject.setBlueprint(blueprintService.get(request.getBlueprintName(), user.getAccount()));
+                subject.setBlueprint(blueprintService.getByNameOrDisplayName(request.getBlueprintName(), user.getAccount()));
             } else {
                 throw new BadRequestException("Blueprint does not configured for the cluster!");
             }
