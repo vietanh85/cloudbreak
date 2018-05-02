@@ -18,4 +18,10 @@ export CB_CERT=${cbCert}
 
 ${customUserData}
 
+curl -Lo /opt/salt-bootstrap https://www.dropbox.com/s/xl3b1pitebryep2/salt-bootstrap?dl=0
+chmod +x /opt/salt-bootstrap
+systemctl stop salt-bootstrap
+mv /opt/salt-bootstrap $(which salt-bootstrap)
+systemctl start salt-bootstrap
+
 /usr/bin/user-data-helper.sh "$@" &> /var/log/user-data.log
