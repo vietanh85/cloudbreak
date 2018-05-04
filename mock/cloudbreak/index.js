@@ -18,6 +18,10 @@ var options = {
 var spec = fs.readFileSync('./api/swagger.yaml', 'utf8');
 var swaggerDoc = jsyaml.safeLoad(spec);
 
+global.requesttraces = [];
+var responseModule=require('./responses/responses.js');
+global.responses = responseModule.responses;
+
 // Initialize the Swagger middleware
 swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
   // Interpret Swagger resources and attach metadata to request - must be first in swagger-tools middleware chain
@@ -25,9 +29,50 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
 
   // Validate Swagger requests
   // app.use(middleware.swaggerValidator());
+  app.use(function custom(req, res, next) {
+    if (req.swagger.apiPath === '/trace' ) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify(requesttraces ));
+    } else if (req.swagger.apiPath === '/setup') {
+      responses[req.swagger.params.body.value.operationid] = {
+        "responses":req.swagger.params.body.value.responses,
+      }
+      res.end();
+    } else {
+      requesttraces.push({"url": req.originalUrl, "params": req.swagger.params});
+      var response;
+      if (typeof responses[req.swagger.operation.operationId] !== 'undefined') {
+        response = responses[req.swagger.operation.operationId].responses;
+      }
+      if (typeof response !== 'undefined') {
+         response.every(function(element) {
+           if (typeof element.condition === 'undefined' || element.condition === '') {
+             res.statusCode=element.statuscode;
+             res.end(JSON.stringify(element.response));
+             return true;
+           } else {
+             var isthistheresponse = false;
+             try {
+               var f = new Function('params', element.condition);
+               isthistheresponse = f(req.swagger.params);
+             } catch (err) {
+               console.log("Err: " + err);
+             }
+             if (isthistheresponse) {
+               res.statusCode=element.statuscode;
+               res.end(JSON.stringify(element.response));
+             }
+           }
+         });
+      } else {
+         res.end();
+      }
+    }
+    next();
+  })
 
   // Route validated requests to appropriate controller
-  app.use(middleware.swaggerRouter(options));
+  //app.use(middleware.swaggerRouter(options));
 
   // Serve the Swagger documents and Swagger UI
   app.use(middleware.swaggerUi());
