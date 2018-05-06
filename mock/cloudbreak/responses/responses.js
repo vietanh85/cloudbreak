@@ -119,3 +119,5 @@ responses.getPublicStackV2= responseObject(stackResponses, OK);
 responses.postPrivateStackV2= responseObject(openstack, OK);
 responses.getPrivateStackV2= responseObject(openstack, OK);
 responses.getStackV2= responseObject(openstack, OK);
+
+exports.responses = responses;
