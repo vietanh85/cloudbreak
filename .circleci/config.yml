@@ -76,7 +76,7 @@ jobs:
       - checkout
       - run:
           name: test
-          command: ./gradlew -Penv=jenkins -b build.gradle test --info --stacktrace --parallel  -x checkstyleMain -x checkstyleTest -x spotbugsMain -x spotbugsTest
+          command: ./gradlew -Penv=jenkins -b build.gradle test --info --stacktrace --parallel  -x checkstyleMain -x checkstyleTest -x spotbugsMain -x spotbugsTest --max-workers=2
       - run:
           name: Save test results
           command: |
