@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.domain;
 import java.util.Map;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,6 +13,9 @@ import javax.persistence.Id;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+
+import com.sequenceiq.cloudbreak.domain.json.Json;
+import com.sequenceiq.cloudbreak.domain.json.JsonToString;
 
 @Entity
 @Table(name = "filesystem")
@@ -47,6 +51,10 @@ public class FileSystem implements ProvisionEntity {
 
     @Column(nullable = false)
     private String description;
+
+    @Convert(converter = JsonToString.class)
+    @Column(columnDefinition = "TEXT")
+    private Json locations;
 
     public FileSystem() {
     }
@@ -129,4 +137,11 @@ public class FileSystem implements ProvisionEntity {
         this.description = description;
     }
 
+    public Json getLocations() {
+        return locations;
+    }
+
+    public void setLocations(Json locations) {
+        this.locations = locations;
+    }
 }

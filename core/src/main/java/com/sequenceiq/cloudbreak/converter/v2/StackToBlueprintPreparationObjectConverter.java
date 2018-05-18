@@ -29,6 +29,7 @@ import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
 import com.sequenceiq.cloudbreak.common.service.user.UserFilterField;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
 import com.sequenceiq.cloudbreak.core.bootstrap.service.container.postgres.PostgresConfigService;
+import com.sequenceiq.cloudbreak.domain.StorageLocations;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.domain.FileSystem;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
@@ -144,8 +145,7 @@ public class StackToBlueprintPreparationObjectConverter extends AbstractConversi
         FileSystemConfigurationView fileSystemConfigurationView = null;
         if (source.getCluster().getFileSystem() != null) {
             fileSystemConfigurationView = new FileSystemConfigurationView(
-                fileSystemConfigurationProvider.fileSystemConfiguration(fileSystem, source),
-                fileSystem == null ? false : fileSystem.isDefaultFs());
+                fileSystemConfigurationProvider.fileSystemConfiguration(fileSystem, source), fileSystem.getLocations().get(StorageLocations.class));
         }
         return fileSystemConfigurationView;
     }

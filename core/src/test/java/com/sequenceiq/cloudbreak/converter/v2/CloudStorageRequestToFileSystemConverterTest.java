@@ -19,14 +19,14 @@ import com.sequenceiq.cloudbreak.api.model.FileSystemType;
 import com.sequenceiq.cloudbreak.api.model.filesystem.AdlsFileSystemParameters;
 import com.sequenceiq.cloudbreak.api.model.filesystem.GcsFileSystemParameters;
 import com.sequenceiq.cloudbreak.api.model.filesystem.WasbFileSystemParameters;
-import com.sequenceiq.cloudbreak.api.model.v2.FileSystemV2Request;
+import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
 import com.sequenceiq.cloudbreak.common.type.APIResourceType;
 import com.sequenceiq.cloudbreak.domain.FileSystem;
 import com.sequenceiq.cloudbreak.service.AuthenticatedUserService;
 import com.sequenceiq.cloudbreak.service.MissingResourceNameGenerator;
 
-public class FileSystemV2RequestToFileSystemConverterTest {
+public class CloudStorageRequestToFileSystemConverterTest {
 
     private static final String USER_ACCOUNT = "fa431902-74fb-4f61-b643-35003f680f6a";
 
@@ -42,7 +42,7 @@ public class FileSystemV2RequestToFileSystemConverterTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @InjectMocks
-    private FileSystemV2RequestToFileSystemConverter underTest;
+    private CloudStorageRequestToFileSystemConverter underTest;
 
     @Mock
     private AuthenticatedUserService authenticatedUserService;
@@ -64,7 +64,7 @@ public class FileSystemV2RequestToFileSystemConverterTest {
 
     @Test
     public void testConvertWhenAdlsParametersNotNullThenItsValuesShouldBePlacedIntoTheResultInstance() {
-        FileSystemV2Request request = createV2Request();
+        CloudStorageRequest request = createV2Request();
         AdlsFileSystemParameters adlsFileSystemParameters = new AdlsFileSystemParameters();
         adlsFileSystemParameters.setAccountName("dummy account name");
         adlsFileSystemParameters.setClientId("1234");
@@ -82,7 +82,7 @@ public class FileSystemV2RequestToFileSystemConverterTest {
 
     @Test
     public void testConvertWhenGcsParametersNotNullThenItsValuesShouldBePlacedIntoTheResultInstance() {
-        FileSystemV2Request request = createV2Request();
+        CloudStorageRequest request = createV2Request();
         GcsFileSystemParameters gcsFileSystemParameters = new GcsFileSystemParameters();
         gcsFileSystemParameters.setDefaultBucketName("bucket name");
         gcsFileSystemParameters.setProjectId("123");
@@ -99,7 +99,7 @@ public class FileSystemV2RequestToFileSystemConverterTest {
 
     @Test
     public void testConvertWhenWasbParametersNotNullThenItsValuesShouldBePlacedIntoTheResultInstance() {
-        FileSystemV2Request request = createV2Request();
+        CloudStorageRequest request = createV2Request();
         WasbFileSystemParameters wasbFileSystemParameters = new WasbFileSystemParameters();
         wasbFileSystemParameters.setAccountKey("123456789");
         wasbFileSystemParameters.setAccountName("accountNameValue");
@@ -115,7 +115,7 @@ public class FileSystemV2RequestToFileSystemConverterTest {
 
     @Test
     public void testConvertWhenNoFileSystemParameterInstanceHasPassedThroughTheRequestThenExceptionShouldComeIndicatingThatTheFileSystemTypeIsUndecidable() {
-        FileSystemV2Request request = createV2Request();
+        CloudStorageRequest request = createV2Request();
 
         expectedException.expect(BadRequestException.class);
         expectedException.expectMessage("Unable to decide file system, none of the supported file system type has provided!");
@@ -124,14 +124,14 @@ public class FileSystemV2RequestToFileSystemConverterTest {
         verify(authenticatedUserService, times(1)).getCbUser();
     }
 
-    private void checkWhetherTheBasicDataHasPassedOrNot(FileSystemV2Request request, FileSystem fileSystem) {
+    private void checkWhetherTheBasicDataHasPassedOrNot(CloudStorageRequest request, FileSystem fileSystem) {
         assertEquals(USER_ID, fileSystem.getOwner());
         assertEquals(USER_ACCOUNT, fileSystem.getAccount());
         assertEquals(request.getDescription(), fileSystem.getDescription());
     }
 
-    private FileSystemV2Request createV2Request() {
-        FileSystemV2Request request = new FileSystemV2Request();
+    private CloudStorageRequest createV2Request() {
+        CloudStorageRequest request = new CloudStorageRequest();
         request.setDescription(TEST_DESCRIPTION);
         return request;
     }

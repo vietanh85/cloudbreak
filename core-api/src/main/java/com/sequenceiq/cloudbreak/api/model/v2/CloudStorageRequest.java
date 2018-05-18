@@ -1,5 +1,8 @@
 package com.sequenceiq.cloudbreak.api.model.v2;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -16,7 +19,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
-public class FileSystemV2Request implements JsonEntity {
+public class CloudStorageRequest implements JsonEntity {
 
     @ApiModelProperty
     private String description;
@@ -32,6 +35,9 @@ public class FileSystemV2Request implements JsonEntity {
 
     @ApiModelProperty
     private S3FileSystemParameters s3;
+
+    @ApiModelProperty
+    private Set<StorageLocationRequest> locations = new HashSet<>();
 
     public String getDescription() {
         return description;
@@ -71,6 +77,14 @@ public class FileSystemV2Request implements JsonEntity {
 
     public void setS3(S3FileSystemParameters s3) {
         this.s3 = s3;
+    }
+
+    public Set<StorageLocationRequest> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(Set<StorageLocationRequest> locations) {
+        this.locations = locations;
     }
 
     public void fillFileSystemParametersRegardingToItsType(FileSystemParameters fileSystemParameters) {

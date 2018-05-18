@@ -34,6 +34,7 @@ import com.sequenceiq.cloudbreak.api.model.GcsFileSystemConfiguration;
 import com.sequenceiq.cloudbreak.api.model.RecipeType;
 import com.sequenceiq.cloudbreak.api.model.RecoveryMode;
 import com.sequenceiq.cloudbreak.api.model.ResourceStatus;
+import com.sequenceiq.cloudbreak.api.model.S3FileSystemConfiguration;
 import com.sequenceiq.cloudbreak.api.model.Status;
 import com.sequenceiq.cloudbreak.api.model.WasbFileSystemConfiguration;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
@@ -59,6 +60,8 @@ import com.sequenceiq.cloudbreak.domain.SecurityConfig;
 import com.sequenceiq.cloudbreak.domain.SecurityGroup;
 import com.sequenceiq.cloudbreak.domain.SecurityRule;
 import com.sequenceiq.cloudbreak.domain.SmartSenseSubscription;
+import com.sequenceiq.cloudbreak.domain.StorageLocation;
+import com.sequenceiq.cloudbreak.domain.StorageLocations;
 import com.sequenceiq.cloudbreak.domain.Template;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.domain.json.JsonToString;
@@ -688,12 +691,38 @@ public class TestUtil {
 
     }
 
+    public static StorageLocations emptyStorageLocations() {
+        return new StorageLocations();
+    }
+
+    public static StorageLocations storageLocations() {
+        StorageLocations storageLocations = new StorageLocations();
+        for (int i = 0; i < 10; i++) {
+            storageLocations.getLocations().add(storageLocation(i));
+        }
+        return storageLocations;
+    }
+
+    public static StorageLocation storageLocation(int i) {
+        StorageLocation storageLocation = new StorageLocation();
+        storageLocation.setValue(i + "_test/test/end");
+        storageLocation.setProperty(i + "_property");
+        storageLocation.setConfigFile(i + "_file");
+        return storageLocation;
+    }
+
     public static FileSystemConfiguration gcsFileSystemConfiguration() {
         GcsFileSystemConfiguration gcsFileSystemConfiguration = new GcsFileSystemConfiguration();
         gcsFileSystemConfiguration.setDefaultBucketName("hortonworks");
         gcsFileSystemConfiguration.setProjectId("test-id");
         gcsFileSystemConfiguration.setServiceAccountEmail("serviceaccountemail");
         return gcsFileSystemConfiguration;
+    }
+
+    public static FileSystemConfiguration s3FileSystemConfiguration() {
+        S3FileSystemConfiguration s3FileSystemConfiguration = new S3FileSystemConfiguration();
+        s3FileSystemConfiguration.setInstanceProfile("instanceprofile");
+        return s3FileSystemConfiguration;
     }
 
     public static FileSystemConfiguration wasbSecureFileSystemConfiguration() {

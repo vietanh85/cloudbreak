@@ -20,6 +20,7 @@ import com.sequenceiq.cloudbreak.blueprint.validation.StackServiceComponentDescr
 import com.sequenceiq.cloudbreak.blueprint.validation.StackServiceComponentDescriptors;
 import com.sequenceiq.cloudbreak.ha.CloudbreakNodeConfig;
 import com.sequenceiq.cloudbreak.json.JsonHelper;
+import com.sequenceiq.cloudbreak.service.CloudbreakResourceReaderService;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 import com.sequenceiq.cloudbreak.util.JsonUtil;
 
@@ -62,6 +63,11 @@ public class CentralBlueprintContext {
         @Bean
         public JsonHelper jsonHelperProvider() {
             return new JsonHelper();
+        }
+
+        @Bean
+        public CloudbreakResourceReaderService cloudbreakResourceReaderService() {
+            return new CloudbreakResourceReaderService();
         }
 
         @Bean

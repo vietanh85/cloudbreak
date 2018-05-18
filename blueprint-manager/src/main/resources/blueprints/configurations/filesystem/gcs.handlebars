@@ -1,5 +1,10 @@
 {
 {{{#if fileSystemConfigs.gcs}}}
+{{{#each fileSystemConfigs.gcs.locations}}}
+  "{{{ this.configFile }}}": {
+    "{{{ this.property }}}": "{{{ this.value }}}"
+  },
+{{{/each}}}
   "core-site": {
     "fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
     "fs.AbstractFileSystem.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS",

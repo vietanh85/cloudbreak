@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
+import com.sequenceiq.cloudbreak.cloud.model.CloudFileSystem;
 import com.sequenceiq.cloudbreak.cloud.model.CloudInstance;
 import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Group;
@@ -33,6 +34,7 @@ import com.sequenceiq.cloudbreak.cloud.model.StackTemplate;
 import com.sequenceiq.cloudbreak.cloud.model.Subnet;
 import com.sequenceiq.cloudbreak.cloud.model.Volume;
 import com.sequenceiq.cloudbreak.core.CloudbreakImageNotFoundException;
+import com.sequenceiq.cloudbreak.domain.FileSystem;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
@@ -85,12 +87,24 @@ public class StackToCloudStackConverter {
         Network network = buildNetwork(stack);
         StackTemplate stackTemplate = componentConfigProvider.getStackTemplate(stack.getId());
         InstanceAuthentication instanceAuthentication = buildInstanceAuthentication(stack.getStackAuthentication());
+        CloudFileSystem cloudFileSystem = buildCloudFileSystem(stack);
         String template = null;
         if (stackTemplate != null) {
             template = stackTemplate.getTemplate();
         }
         return new CloudStack(instanceGroups, network, image, stack.getParameters(), getUserDefinedTags(stack), template,
-                instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey());
+                instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), cloudFileSystem);
+    }
+
+    private CloudFileSystem buildCloudFileSystem(Stack stack) {
+        CloudFileSystem cloudFileSystem;
+        FileSystem fileSystem = stack.getCluster().getFileSystem();
+        if (fileSystem == null) {
+            cloudFileSystem = null;
+        } else {
+            cloudFileSystem = new CloudFileSystem(Collections.unmodifiableMap(fileSystem.getProperties()));
+        }
+        return cloudFileSystem;
     }
 
     public Map<String, String> getUserDefinedTags(Stack stack) {
@@ -143,15 +157,15 @@ public class StackToCloudStackConverter {
 
                 groups.add(
                         new Group(instanceGroup.getGroupName(),
-                        instanceGroup.getInstanceGroupType(),
-                        instances,
-                        buildSecurity(instanceGroup),
-                        skeleton,
-                        fields,
-                        instanceAuthentication,
-                        instanceAuthentication.getLoginUserName(),
-                        instanceAuthentication.getPublicKey(),
-                        rootVolumeSize)
+                                instanceGroup.getInstanceGroupType(),
+                                instances,
+                                buildSecurity(instanceGroup),
+                                skeleton,
+                                fields,
+                                instanceAuthentication,
+                                instanceAuthentication.getLoginUserName(),
+                                instanceAuthentication.getPublicKey(),
+                                rootVolumeSize)
                 );
             }
         }

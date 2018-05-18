@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.cloud.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -30,8 +31,10 @@ public class CloudStack {
 
     private final InstanceAuthentication instanceAuthentication;
 
+    private final Optional<CloudFileSystem> fileSystem;
+
     public CloudStack(Collection<Group> groups, Network network, Image image, Map<String, String> parameters, Map<String, String> tags, String template,
-            InstanceAuthentication instanceAuthentication, String loginUserName, String publicKey) {
+            InstanceAuthentication instanceAuthentication, String loginUserName, String publicKey, CloudFileSystem fileSystem) {
         this.groups = ImmutableList.copyOf(groups);
         this.network = network;
         this.image = image;
@@ -41,6 +44,7 @@ public class CloudStack {
         this.instanceAuthentication = instanceAuthentication;
         this.loginUserName = loginUserName;
         this.publicKey = publicKey;
+        this.fileSystem = Optional.ofNullable(fileSystem);
     }
 
     public List<Group> getGroups() {
@@ -69,6 +73,10 @@ public class CloudStack {
 
     public InstanceAuthentication getInstanceAuthentication() {
         return instanceAuthentication;
+    }
+
+    public Optional<CloudFileSystem> getFileSystem() {
+        return fileSystem;
     }
 
     @Override

@@ -401,7 +401,7 @@ public class OpenStackResourceConnector implements ResourceConnector<Object> {
         }
         return new CloudStack(groups, stack.getNetwork(), stack.getImage(), stack.getParameters(), stack.getTags(),
                 stack.getTemplate(), stack.getInstanceAuthentication(), stack.getInstanceAuthentication().getLoginUserName(),
-                stack.getInstanceAuthentication().getPublicKey());
+                stack.getInstanceAuthentication().getPublicKey(), null);
     }
 
     private String getExistingSubnetCidr(AuthenticatedContext authenticatedContext, CloudStack stack) {

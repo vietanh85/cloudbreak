@@ -37,6 +37,7 @@ import com.sequenceiq.cloudbreak.domain.FlexSubscription;
 import com.sequenceiq.cloudbreak.domain.KerberosConfig;
 import com.sequenceiq.cloudbreak.domain.LdapConfig;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
+import com.sequenceiq.cloudbreak.domain.StorageLocations;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.service.AuthenticatedUserService;
 import com.sequenceiq.cloudbreak.service.CloudbreakServiceException;
@@ -189,10 +190,10 @@ public class StackRequestToBlueprintPreparationObjectConverter extends AbstractC
 
     private FileSystemConfigurationView getFileSystemConfigurationView(StackV2Request source) throws IOException {
         FileSystemConfigurationView fileSystemConfigurationView = null;
-        if (source.getCluster().getFileSystem() != null) {
-            FileSystem fileSystem = getConversionService().convert(source.getCluster().getFileSystem(), FileSystem.class);
+        if (source.getCluster().getCloudStorage() != null) {
+            FileSystem fileSystem = getConversionService().convert(source.getCluster().getCloudStorage(), FileSystem.class);
             FileSystemConfiguration fileSystemConfiguration = fileSystemConfigurationProvider.fileSystemConfiguration(fileSystem, null);
-            fileSystemConfigurationView = new FileSystemConfigurationView(fileSystemConfiguration, fileSystem.isDefaultFs());
+            fileSystemConfigurationView = new FileSystemConfigurationView(fileSystemConfiguration, fileSystem.getLocations().get(StorageLocations.class));
         }
         return fileSystemConfigurationView;
     }

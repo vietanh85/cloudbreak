@@ -1,5 +1,7 @@
 package com.sequenceiq.cloudbreak.blueprint.template.views;
 
+import static com.sequenceiq.cloudbreak.TestUtil.emptyStorageLocations;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +17,7 @@ public class FileSystemViewTest {
     @Test
     public void testGcsFileSystemConfiguration() {
         FileSystemConfiguration fileSystemConfiguration = TestUtil.gcsFileSystemConfiguration();
-        FileSystemView fileSystemView = new GcsFileSystemView(new FileSystemConfigurationView(fileSystemConfiguration));
+        FileSystemView fileSystemView = new GcsFileSystemView(new FileSystemConfigurationView(fileSystemConfiguration, emptyStorageLocations()));
         Assert.assertNotNull(fileSystemView);
         Assert.assertEquals(0, fileSystemView.getProperties().size());
     }
@@ -23,7 +25,7 @@ public class FileSystemViewTest {
     @Test
     public void testAdlsFileSystemConfiguration() {
         FileSystemConfiguration fileSystemConfiguration = TestUtil.adlsFileSystemConfiguration();
-        FileSystemView fileSystemView = new AdlsFileSystemView(new FileSystemConfigurationView(fileSystemConfiguration));
+        FileSystemView fileSystemView = new AdlsFileSystemView(new FileSystemConfigurationView(fileSystemConfiguration, emptyStorageLocations()));
         Assert.assertNotNull(fileSystemView);
         Assert.assertEquals(2, fileSystemView.getProperties().size());
     }
@@ -31,7 +33,7 @@ public class FileSystemViewTest {
     @Test
     public void testWasbFileSystemConfiguration() {
         FileSystemConfiguration fileSystemConfiguration = TestUtil.wasbSecureFileSystemConfiguration();
-        FileSystemView fileSystemView = new WasbFileSystemView(new FileSystemConfigurationView(fileSystemConfiguration));
+        FileSystemView fileSystemView = new WasbFileSystemView(new FileSystemConfigurationView(fileSystemConfiguration, emptyStorageLocations()));
         Assert.assertNotNull(fileSystemView);
         Assert.assertEquals(1, fileSystemView.getProperties().size());
     }

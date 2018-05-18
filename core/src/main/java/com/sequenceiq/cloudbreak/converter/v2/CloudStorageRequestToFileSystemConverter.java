@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.sequenceiq.cloudbreak.api.model.filesystem.FileSystemParameters;
 import com.sequenceiq.cloudbreak.api.model.filesystem.FileSystemResolver;
-import com.sequenceiq.cloudbreak.api.model.v2.FileSystemV2Request;
+import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
 import com.sequenceiq.cloudbreak.domain.FileSystem;
@@ -16,7 +16,7 @@ import com.sequenceiq.cloudbreak.service.AuthenticatedUserService;
 import com.sequenceiq.cloudbreak.service.MissingResourceNameGenerator;
 
 @Component
-public class FileSystemV2RequestToFileSystemConverter extends AbstractConversionServiceAwareConverter<FileSystemV2Request, FileSystem> {
+public class CloudStorageRequestToFileSystemConverter extends AbstractConversionServiceAwareConverter<CloudStorageRequest, FileSystem> {
 
     @Inject
     private AuthenticatedUserService authenticatedUserService;
@@ -25,7 +25,7 @@ public class FileSystemV2RequestToFileSystemConverter extends AbstractConversion
     private MissingResourceNameGenerator nameGenerator;
 
     @Override
-    public FileSystem convert(FileSystemV2Request source) {
+    public FileSystem convert(CloudStorageRequest source) {
         FileSystem fileSystem = new FileSystem();
         fileSystem.setName(nameGenerator.generateName(FILESYSTEM));
         fileSystem.setDefaultFs(false);

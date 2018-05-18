@@ -1,5 +1,10 @@
 {
 {{{#if fileSystemConfigs.adls}}}
+{{{#each fileSystemConfigs.adls.locations}}}
+  "{{{ this.configFile }}}": {
+    "{{{ this.property }}}": "{{{ this.value }}}"
+  },
+{{{/each}}}
   "core-site": {
     "dfs.adls.oauth2.access.token.provider.type": "ClientCredential",
     "dfs.adls.oauth2.client.id": "{{{ fileSystemConfigs.adls.clientId }}}",

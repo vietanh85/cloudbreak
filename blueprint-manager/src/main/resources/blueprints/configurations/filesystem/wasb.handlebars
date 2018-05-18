@@ -1,5 +1,10 @@
 {
 {{{#if fileSystemConfigs.wasb}}}
+{{{#each fileSystemConfigs.wasb.locations}}}
+  "{{{ this.configFile }}}": {
+    "{{{ this.property }}}": "{{{ this.value }}}"
+  },
+{{{/each}}}
   "core-site": {
     "fs.AbstractFileSystem.wasbs.impl": "org.apache.hadoop.fs.azure.Wasbs",
     "fs.AbstractFileSystem.wasb.impl": "org.apache.hadoop.fs.azure.Wasbs",

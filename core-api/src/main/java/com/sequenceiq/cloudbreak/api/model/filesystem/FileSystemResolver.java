@@ -7,7 +7,7 @@ import javax.ws.rs.BadRequestException;
 import com.sequenceiq.cloudbreak.api.model.AdlsFileSystemConfiguration;
 import com.sequenceiq.cloudbreak.api.model.FileSystemConfiguration;
 import com.sequenceiq.cloudbreak.api.model.FileSystemType;
-import com.sequenceiq.cloudbreak.api.model.v2.FileSystemV2Request;
+import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 
 public final class FileSystemResolver {
 
@@ -19,7 +19,7 @@ public final class FileSystemResolver {
     private FileSystemResolver() {
     }
 
-    public static FileSystemParameters decideFileSystemFromFileSystemV2Request(FileSystemV2Request source) {
+    public static FileSystemParameters decideFileSystemFromFileSystemV2Request(CloudStorageRequest source) {
         FileSystemParameters fileSystemParameters;
         if (source.getAdls() != null) {
             fileSystemParameters = source.getAdls();
@@ -35,7 +35,7 @@ public final class FileSystemResolver {
         return fileSystemParameters;
     }
 
-    public static void setFSV2RequestFileSystemParamsByNameAndProperties(String fileSystemType, Map<String, String> properties, FileSystemV2Request request) {
+    public static void setFSV2RequestFileSystemParamsByNameAndProperties(String fileSystemType, Map<String, String> properties, CloudStorageRequest request) {
         FileSystemParameters fileSystemParameters = fillFileSystemParamsByItsType(fileSystemType, properties);
         if (fileSystemParameters.getType() == FileSystemType.ADLS) {
             request.setAdls((AdlsFileSystemParameters) fileSystemParameters);

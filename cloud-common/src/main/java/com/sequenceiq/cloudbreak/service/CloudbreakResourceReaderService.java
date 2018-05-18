@@ -1,4 +1,4 @@
-package com.sequenceiq.cloudbreak.cloud.service;
+package com.sequenceiq.cloudbreak.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +19,12 @@ public class CloudbreakResourceReaderService {
     private String etcConfigDir;
 
     public String resourceDefinition(String prefix, String resource) {
-        String fileName = prefix + '-' + resource + ".json";
+        String fileName = prefix + '-' + resource;
+        return resourceDefinition(fileName);
+    }
+
+    public String resourceDefinition(String name) {
+        String fileName = name + ".json";
         File customResourceFile = new File(etcConfigDir, fileName);
         try {
             if (customResourceFile.exists() && customResourceFile.isFile()) {
