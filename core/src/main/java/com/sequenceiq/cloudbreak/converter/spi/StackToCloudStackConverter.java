@@ -14,11 +14,14 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
 import com.sequenceiq.cloudbreak.blueprint.VolumeUtils;
-import com.sequenceiq.cloudbreak.cloud.model.CloudFileSystem;
+import com.sequenceiq.cloudbreak.blueprint.filesystem.FileSystemConfigurationsViewProvider;
 import com.sequenceiq.cloudbreak.cloud.model.CloudInstance;
 import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Group;
@@ -30,6 +33,7 @@ import com.sequenceiq.cloudbreak.cloud.model.Network;
 import com.sequenceiq.cloudbreak.cloud.model.PortDefinition;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
 import com.sequenceiq.cloudbreak.cloud.model.SecurityRule;
+import com.sequenceiq.cloudbreak.cloud.model.SpiFileSystem;
 import com.sequenceiq.cloudbreak.cloud.model.StackTags;
 import com.sequenceiq.cloudbreak.cloud.model.StackTemplate;
 import com.sequenceiq.cloudbreak.cloud.model.Subnet;
@@ -64,6 +68,13 @@ public class StackToCloudStackConverter {
     @Inject
     private DefaultRootVolumeSizeProvider defaultRootVolumeSizeProvider;
 
+    @Inject
+    private FileSystemConfigurationsViewProvider fileSystemConfigurationsViewProvider;
+
+    @Autowired
+    @Qualifier("conversionService")
+    private ConversionService conversionService;
+
     public CloudStack convert(Stack stack) {
         return convert(stack, Collections.emptySet());
     }
@@ -87,19 +98,23 @@ public class StackToCloudStackConverter {
         Network network = buildNetwork(stack);
         StackTemplate stackTemplate = componentConfigProvider.getStackTemplate(stack.getId());
         InstanceAuthentication instanceAuthentication = buildInstanceAuthentication(stack.getStackAuthentication());
+        SpiFileSystem cloudFileSystem = buildCloudFileSystem(stack);
         String template = null;
         if (stackTemplate != null) {
             template = stackTemplate.getTemplate();
         }
 
-        FileSystem fileSystem = stack.getCluster().getFileSystem();
-        CloudFileSystem cloudFileSystem = null;
-        if (fileSystem != null) {
-            cloudFileSystem = new CloudFileSystem(fileSystem.getProperties());
-        }
+        return new CloudStack(instanceGroups, network, image, stack.getParameters(), getUserDefinedTags(stack), template,
+                instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), cloudFileSystem);
+    }
 
-        return new CloudStack(instanceGroups, network, image, cloudFileSystem, stack.getParameters(), getUserDefinedTags(stack), template,
-                instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey());
+    private SpiFileSystem buildCloudFileSystem(Stack stack) {
+        SpiFileSystem cloudFileSystem = null;
+        FileSystem fileSystem = stack.getCluster().getFileSystem();
+        if (fileSystem != null) {
+            cloudFileSystem = conversionService.convert(fileSystem, SpiFileSystem.class);
+        }
+        return cloudFileSystem;
     }
 
     public Map<String, String> getUserDefinedTags(Stack stack) {

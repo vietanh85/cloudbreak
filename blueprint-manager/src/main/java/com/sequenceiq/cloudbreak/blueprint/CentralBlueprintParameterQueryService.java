@@ -9,6 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import com.sequenceiq.cloudbreak.blueprint.filesystem.FileSystemConfigQueryObject;
+import com.sequenceiq.cloudbreak.blueprint.filesystem.query.ConfigQueryEntry;
+import com.sequenceiq.cloudbreak.blueprint.filesystem.query.FileSystemConfigQueryService;
 import com.sequenceiq.cloudbreak.blueprint.template.BlueprintTemplateProcessor;
 import com.sequenceiq.cloudbreak.blueprint.template.HandleBarModelKey;
 import com.sequenceiq.cloudbreak.blueprint.template.TemplateParameterFilter;
@@ -23,6 +26,9 @@ public class CentralBlueprintParameterQueryService {
 
     @Inject
     private TemplateParameterFilter templateParameterFilter;
+
+    @Inject
+    private FileSystemConfigQueryService fileSystemConfigQueryService;
 
     public Set<String> queryDatalakeParameters(String sourceTemplate) throws BlueprintProcessingException {
         Set<String> blueprintParameters;
@@ -48,5 +54,9 @@ public class CentralBlueprintParameterQueryService {
             throw new BlueprintProcessingException(message, e);
         }
         return blueprintParameters;
+    }
+
+    public Set<ConfigQueryEntry> queryFileSystemParameters(FileSystemConfigQueryObject fileSystemConfigQueryObject) throws BlueprintProcessingException {
+        return fileSystemConfigQueryService.queryParameters(fileSystemConfigQueryObject);
     }
 }

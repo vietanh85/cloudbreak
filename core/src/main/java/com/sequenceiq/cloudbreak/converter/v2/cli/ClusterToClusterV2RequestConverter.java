@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import com.sequenceiq.cloudbreak.api.model.ResourceStatus;
 import com.sequenceiq.cloudbreak.api.model.v2.AmbariV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.ClusterV2Request;
-import com.sequenceiq.cloudbreak.api.model.v2.FileSystemV2Request;
+import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
@@ -29,7 +29,7 @@ public class ClusterToClusterV2RequestConverter extends AbstractConversionServic
         clusterV2Request.setEmailTo(source.getEmailTo());
         clusterV2Request.setExecutorType(null);
         if (source.getFileSystem() != null) {
-            clusterV2Request.setFileSystem(getConversionService().convert(source.getFileSystem(), FileSystemV2Request.class));
+            clusterV2Request.setCloudStorage(getConversionService().convert(source.getFileSystem(), CloudStorageRequest.class));
         }
         clusterV2Request.setLdapConfigName(source.getLdapConfig() == null ? null : source.getLdapConfig().getName());
         clusterV2Request.setName(source.getName());
