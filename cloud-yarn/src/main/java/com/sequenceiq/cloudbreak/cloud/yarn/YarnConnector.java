@@ -33,14 +33,16 @@ public class YarnConnector implements CloudConnector {
     @Inject
     private YarnCredentialConnector credentialConnector;
 
+    //todo:rv:make a real K8sConnector class
     @Inject
-    private YarnResourceConnector resourceConnector;
+    private K8sResourceConnector resourceConnector;
 
     @Inject
     private YarnInstanceConnector instanceConnector;
 
+    //todo:rv:make a real K8sConnector class
     @Inject
-    private YarnMetadataCollector metadataCollector;
+    private K8sMetadataCollector metadataCollector;
 
     @Inject
     private YarnPlatformParameters platformParameters;
