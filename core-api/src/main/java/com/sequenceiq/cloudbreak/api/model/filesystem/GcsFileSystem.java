@@ -10,27 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GcsFileSystem extends BaseFileSystem {
 
-    private String defaultBucketName;
-
-    private String projectId;
-
     private String serviceAccountEmail;
-
-    public String getDefaultBucketName() {
-        return defaultBucketName;
-    }
-
-    public void setDefaultBucketName(String defaultBucketName) {
-        this.defaultBucketName = defaultBucketName;
-    }
-
-    public String getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
-    }
 
     public String getServiceAccountEmail() {
         return serviceAccountEmail;

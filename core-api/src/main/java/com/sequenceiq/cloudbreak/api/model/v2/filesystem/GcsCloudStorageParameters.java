@@ -10,29 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class GcsCloudStorageParameters implements CloudStorageParameters {
 
     @ApiModelProperty
-    private String defaultBucketName;
-
-    @ApiModelProperty
-    private String projectId;
-
-    @ApiModelProperty
     private String serviceAccountEmail;
-
-    public String getDefaultBucketName() {
-        return defaultBucketName;
-    }
-
-    public void setDefaultBucketName(String defaultBucketName) {
-        this.defaultBucketName = defaultBucketName;
-    }
-
-    public String getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
-    }
 
     public String getServiceAccountEmail() {
         return serviceAccountEmail;

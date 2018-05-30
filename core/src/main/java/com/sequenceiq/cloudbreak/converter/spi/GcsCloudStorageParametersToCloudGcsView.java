@@ -12,8 +12,6 @@ public class GcsCloudStorageParametersToCloudGcsView
     @Override
     public CloudGcsView convert(GcsCloudStorageParameters source) {
         CloudGcsView cloudGcsView = new CloudGcsView();
-        cloudGcsView.setDefaultBucketName(source.getDefaultBucketName());
-        cloudGcsView.setProjectId(source.getProjectId());
         cloudGcsView.setServiceAccountEmail(source.getServiceAccountEmail());
         return cloudGcsView;
     }

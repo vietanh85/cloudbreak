@@ -102,8 +102,6 @@ public class CloudStorageRequestToFileSystemConverterTest {
     public void testConvertWhenGcsParametersNotNullThenItsValuesShouldBePlacedIntoTheResultInstance() {
         CloudStorageRequest request = createV2Request();
         GcsCloudStorageParameters gcsFileSystemParameters = new GcsCloudStorageParameters();
-        gcsFileSystemParameters.setDefaultBucketName("bucket name");
-        gcsFileSystemParameters.setProjectId("123");
         gcsFileSystemParameters.setServiceAccountEmail("some@email.com");
         request.setGcs(gcsFileSystemParameters);
         GcsCloudStorageParameters gcsCloudStorageParameters = new GcsCloudStorageParameters();

@@ -13,8 +13,6 @@ public class GcsFileSystemToGcsCloudStorageParametersConverter
     @Override
     public GcsCloudStorageParameters convert(GcsFileSystem source) {
         GcsCloudStorageParameters fileSystemConfigurations = new GcsCloudStorageParameters();
-        fileSystemConfigurations.setDefaultBucketName(source.getDefaultBucketName());
-        fileSystemConfigurations.setProjectId(source.getProjectId());
         fileSystemConfigurations.setServiceAccountEmail(source.getServiceAccountEmail());
         return fileSystemConfigurations;
     }

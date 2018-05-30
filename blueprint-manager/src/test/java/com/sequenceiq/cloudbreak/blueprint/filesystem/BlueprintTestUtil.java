@@ -72,8 +72,6 @@ public class BlueprintTestUtil {
 
     public static GcsFileSystem gcsFileSystem() {
         GcsFileSystem gcsFileSystem = new GcsFileSystem();
-        gcsFileSystem.setDefaultBucketName("hortonworks");
-        gcsFileSystem.setProjectId("test-id");
         gcsFileSystem.setServiceAccountEmail("serviceaccountemail");
         return gcsFileSystem;
     }

@@ -45,10 +45,8 @@
     "fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
     "fs.AbstractFileSystem.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS",
     "fs.gs.working.dir": "/",
-    "fs.gs.system.bucket": "hortonworks",
     "fs.gs.auth.service.account.enable": "true",
-    "fs.gs.auth.service.account.email": "serviceaccountemail",
-    "fs.gs.project.id": "test-id"
+    "fs.gs.auth.service.account.email": "serviceaccountemail"
   }
 
 }

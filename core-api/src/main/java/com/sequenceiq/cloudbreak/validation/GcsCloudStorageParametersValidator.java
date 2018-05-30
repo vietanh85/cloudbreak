@@ -1,9 +1,9 @@
 package com.sequenceiq.cloudbreak.validation;
 
-import com.sequenceiq.cloudbreak.api.model.v2.filesystem.GcsCloudStorageParameters;
-
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
+import com.sequenceiq.cloudbreak.api.model.v2.filesystem.GcsCloudStorageParameters;
 
 public class GcsCloudStorageParametersValidator implements ConstraintValidator<ValidGcsCloudStorageParameters, GcsCloudStorageParameters> {
 
@@ -16,23 +16,13 @@ public class GcsCloudStorageParametersValidator implements ConstraintValidator<V
     @Override
     public boolean isValid(GcsCloudStorageParameters value, ConstraintValidatorContext context) {
         boolean result;
-        if (!isDefaultBucketNameValid(value.getDefaultBucketName())
-                || !isProjectIdValid(value.getProjectId())
-                || !isServiceAccountEmailValid(value.getServiceAccountEmail())) {
+        if (!isServiceAccountEmailValid(value.getServiceAccountEmail())) {
             ValidatorUtil.addConstraintViolation(context, failMessage, "status");
             result = false;
         } else {
             result = true;
         }
         return result;
-    }
-
-    private boolean isDefaultBucketNameValid(String defaultBucketName) {
-        return isNotNull(defaultBucketName, "defaultBucketName should not be null!");
-    }
-
-    private boolean isProjectIdValid(String projectId) {
-        return isNotNull(projectId, "defaultBucketName should not be null!");
     }
 
     private boolean isServiceAccountEmailValid(String serviceAccountEmail) {

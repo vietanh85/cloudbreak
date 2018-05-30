@@ -56,9 +56,7 @@ public class FilesystemConfigureTest extends AbstractCloudbreakIntegrationTest {
                 break;
             case "GCP":
                 GcsCloudStorageParameters gcsCloudStorageParameters = new GcsCloudStorageParameters();
-                gcsCloudStorageParameters.setProjectId(cloudProviderParams.get("projectId"));
                 gcsCloudStorageParameters.setServiceAccountEmail(cloudProviderParams.get("serviceAccountId"));
-                gcsCloudStorageParameters.setDefaultBucketName(fsName);
                 fsRequest.setGcs(gcsCloudStorageParameters);
                 fsRequest.setType(filesystemType);
                 break;
