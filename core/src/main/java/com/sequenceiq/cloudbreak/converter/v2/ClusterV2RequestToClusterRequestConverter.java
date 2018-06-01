@@ -1,13 +1,5 @@
 package com.sequenceiq.cloudbreak.converter.v2;
 
-import java.util.HashSet;
-
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import com.sequenceiq.cloudbreak.api.model.ConnectedClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.FileSystemRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
@@ -15,11 +7,13 @@ import com.sequenceiq.cloudbreak.api.model.v2.AmbariV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.ClusterV2Request;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
 import com.sequenceiq.cloudbreak.service.sharedservice.SharedServiceConfigProvider;
+import org.springframework.stereotype.Component;
+
+import javax.inject.Inject;
+import java.util.HashSet;
 
 @Component
 public class ClusterV2RequestToClusterRequestConverter extends AbstractConversionServiceAwareConverter<ClusterV2Request, ClusterRequest> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClusterV2RequestToClusterRequestConverter.class);
 
     @Inject
     private SharedServiceConfigProvider sharedServiceConfigProvider;
@@ -30,8 +24,8 @@ public class ClusterV2RequestToClusterRequestConverter extends AbstractConversio
         cluster.setExecutorType(source.getExecutorType());
         cluster.setEmailNeeded(source.getEmailNeeded());
         cluster.setEmailTo(source.getEmailTo());
-        if (source.getFileSystem() != null) {
-            cluster.setFileSystem(getConversionService().convert(source.getFileSystem(), FileSystemRequest.class));
+        if (source.getCloudStorage() != null) {
+            cluster.setFileSystem(getConversionService().convert(source.getCloudStorage(), FileSystemRequest.class));
         }
             cluster.setName(source.getName());
         if (source.getRdsConfigNames() != null && !source.getRdsConfigNames().isEmpty()) {
