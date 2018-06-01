@@ -1,33 +1,32 @@
-package com.sequenceiq.cloudbreak.api.model.filesystem;
+package com.sequenceiq.cloudbreak.api.model.v2.filesystem;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import javax.validation.constraints.NotNull;
 
-import com.sequenceiq.cloudbreak.api.model.FileSystemType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.sequenceiq.cloudbreak.api.model.filesystem.FileSystemType;
+import com.sequenceiq.cloudbreak.validation.ValidAdlsCloudStorageParameters;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel
-public class AdlsFileSystemParameters implements FileSystemParameters {
-
-    public static final String ACCOUNT_NAME = "accountName";
-
-    public static final String CLIENT_ID = "clientId";
-
-    public static final String CREDENTIAL = "credential";
-
-    public static final String TENANT_ID = "tenantId";
-
-    private static final int PARAMETER_QUANTITY = 4;
+@ValidAdlsCloudStorageParameters
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(Include.NON_NULL)
+public class AdlsCloudStorageParameters implements CloudStorageParameters {
 
     @ApiModelProperty
+    @NotNull
     private String accountName;
 
     @ApiModelProperty
+    @NotNull
     private String clientId;
 
     @ApiModelProperty
+    @NotNull
     private String credential;
 
     @ApiModelProperty
@@ -65,18 +64,10 @@ public class AdlsFileSystemParameters implements FileSystemParameters {
         this.tenantId = tenantId;
     }
 
+    @ApiModelProperty(hidden = true)
     @Override
     public FileSystemType getType() {
         return FileSystemType.ADLS;
     }
 
-    @Override
-    public Map<String, String> getAsMap() {
-        Map<String, String> params = new LinkedHashMap<>(PARAMETER_QUANTITY);
-        params.put(ACCOUNT_NAME, accountName);
-        params.put(CLIENT_ID, clientId);
-        params.put(CREDENTIAL, credential);
-        params.put(TENANT_ID, tenantId);
-        return params;
-    }
 }
