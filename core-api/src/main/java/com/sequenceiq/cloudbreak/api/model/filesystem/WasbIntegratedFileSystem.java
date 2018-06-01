@@ -1,25 +1,25 @@
-package com.sequenceiq.cloudbreak.api.model;
+package com.sequenceiq.cloudbreak.api.model.filesystem;
 
-import javax.validation.constraints.NotNull;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
-public class WasbIntegratedFileSystemConfiguration extends FileSystemConfiguration {
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-    @NotNull
+@JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class WasbIntegratedFileSystem extends BaseFileSystem {
+
     private String tenantId;
 
-    @NotNull
     private String subscriptionId;
 
-    @NotNull
     private String appId;
 
-    @NotNull
     private String appPassword;
 
-    @NotNull
     private String region;
 
-    @NotNull
     private String storageName;
 
     public String getTenantId() {
