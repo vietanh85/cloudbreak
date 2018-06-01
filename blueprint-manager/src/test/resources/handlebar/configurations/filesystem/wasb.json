@@ -1,5 +1,6 @@
 {
 
+
   "core-site": {
     "fs.AbstractFileSystem.wasbs.impl": "org.apache.hadoop.fs.azure.Wasbs",
     "fs.AbstractFileSystem.wasb.impl": "org.apache.hadoop.fs.azure.Wasbs",
