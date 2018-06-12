@@ -119,7 +119,7 @@
             "name": "JOURNALNODE"
           },
           {
-            "name": "LIVY_SERVER"
+            "name": "LIVY2_SERVER"
           },
           {
             "name": "MAPREDUCE2_CLIENT"
@@ -146,10 +146,10 @@
             "name": "SLIDER"
           },
           {
-            "name": "SPARK_CLIENT"
+            "name": "SPARK2_CLIENT"
           },
           {
-            "name": "SPARK_JOBHISTORYSERVER"
+            "name": "SPARK2_JOBHISTORYSERVER"
           },
           {
             "name": "TEZ_CLIENT"
@@ -183,7 +183,7 @@
             "name": "TEZ_CLIENT"
           },
           {
-            "name": "SPARK_CLIENT"
+            "name": "SPARK2_CLIENT"
           },
           {
             "name": "DATANODE"
@@ -193,6 +193,9 @@
           },
           {
             "name": "NODEMANAGER"
+          },
+          {
+            "name": "ZOOKEEPER_CLIENT"
           }
         ],
         "cardinality": "1+"
@@ -208,13 +211,16 @@
             "name": "TEZ_CLIENT"
           },
           {
-            "name": "SPARK_CLIENT"
+            "name": "SPARK2_CLIENT"
           },
           {
             "name": "METRICS_MONITOR"
           },
           {
             "name": "NODEMANAGER"
+          },
+          {
+            "name": "ZOOKEEPER_CLIENT"
           }
         ],
         "cardinality": "1+"

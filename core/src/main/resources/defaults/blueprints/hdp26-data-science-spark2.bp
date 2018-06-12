@@ -115,15 +115,6 @@
             "name": "SPARK2_JOBHISTORYSERVER"
           },
           {
-            "name": "SPARK_CLIENT"
-          },
-          {
-            "name": "SPARK_JOBHISTORYSERVER"
-          },
-          {
-            "name": "SQOOP"
-          },
-          {
             "name": "TEZ_CLIENT"
           },
           {
@@ -158,9 +149,6 @@
             "name": "SPARK2_CLIENT"
           },
           {
-            "name": "SPARK_CLIENT"
-          },
-          {
             "name": "DATANODE"
           },
           {
@@ -168,6 +156,9 @@
           },
           {
             "name": "NODEMANAGER"
+          },
+          {
+            "name": "ZOOKEEPER_CLIENT"
           }
         ],
         "cardinality": "1+"
@@ -186,13 +177,13 @@
             "name": "SPARK2_CLIENT"
           },
           {
-            "name": "SPARK_CLIENT"
-          },
-          {
             "name": "METRICS_MONITOR"
           },
           {
             "name": "NODEMANAGER"
+          },
+          {
+            "name": "ZOOKEEPER_CLIENT"
           }
         ],
         "cardinality": "1+"

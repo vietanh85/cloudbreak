@@ -150,6 +150,9 @@
           },
           {
             "name": "NODEMANAGER"
+          },
+          {
+            "name": "ZOOKEEPER_CLIENT"
           }
         ],
         "cardinality": "1+"
@@ -172,6 +175,9 @@
           },
           {
             "name": "NODEMANAGER"
+          },
+          {
+            "name": "ZOOKEEPER_CLIENT"
           }
         ],
         "cardinality": "1+"
