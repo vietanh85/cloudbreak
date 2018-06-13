@@ -76,12 +76,7 @@
       {
         "capacity-scheduler" : {
           "properties" : {
-            "yarn.scheduler.capacity.root.queues" : "default,llap",
-            "yarn.scheduler.capacity.root.capacity" : "100",
-            "yarn.scheduler.capacity.root.default.capacity" : "25",
-            "yarn.scheduler.capacity.root.default.maximum-capacity" : "100",
-            "yarn.scheduler.capacity.root.llap.maximum-capacity" : "100",
-            "yarn.scheduler.capacity.root.llap.capacity" : "75"
+            "yarn.scheduler.capacity.default.maximum-am-resource-percent": "100"
           }
         }
       }
@@ -119,7 +114,7 @@
             "name": "JOURNALNODE"
           },
           {
-            "name": "LIVY_SERVER"
+            "name": "LIVY2_SERVER"
           },
           {
             "name": "MAPREDUCE2_CLIENT"
@@ -146,10 +141,10 @@
             "name": "SLIDER"
           },
           {
-            "name": "SPARK_CLIENT"
+            "name": "SPARK2_CLIENT"
           },
           {
-            "name": "SPARK_JOBHISTORYSERVER"
+            "name": "SPARK2_JOBHISTORYSERVER"
           },
           {
             "name": "TEZ_CLIENT"
@@ -183,7 +178,7 @@
             "name": "TEZ_CLIENT"
           },
           {
-            "name": "SPARK_CLIENT"
+            "name": "SPARK2_CLIENT"
           },
           {
             "name": "DATANODE"
@@ -208,7 +203,7 @@
             "name": "TEZ_CLIENT"
           },
           {
-            "name": "SPARK_CLIENT"
+            "name": "SPARK2_CLIENT"
           },
           {
             "name": "METRICS_MONITOR"
