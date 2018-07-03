@@ -4,6 +4,8 @@ public class CloudGcsView extends CloudFileSystemView {
 
     private String serviceAccountEmail;
 
+    private String projectId;
+
     public CloudGcsView() {
     }
 
@@ -13,5 +15,13 @@ public class CloudGcsView extends CloudFileSystemView {
 
     public void setServiceAccountEmail(String serviceAccountEmail) {
         this.serviceAccountEmail = serviceAccountEmail;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 }

@@ -18,12 +18,23 @@ public class GcsCloudStorageParameters implements CloudStorageParameters {
     @NotNull
     private String serviceAccountEmail;
 
+    @ApiModelProperty
+    private String projectId;
+
     public String getServiceAccountEmail() {
         return serviceAccountEmail;
     }
 
     public void setServiceAccountEmail(String serviceAccountEmail) {
         this.serviceAccountEmail = serviceAccountEmail;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
     @ApiModelProperty(hidden = true)
