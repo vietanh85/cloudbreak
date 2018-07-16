@@ -206,3 +206,5 @@ mock:
   image:
     catalog:
       url: https://localhost:9443/imagecatalog
+rest:
+  debug: true

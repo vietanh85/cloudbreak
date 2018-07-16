@@ -54,10 +54,16 @@ dependencies {
   compile (project(':orchestrator-salt')) {
     transitive = false;
   }
+  compile (project(':core-model')) {
+    transitive = false;
+  }
   compile (project(':cloud-api')) {
     transitive = false;
   }
   compile (project(':autoscale-api')) {
+    transitive = false;
+  }
+  compile (project(':blueprint-manager')) {
     transitive = false;
   }
   compile("com.sequenceiq:${ambariClientName}:${ambariClientVersion}") {
