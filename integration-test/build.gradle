@@ -51,9 +51,7 @@ dependencies {
   compile (project(':orchestrator-api')) {
     transitive = false;
   }
-  compile (project(':orchestrator-salt')) {
-    transitive = false;
-  }
+  compile (project(':orchestrator-salt'))
   compile (project(':core-model')) {
     transitive = false;
   }
