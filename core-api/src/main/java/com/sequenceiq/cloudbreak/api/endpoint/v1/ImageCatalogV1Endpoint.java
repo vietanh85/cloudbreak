@@ -22,6 +22,8 @@ import com.sequenceiq.cloudbreak.api.model.imagecatalog.ImagesResponse;
 import com.sequenceiq.cloudbreak.api.model.imagecatalog.UpdateImageCatalogRequest;
 import com.sequenceiq.cloudbreak.doc.ContentType;
 import com.sequenceiq.cloudbreak.doc.ControllerDescription;
+import com.sequenceiq.cloudbreak.doc.Notes;
+import com.sequenceiq.cloudbreak.doc.OperationDescriptions;
 import com.sequenceiq.cloudbreak.doc.OperationDescriptions.ImageCatalogOpDescription;
 
 import io.swagger.annotations.Api;
@@ -101,5 +103,11 @@ public interface ImageCatalogV1Endpoint {
     @ApiOperation(value = ImageCatalogOpDescription.GET_BY_IMAGE_CATALOG_NAME, produces = ContentType.JSON,
             notes = IMAGE_CATALOG_NOTES, nickname = "getImageCatalogRequestFromName")
     ImageCatalogRequest getRequestfromName(@PathParam("name") String name);
+
+    @POST
+    @Path("getApplicable/{name}/{clusterName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = OperationDescriptions.StackOpDescription.PUT_BY_NAME, produces = ContentType.JSON, notes = Notes.STACK_NOTES, nickname = "changeImage")
+    ImagesResponse getApplicableImages(@PathParam("name") String name, @PathParam("clusterName") String clusterName) throws Exception;
 
 }
