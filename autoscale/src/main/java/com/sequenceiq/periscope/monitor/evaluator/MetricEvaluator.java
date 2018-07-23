@@ -11,10 +11,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.sequenceiq.ambari.client.AmbariClient;
+import com.sequenceiq.periscope.aspects.AmbariRequestLogging;
 import com.sequenceiq.periscope.domain.BaseAlert;
 import com.sequenceiq.periscope.domain.Cluster;
 import com.sequenceiq.periscope.domain.MetricAlert;
 import com.sequenceiq.periscope.log.MDCBuilder;
+import com.sequenceiq.periscope.monitor.context.ClusterIdEvaluatorContext;
+import com.sequenceiq.periscope.monitor.context.EvaluatorContext;
 import com.sequenceiq.periscope.monitor.event.ScalingEvent;
 import com.sequenceiq.periscope.monitor.event.UpdateFailedEvent;
 import com.sequenceiq.periscope.repository.MetricAlertRepository;
@@ -42,11 +45,19 @@ public class MetricEvaluator extends AbstractEventPublisher implements Evaluator
     @Inject
     private AmbariClientProvider ambariClientProvider;
 
+    @Inject
+    private AmbariRequestLogging ambariRequestLogging;
+
     private long clusterId;
 
     @Override
-    public void setContext(Map<String, Object> context) {
-        clusterId = (long) context.get(EvaluatorContext.CLUSTER_ID.name());
+    public void setContext(EvaluatorContext context) {
+        clusterId = (long) context.getData();
+    }
+
+    @Override
+    public EvaluatorContext getContext() {
+        return new ClusterIdEvaluatorContext(clusterId);
     }
 
     @Override
@@ -58,7 +69,7 @@ public class MetricEvaluator extends AbstractEventPublisher implements Evaluator
             for (MetricAlert alert : alertRepository.findAllByCluster(clusterId)) {
                 String alertName = alert.getName();
                 LOGGER.info("Checking metric based alert: '{}'", alertName);
-                List<Map<String, Object>> alertHistory = ambariClient.getAlertHistory(alert.getDefinitionName(), 1);
+                List<Map<String, Object>> alertHistory = ambariRequestLogging.logging(() -> ambariClient.getAlertHistory(alert.getDefinitionName(), 1));
                 int historySize = alertHistory.size();
                 if (historySize > 1) {
                     LOGGER.debug("Multiple results found for alert: {}, probably HOST alert, ignoring now..", alertName);

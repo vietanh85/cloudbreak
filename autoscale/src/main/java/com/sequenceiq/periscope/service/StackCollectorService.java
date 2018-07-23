@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import com.sequenceiq.cloudbreak.api.model.AutoscaleStackResponse;
 import com.sequenceiq.cloudbreak.api.model.Status;
 import com.sequenceiq.cloudbreak.client.CloudbreakClient;
-import com.sequenceiq.periscope.model.ClusterCreationEvaluatorContext;
+import com.sequenceiq.periscope.monitor.context.ClusterCreationEvaluatorContext;
 import com.sequenceiq.periscope.monitor.evaluator.ClusterCreationEvaluator;
 import com.sequenceiq.periscope.service.configuration.CloudbreakClientConfiguration;
 
@@ -37,6 +37,9 @@ public class StackCollectorService {
     @Inject
     private CloudbreakClientConfiguration cloudbreakClientConfiguration;
 
+    @Inject
+    private RejectedThreadService rejectedThreadService;
+
     public void collectStackDetails() {
         if (LOCK.tryLock()) {
             try {
@@ -50,6 +53,7 @@ public class StackCollectorService {
                             ClusterCreationEvaluator clusterCreationEvaluator = applicationContext.getBean(ClusterCreationEvaluator.class);
                             clusterCreationEvaluator.setContext(new ClusterCreationEvaluatorContext(stack));
                             executorService.submit(clusterCreationEvaluator);
+                            rejectedThreadService.remove(stack);
                         } else {
                             LOGGER.info("Could not find Ambari for stack: {} (ID:{})", stack.getName(), stack.getStackId());
                         }

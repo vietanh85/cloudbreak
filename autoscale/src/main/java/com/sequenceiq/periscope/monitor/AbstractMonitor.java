@@ -5,35 +5,39 @@ import java.util.concurrent.ExecutorService;
 
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import com.sequenceiq.periscope.api.model.ClusterState;
-import com.sequenceiq.periscope.domain.Cluster;
 import com.sequenceiq.periscope.log.MDCBuilder;
+import com.sequenceiq.periscope.monitor.context.EvaluatorContext;
 import com.sequenceiq.periscope.monitor.evaluator.EvaluatorExecutor;
-import com.sequenceiq.periscope.service.ClusterService;
-import com.sequenceiq.periscope.service.ha.PeriscopeNodeConfig;
+import com.sequenceiq.periscope.service.RejectedThreadService;
 
-public abstract class AbstractMonitor implements Monitor {
+public abstract class AbstractMonitor<M extends Monitored> implements Monitor<M> {
 
-    private PeriscopeNodeConfig periscopeNodeConfig;
-
-    private ClusterService clusterService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMonitor.class);
 
     private ApplicationContext applicationContext;
 
     private ExecutorService executorService;
 
+    private RejectedThreadService rejectedThreadService;
+
     @Override
     public void execute(JobExecutionContext context) {
         MDCBuilder.buildMdcContext();
         evalContext(context);
-        for (Cluster cluster : getClusters()) {
-            EvaluatorExecutor evaluatorExecutor = applicationContext.getBean(getEvaluatorType().getSimpleName(), EvaluatorExecutor.class);
-            evaluatorExecutor.setContext(getContext(cluster));
+        List<M> monitoredData = getMonitored();
+        LOGGER.info("Job started: {}, monitored: {}", context.getJobDetail().getKey(), monitoredData.size());
+        for (M monitored : monitoredData) {
+            EvaluatorExecutor evaluatorExecutor = getEvaluatorExecutorBean(monitored);
+            EvaluatorContext evaluatorContext = getContext(monitored);
+            evaluatorExecutor.setContext(evaluatorContext);
             executorService.submit(evaluatorExecutor);
-            cluster.setLastEvaulated(System.currentTimeMillis());
-            clusterService.save(cluster);
+            rejectedThreadService.remove(evaluatorContext.getData());
+            monitored.setLastEvaluated(System.currentTimeMillis());
+            save(monitored);
         }
     }
 
@@ -41,19 +45,22 @@ public abstract class AbstractMonitor implements Monitor {
         JobDataMap monitorContext = context.getJobDetail().getJobDataMap();
         applicationContext = (ApplicationContext) monitorContext.get(MonitorContext.APPLICATION_CONTEXT.name());
         executorService = applicationContext.getBean(ExecutorService.class);
-        clusterService = applicationContext.getBean(ClusterService.class);
-        periscopeNodeConfig = applicationContext.getBean(PeriscopeNodeConfig.class);
+        rejectedThreadService = applicationContext.getBean(RejectedThreadService.class);
     }
 
-    PeriscopeNodeConfig getPeriscopeNodeConfig() {
-        return periscopeNodeConfig;
+    protected ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
-    ClusterService getClusterService() {
-        return clusterService;
+    protected EvaluatorExecutor getEvaluatorExecutorBean(M cluster) {
+        return applicationContext.getBean(getEvaluatorType(cluster).getSimpleName(), EvaluatorExecutor.class);
     }
 
-    List<Cluster> getClusters() {
-        return clusterService.findAllForNode(ClusterState.RUNNING, true, periscopeNodeConfig.getId());
+    protected abstract List<M> getMonitored();
+
+    protected abstract M save(M monitored);
+
+    protected RejectedThreadService getRejectedThreadService() {
+        return rejectedThreadService;
     }
 }

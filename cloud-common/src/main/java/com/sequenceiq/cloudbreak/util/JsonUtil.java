@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
@@ -19,6 +22,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.sf.json.JSONObject;
 
 public class JsonUtil {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonUtil.class);
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -40,6 +45,15 @@ public class JsonUtil {
 
     public static String writeValueAsString(Object object) throws JsonProcessingException {
         return MAPPER.writeValueAsString(object);
+    }
+
+    public static String writeValueAsStringSilent(Object object) {
+        try {
+            return MAPPER.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            LOGGER.info("JSON parse went wrong in silent mode: {}", e.getMessage());
+        }
+        return null;
     }
 
     public static JsonNode readTree(String content) throws IOException {
