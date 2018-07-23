@@ -14,9 +14,10 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupType;
 import com.sequenceiq.cloudbreak.api.model.JsonEntity;
 import com.sequenceiq.cloudbreak.api.model.RecoveryMode;
+import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupType;
+import com.sequenceiq.cloudbreak.api.model.v2.availability.AvailabilityRequest;
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions.HostGroupModelDescription;
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions.InstanceGroupModelDescription;
 
@@ -57,6 +58,9 @@ public class InstanceGroupV2Request implements JsonEntity {
 
     @ApiModelProperty(HostGroupModelDescription.RECOVERY_MODE)
     private RecoveryMode recoveryMode = RecoveryMode.MANUAL;
+
+    @ApiModelProperty(InstanceGroupModelDescription.AVAILABILITY)
+    private AvailabilityRequest availability;
 
     public TemplateV2Request getTemplate() {
         return template;
@@ -120,5 +124,13 @@ public class InstanceGroupV2Request implements JsonEntity {
 
     public void setRecoveryMode(RecoveryMode recoveryMode) {
         this.recoveryMode = recoveryMode;
+    }
+
+    public AvailabilityRequest getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(AvailabilityRequest availability) {
+        this.availability = availability;
     }
 }

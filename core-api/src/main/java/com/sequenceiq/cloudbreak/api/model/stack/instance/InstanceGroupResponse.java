@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sequenceiq.cloudbreak.api.model.SecurityGroupResponse;
 import com.sequenceiq.cloudbreak.api.model.TemplateResponse;
+import com.sequenceiq.cloudbreak.api.model.v2.availability.AvailabilityResponse;
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions;
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions.InstanceGroupModelDescription;
 
@@ -29,6 +30,9 @@ public class InstanceGroupResponse extends InstanceGroupBase {
 
     @ApiModelProperty(InstanceGroupModelDescription.SECURITYGROUP)
     private SecurityGroupResponse securityGroup;
+
+    @ApiModelProperty(InstanceGroupModelDescription.AVAILABILITY)
+    private AvailabilityResponse availability;
 
     @JsonProperty("id")
     public Long getId() {
@@ -64,5 +68,13 @@ public class InstanceGroupResponse extends InstanceGroupBase {
 
     public void setSecurityGroup(SecurityGroupResponse securityGroup) {
         this.securityGroup = securityGroup;
+    }
+
+    public AvailabilityResponse getAvailability() {
+        return availability;
+    }
+
+    public void setAvailability(AvailabilityResponse availability) {
+        this.availability = availability;
     }
 }
