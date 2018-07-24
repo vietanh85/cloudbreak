@@ -27,6 +27,7 @@ import com.sequenceiq.cloudbreak.domain.Template;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.domain.json.JsonToString;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
+import com.sequenceiq.cloudbreak.domain.stack.availability.AvailabilityConfig;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -58,6 +59,9 @@ public class InstanceGroup implements ProvisionEntity, Comparable<InstanceGroup>
 
     @OneToMany(mappedBy = "instanceGroup", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private Set<InstanceMetaData> instanceMetaData = new HashSet<>();
+
+    @OneToMany(mappedBy = "instanceGroup", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private Set<AvailabilityConfig> availabilityConfigs = new HashSet<>();
 
     @Convert(converter = JsonToString.class)
     @Column(columnDefinition = "TEXT")
