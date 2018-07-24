@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 import com.sequenceiq.it.IntegrationTestContext;
+import com.sequenceiq.it.spark.MockSparkServer;
 import com.sequenceiq.it.verification.Call;
 
 import spark.Response;
@@ -50,6 +51,8 @@ public class Mock extends Entity {
         singletonSparkService.secure(keystoreFile.getPath(), "secret", null, null);
         singletonSparkService.before((req, res) -> res.type("application/json"));
         singletonSparkService.after((request, response) -> mock.requestResponseMap.put(Call.fromRequest(request), response));
+
+        MockSparkServer.mockImageCatalogResponse();
     }
 
     private static File createTempFileFromClasspath(String file) {
