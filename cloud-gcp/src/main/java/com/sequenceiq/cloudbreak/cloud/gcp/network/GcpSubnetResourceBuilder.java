@@ -19,6 +19,7 @@ import com.sequenceiq.cloudbreak.cloud.gcp.GcpResourceException;
 import com.sequenceiq.cloudbreak.cloud.gcp.context.GcpContext;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource.Builder;
+import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
 import com.sequenceiq.cloudbreak.cloud.template.ResourceNotNeededException;
@@ -30,8 +31,8 @@ public class GcpSubnetResourceBuilder extends AbstractGcpNetworkBuilder {
     public static final String SUBNET_NAME = "subnetName";
 
     @Override
-    public CloudResource create(GcpContext context, AuthenticatedContext auth, Network network) {
-        if (isLegacyNetwork(network)) {
+    public CloudResource create(GcpContext context, AuthenticatedContext auth, CloudStack cloudStack, Network network) {
+        if (isLegacyNetwork(network, cloudStack.getLegacyAvailabilityConfig())) {
             throw new ResourceNotNeededException("Legacy GCP networks doesn't support subnets. Subnet won't be created.");
         }
         String resourceName = isExistingSubnet(network) ? getSubnetId(network) : getResourceNameService().resourceName(resourceType(), context.getName());
@@ -39,14 +40,15 @@ public class GcpSubnetResourceBuilder extends AbstractGcpNetworkBuilder {
     }
 
     @Override
-    public CloudResource build(GcpContext context, AuthenticatedContext auth, Network network, Security security, CloudResource resource) throws Exception {
+    public CloudResource build(GcpContext context, AuthenticatedContext auth, CloudStack cloudStack, Network network, Security security, CloudResource resource)
+            throws Exception {
         if (isNewNetworkAndSubnet(network) || isNewSubnetInExistingNetwork(network)) {
             Compute compute = context.getCompute();
             String projectId = context.getProjectId();
 
             Subnetwork gcpSubnet = new Subnetwork();
             gcpSubnet.setName(resource.getName());
-            gcpSubnet.setIpCidrRange(network.getSubnet().getCidr());
+            gcpSubnet.setIpCidrRange(cloudStack.getLegacySubnet().getCidr());
 
             String networkName = context.getStringParameter(GcpNetworkResourceBuilder.NETWORK_NAME);
             gcpSubnet.setNetwork(String.format("https://www.googleapis.com/compute/v1/projects/%s/global/networks/%s", projectId, networkName));

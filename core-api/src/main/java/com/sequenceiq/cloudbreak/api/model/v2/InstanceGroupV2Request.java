@@ -60,7 +60,7 @@ public class InstanceGroupV2Request implements JsonEntity {
     private RecoveryMode recoveryMode = RecoveryMode.MANUAL;
 
     @ApiModelProperty(InstanceGroupModelDescription.AVAILABILITY)
-    private AvailabilityRequest availability;
+    private Set<AvailabilityRequest> availability = new HashSet<>();
 
     public TemplateV2Request getTemplate() {
         return template;
@@ -126,11 +126,11 @@ public class InstanceGroupV2Request implements JsonEntity {
         this.recoveryMode = recoveryMode;
     }
 
-    public AvailabilityRequest getAvailability() {
+    public Set<AvailabilityRequest> getAvailability() {
         return availability;
     }
 
-    public void setAvailability(AvailabilityRequest availability) {
+    public void setAvailability(Set<AvailabilityRequest> availability) {
         this.availability = availability;
     }
 }

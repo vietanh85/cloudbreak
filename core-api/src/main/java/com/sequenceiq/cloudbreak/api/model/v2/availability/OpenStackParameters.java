@@ -9,6 +9,10 @@ import io.swagger.annotations.ApiModel;
 @ApiModel
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OpenStackParameters extends BaseAvailabiltityParameter {
+public class OpenStackParameters implements AvailabilityParameters {
 
+    @Override
+    public String getType() {
+        return "OPENSTACK";
+    }
 }

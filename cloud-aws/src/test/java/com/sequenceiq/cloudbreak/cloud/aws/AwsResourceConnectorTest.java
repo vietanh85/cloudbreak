@@ -38,7 +38,6 @@ import com.sequenceiq.cloudbreak.cloud.model.InstanceAuthentication;
 import com.sequenceiq.cloudbreak.cloud.model.Location;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
 import com.sequenceiq.cloudbreak.cloud.model.Region;
-import com.sequenceiq.cloudbreak.cloud.model.Subnet;
 import com.sequenceiq.cloudbreak.cloud.scheduler.SyncPollingScheduler;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -77,13 +76,13 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDR() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
 
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -126,12 +125,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWithNon24Subnets() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -170,12 +169,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWithNon24Subnets2() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -214,12 +213,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWithNon24Subnets3() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -258,12 +257,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit24Vpc() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -296,12 +295,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit24VpcEmptySubnet() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -332,12 +331,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit20Vpc() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -376,12 +375,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit20Vpc2() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -420,12 +419,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit20VpcFull() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -473,12 +472,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit20Vpc1Empty() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -525,12 +524,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit20Vpc1Empty2() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -577,12 +576,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRWit20Vpc1EmptyInTheMiddle() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -629,12 +628,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRForFullVpc() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);
@@ -675,12 +674,12 @@ public class AwsResourceConnectorTest {
     public void testFindNonOverLappingCIDRForOneSpot() {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), null, null,
+        Group group1 = new Group("group1", InstanceGroupType.CORE, Collections.emptyList(), Collections.emptyList(), null, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE);
         Map<String, Object> networkParameters = new HashMap<>();
         networkParameters.put("vpcId", "vpc-12345678");
         networkParameters.put("internetGatewayId", "igw-12345678");
-        Network network = new Network(new Subnet(null), networkParameters);
+        Network network = new Network(networkParameters);
         CloudStack cloudStack = new CloudStack(singletonList(group1), network, null, emptyMap(), emptyMap(), null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
         AuthenticatedContext authenticatedContext = mock(AuthenticatedContext.class);

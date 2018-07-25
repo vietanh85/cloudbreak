@@ -1,12 +1,16 @@
 package com.sequenceiq.cloudbreak.cloud.model;
 
+import java.util.Map;
 import java.util.Objects;
 
-public class Subnet {
+import com.sequenceiq.cloudbreak.cloud.model.generic.DynamicModel;
+
+public class Subnet extends DynamicModel {
 
     private final String cidr;
 
-    public Subnet(String cidr) {
+    public Subnet(String cidr, Map<String, Object> parameters) {
+        super(parameters);
         this.cidr = cidr;
     }
 

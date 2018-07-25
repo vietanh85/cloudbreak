@@ -59,7 +59,8 @@ public abstract class AbstractResourceConnector implements ResourceConnector<Lis
         ResourceBuilderContext context = contextBuilders.get(platform).contextInit(cloudContext, auth, stack.getNetwork(), null, true);
 
         //network
-        List<CloudResourceStatus> cloudResourceStatuses = networkResourceService.buildResources(context, auth, stack.getNetwork(), stack.getCloudSecurity());
+        List<CloudResourceStatus> cloudResourceStatuses = networkResourceService.buildResources(context, auth, stack, stack.getNetwork(),
+                stack.getCloudSecurity());
         context.addNetworkResources(getCloudResources(cloudResourceStatuses));
 
         //group
@@ -176,7 +177,12 @@ public abstract class AbstractResourceConnector implements ResourceConnector<Lis
     private Group getScalingGroup(Group scalingGroup) {
         List<CloudInstance> instances = new ArrayList<>(scalingGroup.getInstances());
         instances.removeIf(cloudInstance -> InstanceStatus.CREATE_REQUESTED != cloudInstance.getTemplate().getStatus());
-        return new Group(scalingGroup.getName(), scalingGroup.getType(), instances, scalingGroup.getSecurity(), null,
+        return new Group(scalingGroup.getName(),
+                scalingGroup.getType(),
+                instances,
+                scalingGroup.getCloudAvailabilities(),
+                scalingGroup.getSecurity(),
+                null,
                 scalingGroup.getInstanceAuthentication(),
                 scalingGroup.getInstanceAuthentication().getLoginUserName(),
                 scalingGroup.getInstanceAuthentication().getPublicKey(),

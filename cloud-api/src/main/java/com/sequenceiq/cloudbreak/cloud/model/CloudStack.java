@@ -91,6 +91,15 @@ public class CloudStack {
         return loginUserName;
     }
 
+    public Subnet getLegacySubnet() {
+        return getLegacyAvailabilityConfig().getSubnet();
+    }
+
+    public CloudAvailability getLegacyAvailabilityConfig() {
+        return groups.get(0).getCloudAvailabilities().get(0);
+    }
+
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CloudStack{");

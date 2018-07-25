@@ -9,6 +9,10 @@ import io.swagger.annotations.ApiModel;
 @ApiModel
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class GcpParameters extends BaseAvailabiltityParameter {
+public class GcpParameters implements AvailabilityParameters {
 
+    @Override
+    public String getType() {
+        return "GCP";
+    }
 }

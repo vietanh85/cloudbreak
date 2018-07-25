@@ -1,13 +1,13 @@
 package com.sequenceiq.cloudbreak.cloud.model;
 
-import com.google.common.collect.ImmutableList;
-import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupType;
-import com.sequenceiq.cloudbreak.cloud.model.generic.DynamicModel;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import com.google.common.collect.ImmutableList;
+import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupType;
+import com.sequenceiq.cloudbreak.cloud.model.generic.DynamicModel;
 
 public class Group extends DynamicModel {
 
@@ -27,13 +27,17 @@ public class Group extends DynamicModel {
 
     private final Optional<CloudInstance> skeleton;
 
+    private final List<CloudAvailability> cloudAvailabilities;
+
     private final int rootVolumeSize;
 
-    public Group(String name, InstanceGroupType type, Collection<CloudInstance> instances, Security security, CloudInstance skeleton,
-            InstanceAuthentication instanceAuthentication, String loginUserName, String publicKey, int rootVolumeSize) {
+    public Group(String name, InstanceGroupType type, Collection<CloudInstance> instances, List<CloudAvailability> cloudAvailabilities,
+            Security security, CloudInstance skeleton, InstanceAuthentication instanceAuthentication, String loginUserName,
+            String publicKey, int rootVolumeSize) {
         this.name = name;
         this.type = type;
         this.instances = ImmutableList.copyOf(instances);
+        this.cloudAvailabilities = ImmutableList.copyOf(cloudAvailabilities);
         this.security = security;
         this.skeleton = Optional.ofNullable(skeleton);
         this.instanceAuthentication = instanceAuthentication;
@@ -42,12 +46,14 @@ public class Group extends DynamicModel {
         this.rootVolumeSize = rootVolumeSize;
     }
 
-    public Group(String name, InstanceGroupType type, Collection<CloudInstance> instances, Security security, CloudInstance skeleton,
-            Map<String, Object> parameters, InstanceAuthentication instanceAuthentication, String loginUserName, String publicKey, int rootVolumeSize) {
+    public Group(String name, InstanceGroupType type, Collection<CloudInstance> instances, List<CloudAvailability> cloudAvailabilities,
+            Security security, CloudInstance skeleton, Map<String, Object> parameters, InstanceAuthentication instanceAuthentication, String loginUserName,
+            String publicKey, int rootVolumeSize) {
         super(parameters);
         this.name = name;
         this.type = type;
         this.instances = ImmutableList.copyOf(instances);
+        this.cloudAvailabilities = ImmutableList.copyOf(cloudAvailabilities);
         this.security = security;
         this.skeleton = Optional.ofNullable(skeleton);
         this.instanceAuthentication = instanceAuthentication;
@@ -97,6 +103,10 @@ public class Group extends DynamicModel {
 
     public int getRootVolumeSize() {
         return rootVolumeSize;
+    }
+
+    public List<CloudAvailability> getCloudAvailabilities() {
+        return cloudAvailabilities;
     }
 
     @Override

@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -17,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupType;
 import com.sequenceiq.cloudbreak.cloud.aws.view.AwsGroupView;
 import com.sequenceiq.cloudbreak.cloud.aws.view.AwsInstanceView;
+import com.sequenceiq.cloudbreak.cloud.aws.view.AwsSubnetView;
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.exception.CloudConnectorException;
 import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
@@ -38,6 +41,8 @@ public class CloudFormationTemplateBuilder {
     public String build(ModelContext context) {
         Map<String, Object> model = new HashMap<>();
         Collection<AwsGroupView> awsGroupViews = new ArrayList<>();
+        Set<AwsSubnetView> awsSubnetViews = new HashSet<>();
+        Map<String, Set<String>> subnets = new HashMap<>();
         Collection<AwsGroupView> awsGatewayGroupViews = new ArrayList<>();
         int i = 0;
         boolean multigw = context.stack.getGroups().stream().filter(g -> g.getType() == InstanceGroupType.GATEWAY).count() > 1;
@@ -69,6 +74,8 @@ public class CloudFormationTemplateBuilder {
             }
             i++;
         }
+
+
         model.put("instanceGroups", awsGroupViews);
         model.put("gatewayGroups", awsGatewayGroupViews);
         model.put("existingVPC", context.existingVPC);

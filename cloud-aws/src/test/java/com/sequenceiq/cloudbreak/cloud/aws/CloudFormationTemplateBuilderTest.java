@@ -139,11 +139,11 @@ public class CloudFormationTemplateBuilderTest {
         );
         image = new Image("cb-centos66-amb200-2015-05-25", userData, "redhat6", "redhat6", "", "default", "default-id", new HashMap<>());
         List<Group> groups = new ArrayList<>();
-        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), emptyList(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), emptyList(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
@@ -660,9 +660,9 @@ public class CloudFormationTemplateBuilderTest {
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
         List<Group> groups = new ArrayList<>();
         Security security = new Security(emptyList(), singletonList("single-sg-id"));
-        groups.add(new Group(name, InstanceGroupType.CORE, emptyList(), security, instance,
+        groups.add(new Group(name, InstanceGroupType.CORE, emptyList(), emptyList(), security, instance,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), "publickey", ROOT_VOLUME_SIZE));
-        CloudStack cloudStack = new CloudStack(groups, new Network(new Subnet(CIDR)), image, emptyMap(), emptyMap(), "template",
+        CloudStack cloudStack = new CloudStack(groups, new Network(emptyMap()), image, emptyMap(), emptyMap(), "template",
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), "publicKey", null);
         //WHEN
         modelContext = new ModelContext()
@@ -692,11 +692,11 @@ public class CloudFormationTemplateBuilderTest {
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
         List<Group> groups = new ArrayList<>();
         Security security = new Security(emptyList(), singletonList("single-sg-id"));
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, emptyList(), security, instance,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, emptyList(), emptyList(), security, instance,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), "publickey", ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, emptyList(), security, instance,
+        groups.add(new Group(name, InstanceGroupType.CORE, emptyList(), emptyList(), security, instance,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), "publickey", ROOT_VOLUME_SIZE));
-        CloudStack cloudStack = new CloudStack(groups, new Network(new Subnet(CIDR)), image, emptyMap(), emptyMap(), "template",
+        CloudStack cloudStack = new CloudStack(groups, new Network(emptyMap()), image, emptyMap(), emptyMap(), "template",
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), "publicKey", null);
         //WHEN
         modelContext = new ModelContext()
@@ -726,9 +726,9 @@ public class CloudFormationTemplateBuilderTest {
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
         List<Group> groups = new ArrayList<>();
         Security security = new Security(emptyList(), List.of("multi-sg-id1", "multi-sg-id2"));
-        groups.add(new Group(name, InstanceGroupType.CORE, emptyList(), security, instance,
+        groups.add(new Group(name, InstanceGroupType.CORE, emptyList(), emptyList(), security, instance,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), "publickey", ROOT_VOLUME_SIZE));
-        CloudStack cloudStack = new CloudStack(groups, new Network(new Subnet(CIDR)), image, emptyMap(), emptyMap(), "template",
+        CloudStack cloudStack = new CloudStack(groups, new Network(emptyMap()), image, emptyMap(), emptyMap(), "template",
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), "publicKey", null);
         //WHEN
         modelContext = new ModelContext()

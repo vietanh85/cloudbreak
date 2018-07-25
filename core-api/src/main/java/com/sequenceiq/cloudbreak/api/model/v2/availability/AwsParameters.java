@@ -9,9 +9,11 @@ import io.swagger.annotations.ApiModel;
 @ApiModel
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AwsParameters extends BaseAvailabiltityParameter {
+public class AwsParameters implements AvailabilityParameters {
 
     private String subnetId;
+
+    private String internetGatewayId;
 
     public String getSubnetId() {
         return subnetId;
@@ -19,5 +21,18 @@ public class AwsParameters extends BaseAvailabiltityParameter {
 
     public void setSubnetId(String subnetId) {
         this.subnetId = subnetId;
+    }
+
+    public String getInternetGatewayId() {
+        return internetGatewayId;
+    }
+
+    public void setInternetGatewayId(String internetGatewayId) {
+        this.internetGatewayId = internetGatewayId;
+    }
+
+    @Override
+    public String getType() {
+        return "AWS";
     }
 }

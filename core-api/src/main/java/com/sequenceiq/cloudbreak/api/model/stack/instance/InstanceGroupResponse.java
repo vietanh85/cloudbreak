@@ -32,7 +32,7 @@ public class InstanceGroupResponse extends InstanceGroupBase {
     private SecurityGroupResponse securityGroup;
 
     @ApiModelProperty(InstanceGroupModelDescription.AVAILABILITY)
-    private AvailabilityResponse availability;
+    private Set<AvailabilityResponse> availability = new HashSet<>();
 
     @JsonProperty("id")
     public Long getId() {
@@ -70,11 +70,11 @@ public class InstanceGroupResponse extends InstanceGroupBase {
         this.securityGroup = securityGroup;
     }
 
-    public AvailabilityResponse getAvailability() {
+    public Set<AvailabilityResponse> getAvailability() {
         return availability;
     }
 
-    public void setAvailability(AvailabilityResponse availability) {
+    public void setAvailability(Set<AvailabilityResponse> availability) {
         this.availability = availability;
     }
 }

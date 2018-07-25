@@ -195,7 +195,7 @@ public class AwsResourceConnector implements ResourceConnector<Object> {
             CloudResource cloudFormationStack = new Builder().type(ResourceType.CLOUDFORMATION_STACK).name(cFStackName).build();
             resourceNotifier.notifyAllocation(cloudFormationStack, ac.getCloudContext());
 
-            String cidr = stack.getNetwork().getSubnet().getCidr();
+            String cidr = stack.getLegacySubnet().getCidr();
             String subnet = isNoCIDRProvided(existingVPC, existingSubnet, cidr) ? findNonOverLappingCIDR(ac, stack) : cidr;
             AwsInstanceProfileView awsInstanceProfileView = new AwsInstanceProfileView(stack);
             ModelContext modelContext = new ModelContext()

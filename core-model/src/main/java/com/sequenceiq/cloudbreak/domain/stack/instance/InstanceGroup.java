@@ -156,4 +156,12 @@ public class InstanceGroup implements ProvisionEntity, Comparable<InstanceGroup>
     public int compareTo(InstanceGroup o) {
         return groupName.compareTo(o.groupName);
     }
+
+    public Set<AvailabilityConfig> getAvailabilityConfigs() {
+        return availabilityConfigs;
+    }
+
+    public void setAvailabilityConfigs(Set<AvailabilityConfig> availabilityConfigs) {
+        this.availabilityConfigs = availabilityConfigs;
+    }
 }

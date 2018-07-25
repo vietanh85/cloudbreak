@@ -125,47 +125,6 @@
 
   "Resources" : {
 
-  <#if enableInstanceProfile && !existingRole>
-        "S3AccessRole" : {
-            "Type"  : "AWS::IAM::Role",
-            "Properties" : {
-                "AssumeRolePolicyDocument" : {
-                    "Statement" : [ {
-                        "Effect" : "Allow",
-                        "Principal" : {
-                            "Service" : [ "ec2.amazonaws.com" ]
-                        },
-                        "Action" : [ "sts:AssumeRole" ]
-                    } ]
-                },
-                "Path" : "/"
-            }
-        },
-
-        "S3RolePolicies" : {
-            "Type" : "AWS::IAM::Policy",
-            "Properties" : {
-                "PolicyName" : "s3access",
-                "PolicyDocument" : {
-                    "Statement" : [ {
-                        "Effect" : "Allow",
-                        "Action" : "s3:*",
-                        "Resource" : "*"
-                    }]
-                },
-                "Roles" : [ { "Ref" : "S3AccessRole" } ]
-            }
-        },
-
-        "S3InstanceProfile" : {
-            "Type" : "AWS::IAM::InstanceProfile",
-            "Properties" : {
-                "Path" : "/",
-                "Roles" : [ { "Ref" : "S3AccessRole" } ]
-            }
-        },
-    </#if>
-
     <#if mapPublicIpOnLaunch>
         <#list gatewayGroups as group>
             <#list 1..group.instanceCount as nth>

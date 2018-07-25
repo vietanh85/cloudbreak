@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -278,7 +279,7 @@ public class GcpInstanceResourceBuilderTest {
     public Group newGroupWithParams(Map<String, Object> params) {
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
         CloudInstance cloudInstance = newCloudInstance(params, instanceAuthentication);
-        return new Group(name, InstanceGroupType.CORE, Collections.singletonList(cloudInstance), security, null,
+        return new Group(name, InstanceGroupType.CORE, Collections.singletonList(cloudInstance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), 50);
     }
 

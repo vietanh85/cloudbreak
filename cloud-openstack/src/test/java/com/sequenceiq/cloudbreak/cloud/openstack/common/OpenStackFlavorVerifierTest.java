@@ -67,7 +67,7 @@ public class OpenStackFlavorVerifierTest {
     @Test(expected = CloudConnectorException.class)
     public void openStackNullFlavor() {
         try {
-            Group g1 = new Group("name", InstanceGroupType.GATEWAY, new ArrayList<>(), null, null,
+            Group g1 = new Group("name", InstanceGroupType.GATEWAY, new ArrayList<>(), new ArrayList<>(), null, null,
                     null, "loginUserName", "publicKey", 50);
             List<Group> instanceGroups = ImmutableList.of(g1);
             when(flavorService.list()).thenReturn(null);
@@ -94,7 +94,7 @@ public class OpenStackFlavorVerifierTest {
         InstanceTemplate template = new InstanceTemplate(flavor, null, null, new ArrayList<>(), null, null, null, null);
         CloudInstance skeleton = new CloudInstance("id1", template, null);
 
-        Group group = new Group("name", InstanceGroupType.GATEWAY, new ArrayList<>(), null, skeleton,
+        Group group = new Group("name", InstanceGroupType.GATEWAY, new ArrayList<>(), new ArrayList<>(), null, skeleton,
                 null, "loginUserName", "publicKey", 50);
         return group;
     }

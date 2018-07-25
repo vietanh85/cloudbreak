@@ -4,6 +4,7 @@ import com.sequenceiq.cloudbreak.cloud.CloudPlatformAware;
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResourceStatus;
+import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
 import com.sequenceiq.cloudbreak.cloud.template.context.ResourceBuilderContext;
@@ -46,7 +47,7 @@ public interface NetworkResourceBuilder<C extends ResourceBuilderContext> extend
      * @param network Network object provided which contains all the necessary information to create the proper network and subnet or the existing ones id.
      * @return Returns the buildable cloud resources.
      */
-    CloudResource create(C context, AuthenticatedContext auth, Network network);
+    CloudResource create(C context, AuthenticatedContext auth, CloudStack cloudStack, Network network);
 
     /**
      * This method will be called after the {@link #create(ResourceBuilderContext, AuthenticatedContext, Network)} method with the constructed
@@ -66,7 +67,8 @@ public interface NetworkResourceBuilder<C extends ResourceBuilderContext> extend
      * @throws Exception Exception can be thrown if the resource create request fails. It will result in stack failure since these resources are not
      *                   replaceable.
      */
-    CloudResource build(C context, AuthenticatedContext auth, Network network, Security security, CloudResource resource) throws Exception;
+    CloudResource build(C context, AuthenticatedContext auth, CloudStack cloudStack, Network network, Security security, CloudResource resource)
+            throws Exception;
 
     /**
      * This functionality is not in use currently, but in the future it will be possible to update an existing resource.

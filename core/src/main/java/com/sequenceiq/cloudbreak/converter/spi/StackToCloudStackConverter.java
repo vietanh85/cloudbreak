@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.Maps;
 import com.sequenceiq.cloudbreak.blueprint.VolumeUtils;
 import com.sequenceiq.cloudbreak.blueprint.filesystem.FileSystemConfigurationsViewProvider;
+import com.sequenceiq.cloudbreak.cloud.model.CloudAvailability;
 import com.sequenceiq.cloudbreak.cloud.model.CloudInstance;
 import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Group;
@@ -50,6 +51,7 @@ import com.sequenceiq.cloudbreak.domain.StackAuthentication;
 import com.sequenceiq.cloudbreak.domain.Template;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
+import com.sequenceiq.cloudbreak.domain.stack.availability.AvailabilityConfig;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
 import com.sequenceiq.cloudbreak.repository.SecurityRuleRepository;
@@ -213,10 +215,17 @@ public class StackToCloudStackConverter {
                     rootVolumeSize = defaultRootVolumeSizeProvider.getForPlatform(instanceGroup.getTemplate().cloudPlatform());
                 }
 
+                List<CloudAvailability> cloudAvailabilities = new ArrayList<>();
+                for (AvailabilityConfig availabilityConfig : instanceGroup.getAvailabilityConfigs()) {
+                    cloudAvailabilities.add(buildCloudAvailability(buildSubnet(availabilityConfig), availabilityConfig.getAvailabilityZone()));
+                }
+
+
                 groups.add(
                         new Group(instanceGroup.getGroupName(),
                                 instanceGroup.getInstanceGroupType(),
                                 instances,
+                                cloudAvailabilities,
                                 buildSecurity(instanceGroup),
                                 skeleton,
                                 fields,
@@ -228,6 +237,14 @@ public class StackToCloudStackConverter {
             }
         }
         return groups;
+    }
+
+    private CloudAvailability buildCloudAvailability(Subnet subnet, String availabiltyZone) {
+        return new CloudAvailability(subnet, availabiltyZone);
+    }
+
+    private Subnet buildSubnet(AvailabilityConfig availabilityConfig) {
+        return new Subnet(availabilityConfig.getSubnetCIDR(), availabilityConfig.getConfigurations().getMap());
     }
 
     private InstanceAuthentication buildInstanceAuthentication(StackAuthentication stackAuthentication) {
@@ -276,10 +293,9 @@ public class StackToCloudStackConverter {
         com.sequenceiq.cloudbreak.domain.Network stackNetwork = stack.getNetwork();
         Network result = null;
         if (stackNetwork != null) {
-            Subnet subnet = new Subnet(stackNetwork.getSubnetCIDR());
             Json attributes = stackNetwork.getAttributes();
             Map<String, Object> params = attributes == null ? Collections.emptyMap() : attributes.getMap();
-            result = new Network(subnet, params);
+            result = new Network(params);
         }
         return result;
     }

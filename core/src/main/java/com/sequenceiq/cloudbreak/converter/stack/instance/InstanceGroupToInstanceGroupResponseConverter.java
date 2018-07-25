@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.converter.stack.instance;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.core.convert.TypeDescriptor;
@@ -9,7 +10,9 @@ import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceMetaDataJson;
 import com.sequenceiq.cloudbreak.api.model.SecurityGroupResponse;
 import com.sequenceiq.cloudbreak.api.model.TemplateResponse;
+import com.sequenceiq.cloudbreak.api.model.v2.availability.AvailabilityResponse;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
+import com.sequenceiq.cloudbreak.domain.stack.availability.AvailabilityConfig;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
 import com.sequenceiq.cloudbreak.domain.json.Json;
@@ -36,6 +39,12 @@ public class InstanceGroupToInstanceGroupResponseConverter extends AbstractConve
         Json attributes = entity.getAttributes();
         if (attributes != null) {
             instanceGroupResponse.setParameters(attributes.getMap());
+        }
+        instanceGroupResponse.setAvailability(new HashSet<>());
+        if (entity.getAvailabilityConfigs() != null) {
+            for (AvailabilityConfig availabilityConfig : entity.getAvailabilityConfigs()) {
+                instanceGroupResponse.getAvailability().add(getConversionService().convert(availabilityConfig, AvailabilityResponse.class));
+            }
         }
         return instanceGroupResponse;
     }

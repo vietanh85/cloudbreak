@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.sequenceiq.cloudbreak.cloud.model.CloudCredential;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
-import com.sequenceiq.cloudbreak.cloud.model.Subnet;
 
 public class GcpStackUtilTest {
 
@@ -45,7 +44,7 @@ public class GcpStackUtilTest {
 
     @Test
     public void testNewSubnetInExistingNetworkNoNetwork() {
-        Network network = new Network(new Subnet(""));
+        Network network = new Network(new HashMap<>());
         assertFalse(GcpStackUtil.isNewSubnetInExistingNetwork(network));
     }
 
@@ -53,7 +52,7 @@ public class GcpStackUtilTest {
     public void testNewSubnetInExistingNetworkWithNetwork() {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put(GcpStackUtil.NETWORK_ID, "asdf");
-        Network network = new Network(new Subnet(""), parameters);
+        Network network = new Network(parameters);
         assertTrue(GcpStackUtil.isNewSubnetInExistingNetwork(network));
     }
 
@@ -62,7 +61,7 @@ public class GcpStackUtilTest {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put(GcpStackUtil.NETWORK_ID, "asdf");
         parameters.put(GcpStackUtil.SUBNET_ID, "asdf");
-        Network network = new Network(new Subnet(""), parameters);
+        Network network = new Network(parameters);
         assertFalse(GcpStackUtil.isNewSubnetInExistingNetwork(network));
     }
 

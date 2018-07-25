@@ -77,7 +77,7 @@ public class AzureTemplateBuilder {
             model.put("storage_vhd_name", imageName);
             model.put("stackname", stackName);
             model.put("region", cloudContext.getLocation().getRegion().value());
-            model.put("subnet1Prefix", network.getSubnet().getCidr());
+            model.put("subnet1Prefix", cloudStack.getLegacySubnet().getCidr());
             model.put("groups", armStack.getGroups());
             model.put("igs", armStack.getInstanceGroups());
             model.put("securities", armSecurityView.getPorts());

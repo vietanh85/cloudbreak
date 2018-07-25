@@ -57,7 +57,6 @@ import com.sequenceiq.cloudbreak.cloud.model.PortDefinition;
 import com.sequenceiq.cloudbreak.cloud.model.Region;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
 import com.sequenceiq.cloudbreak.cloud.model.SecurityRule;
-import com.sequenceiq.cloudbreak.cloud.model.Subnet;
 import com.sequenceiq.cloudbreak.cloud.model.Volume;
 import com.sequenceiq.cloudbreak.common.service.DefaultCostTaggingService;
 import com.sequenceiq.cloudbreak.common.type.CloudbreakResourceType;
@@ -190,7 +189,7 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildNoPublicIpNoFirewall() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         when(azureUtils.isPrivateIp(any())).then(invocation -> true);
         when(azureUtils.isNoSecurityGroups(any())).then(invocation -> true);
         Map<String, String> parameters = new HashMap<>();
@@ -198,7 +197,7 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
 
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
@@ -218,7 +217,7 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildNoPublicIpNoFirewallWithTags() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         when(azureUtils.isPrivateIp(any())).then(invocation -> true);
         when(azureUtils.isNoSecurityGroups(any())).then(invocation -> true);
         Map<String, String> parameters = new HashMap<>();
@@ -226,7 +225,7 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         Map<String, String> userDefinedTags = Maps.newHashMap();
         userDefinedTags.put("testtagkey1", "testtagvalue1");
@@ -258,7 +257,7 @@ public class AzureTemplateBuilderTest {
         when(azureUtils.getCustomSubnetIds(any())).thenReturn(Collections.singletonList("existingSubnet"));
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
 
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         when(azureUtils.isPrivateIp(any())).then(invocation -> true);
         when(azureUtils.isNoSecurityGroups(any())).then(invocation -> true);
         Map<String, String> parameters = new HashMap<>();
@@ -266,7 +265,7 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -285,7 +284,7 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildNoPublicIpButFirewall() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         when(azureUtils.isPrivateIp(any())).then(invocation -> true);
         when(azureUtils.isNoSecurityGroups(any())).then(invocation -> false);
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -295,7 +294,7 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -314,7 +313,7 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildWithPublicIpAndFirewall() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         when(azureUtils.isPrivateIp(any())).then(invocation -> false);
         when(azureUtils.isNoSecurityGroups(any())).then(invocation -> false);
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -324,7 +323,7 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -347,13 +346,13 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildWithInstanceGroupTypeCore() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -373,13 +372,13 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildWithInstanceGroupTypeCoreShouldNotContainsGatewayCustomData() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -399,13 +398,13 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildWithInstanceGroupTypeGateway() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -425,13 +424,13 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildWithInstanceGroupTypeGatewayShouldNotContainsCoreCustomData() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -451,15 +450,15 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildWithInstanceGroupTypeGatewayAndCore() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -480,15 +479,15 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildTestResourceGroupName() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -512,15 +511,15 @@ public class AzureTemplateBuilderTest {
         when(azureUtils.getCustomNetworkId(any())).thenReturn("existingNetworkName");
         when(azureUtils.getCustomResourceGroupName(any())).thenReturn("existingResourceGroup");
         when(azureUtils.getCustomSubnetIds(any())).thenReturn(Collections.singletonList("existingSubnet"));
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -542,15 +541,15 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildTestExistingSubnetNameNotInTemplate() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -570,15 +569,15 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildTestVirtualNetworkNamePrefix() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -598,15 +597,15 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildTestSubnet1Prefix() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -626,15 +625,15 @@ public class AzureTemplateBuilderTest {
     @Test
     public void buildTestDataDisks() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
@@ -656,15 +655,15 @@ public class AzureTemplateBuilderTest {
     @Ignore
     public void buildTestDataDisksShouldThrowAssertionError() {
         //GIVEN
-        Network network = new Network(new Subnet("testSubnet"));
+        Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);

@@ -14,6 +14,7 @@ import com.sequenceiq.cloudbreak.cloud.gcp.GcpResourceException;
 import com.sequenceiq.cloudbreak.cloud.gcp.context.GcpContext;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource.Builder;
+import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
 import com.sequenceiq.cloudbreak.common.type.ResourceType;
@@ -24,13 +25,14 @@ public class GcpNetworkResourceBuilder extends AbstractGcpNetworkBuilder {
     public static final String NETWORK_NAME = "netName";
 
     @Override
-    public CloudResource create(GcpContext context, AuthenticatedContext auth, Network network) {
+    public CloudResource create(GcpContext context, AuthenticatedContext auth, CloudStack cloudStack, Network network) {
         String name = isExistingNetwork(network) ? getCustomNetworkId(network) : getResourceNameService().resourceName(resourceType(), context.getName());
         return createNamedResource(resourceType(), name);
     }
 
     @Override
-    public CloudResource build(GcpContext context, AuthenticatedContext auth, Network network, Security security, CloudResource resource) throws Exception {
+    public CloudResource build(GcpContext context, AuthenticatedContext auth, CloudStack cloudStack, Network network, Security security, CloudResource resource)
+            throws Exception {
         if (!isExistingNetwork(network)) {
             Compute compute = context.getCompute();
             String projectId = context.getProjectId();

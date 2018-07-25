@@ -493,7 +493,7 @@ public class StackToCloudStackConverterTest {
         CloudStack result = underTest.convert(stack);
 
         assertNotNull(result.getNetwork());
-        assertEquals(subnetCIDR, result.getNetwork().getSubnet().getCidr());
+        assertEquals(subnetCIDR, result.getLegacySubnet());
         assertTrue(result.getNetwork().getParameters().isEmpty());
     }
 
@@ -510,7 +510,7 @@ public class StackToCloudStackConverterTest {
         CloudStack result = underTest.convert(stack);
 
         assertNotNull(result.getNetwork());
-        assertEquals(subnetCIDR, result.getNetwork().getSubnet().getCidr());
+        assertEquals(subnetCIDR, result.getLegacySubnet());
         assertEquals(params, result.getNetwork().getParameters());
     }
 

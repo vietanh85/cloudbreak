@@ -24,6 +24,7 @@ import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Group;
 import com.sequenceiq.cloudbreak.cloud.model.Image;
 import com.sequenceiq.cloudbreak.cloud.model.Location;
+import com.sequenceiq.cloudbreak.cloud.model.Subnet;
 import com.sequenceiq.cloudbreak.cloud.openstack.common.OpenStackUtils;
 import com.sequenceiq.cloudbreak.cloud.openstack.view.KeystoneCredentialView;
 import com.sequenceiq.cloudbreak.cloud.openstack.view.NeutronNetworkView;
@@ -81,6 +82,7 @@ public class HeatTemplateBuilder {
     public Map<String, String> buildParameters(AuthenticatedContext auth, CloudStack cloudStack, boolean existingNetwork, String existingSubnetCidr) {
         KeystoneCredentialView osCredential = new KeystoneCredentialView(auth);
         NeutronNetworkView neutronView = new NeutronNetworkView(cloudStack.getNetwork());
+        Subnet subnet = cloudStack.getLegacySubnet();
         Map<String, String> parameters = new HashMap<>();
         if (neutronView.isAssignFloatingIp()) {
             parameters.put("public_net_id", neutronView.getPublicNetId());
@@ -99,7 +101,9 @@ public class HeatTemplateBuilder {
                 parameters.put("router_id", neutronView.getCustomRouterId());
             }
         }
-        parameters.put("app_net_cidr", isBlank(existingSubnetCidr) ? neutronView.getSubnetCIDR() : existingSubnetCidr);
+        parameters.put("app_net_cidr", isBlank(existingSubnetCidr) ?
+                subnet.getCidr()
+                : existingSubnetCidr);
         return parameters;
     }
 

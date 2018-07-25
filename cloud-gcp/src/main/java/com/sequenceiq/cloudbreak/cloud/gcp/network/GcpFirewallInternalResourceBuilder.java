@@ -24,6 +24,7 @@ import com.sequenceiq.cloudbreak.cloud.gcp.GcpResourceException;
 import com.sequenceiq.cloudbreak.cloud.gcp.context.GcpContext;
 import com.sequenceiq.cloudbreak.cloud.gcp.util.GcpStackUtil;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource;
+import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
 import com.sequenceiq.cloudbreak.cloud.template.ResourceNotNeededException;
@@ -33,7 +34,7 @@ import com.sequenceiq.cloudbreak.common.type.ResourceType;
 public class GcpFirewallInternalResourceBuilder extends AbstractGcpNetworkBuilder {
 
     @Override
-    public CloudResource create(GcpContext context, AuthenticatedContext auth, Network network) {
+    public CloudResource create(GcpContext context, AuthenticatedContext auth,  CloudStack cloudStack, Network network) {
         if (noFirewallRules(network)) {
             throw new ResourceNotNeededException("Firewall rules won't be created.");
         }
@@ -42,8 +43,8 @@ public class GcpFirewallInternalResourceBuilder extends AbstractGcpNetworkBuilde
     }
 
     @Override
-    public CloudResource build(GcpContext context, AuthenticatedContext auth, Network network, Security security, CloudResource buildableResource)
-            throws Exception {
+    public CloudResource build(GcpContext context, AuthenticatedContext auth, CloudStack cloudStack, Network network,
+            Security security, CloudResource buildableResource) throws Exception {
         String projectId = context.getProjectId();
 
         Firewall firewall = new Firewall();
@@ -61,12 +62,12 @@ public class GcpFirewallInternalResourceBuilder extends AbstractGcpNetworkBuilde
         firewall.setTargetTags(Collections.singletonList(GcpStackUtil.getClusterTag(auth.getCloudContext())));
         firewall.setAllowed(Arrays.asList(allowed1, allowed2, allowed3));
         firewall.setName(buildableResource.getName());
-        if (isLegacyNetwork(network)) {
+        if (isLegacyNetwork(network, cloudStack.getLegacyAvailabilityConfig())) {
             Networks.Get networkRequest = context.getCompute().networks().get(projectId, getCustomNetworkId(network));
             com.google.api.services.compute.model.Network existingNetwork = networkRequest.execute();
             firewall.setSourceRanges(Collections.singletonList(existingNetwork.getIPv4Range()));
         } else if (isNewNetworkAndSubnet(network) || isNewSubnetInExistingNetwork(network)) {
-            firewall.setSourceRanges(Collections.singletonList(network.getSubnet().getCidr()));
+            firewall.setSourceRanges(Collections.singletonList(cloudStack.getLegacySubnet().getCidr()));
         } else {
             Get sn = context.getCompute().subnetworks().get(projectId, context.getLocation().getRegion().value(), getSubnetId(network));
             com.google.api.services.compute.model.Subnetwork existingSubnet = sn.execute();

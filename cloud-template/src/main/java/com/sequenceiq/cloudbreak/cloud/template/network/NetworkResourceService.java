@@ -17,6 +17,7 @@ import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResourceStatus;
+import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
 import com.sequenceiq.cloudbreak.cloud.model.Platform;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
@@ -51,7 +52,7 @@ public class NetworkResourceService {
     private PersistenceNotifier resourceNotifier;
 
     public List<CloudResourceStatus> buildResources(ResourceBuilderContext context,
-            AuthenticatedContext auth, Network network, Security security) throws Exception {
+            AuthenticatedContext auth, CloudStack cloudStack, Network network, Security security) throws Exception {
         CloudContext cloudContext = auth.getCloudContext();
         List<CloudResourceStatus> results = new ArrayList<>();
         for (NetworkResourceBuilder builder : resourceBuilders.network(cloudContext.getPlatform())) {
@@ -60,9 +61,9 @@ public class NetworkResourceService {
                 break;
             }
             try {
-                CloudResource buildableResource = builder.create(context, auth, network);
+                CloudResource buildableResource = builder.create(context, auth, cloudStack, network);
                 createResource(auth, buildableResource);
-                CloudResource resource = builder.build(context, auth, network, security, buildableResource);
+                CloudResource resource = builder.build(context, auth, cloudStack, network, security, buildableResource);
                 updateResource(auth, resource);
                 PollTask<List<CloudResourceStatus>> task = statusCheckFactory.newPollResourceTask(builder, auth,
                         Collections.singletonList(resource), context, true);

@@ -9,11 +9,10 @@ import io.swagger.annotations.ApiModel;
 @ApiModel
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AzureParameters implements AvailabilityParameters {
-
+public class YarnParameters implements AvailabilityParameters {
 
     @Override
     public String getType() {
-        return "AZURE";
+        return "YARN";
     }
 }

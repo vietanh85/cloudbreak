@@ -16,10 +16,6 @@ public class NeutronNetworkView {
         this.network = network;
     }
 
-    public String getSubnetCIDR() {
-        return network.getSubnet().getCidr();
-    }
-
     public boolean isAssignFloatingIp() {
         return isNoneEmpty(getPublicNetId());
     }

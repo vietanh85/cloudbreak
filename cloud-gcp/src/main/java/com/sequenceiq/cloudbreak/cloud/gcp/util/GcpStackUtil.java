@@ -39,6 +39,7 @@ import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
 import com.sequenceiq.cloudbreak.cloud.event.credential.CredentialVerificationException;
 import com.sequenceiq.cloudbreak.cloud.gcp.GcpResourceException;
 import com.sequenceiq.cloudbreak.cloud.model.AvailabilityZone;
+import com.sequenceiq.cloudbreak.cloud.model.CloudAvailability;
 import com.sequenceiq.cloudbreak.cloud.model.CloudCredential;
 import com.sequenceiq.cloudbreak.cloud.model.Group;
 import com.sequenceiq.cloudbreak.cloud.model.Network;
@@ -271,8 +272,8 @@ public final class GcpStackUtil {
         return !isExistingNetwork(network);
     }
 
-    public static boolean isLegacyNetwork(Network network) {
-        return isAnyEmpty(network.getSubnet().getCidr()) && isAnyEmpty(getSubnetId(network));
+    public static boolean isLegacyNetwork(Network network, CloudAvailability availability) {
+        return isAnyEmpty(availability.getSubnet().getCidr()) && isAnyEmpty(getSubnetId(network));
     }
 
     public static boolean isExistingSubnet(Network network) {
