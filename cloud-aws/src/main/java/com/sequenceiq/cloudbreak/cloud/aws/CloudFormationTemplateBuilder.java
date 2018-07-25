@@ -59,7 +59,7 @@ public class CloudFormationTemplateBuilder {
                     group.getSecurity().getRules(),
                     group.getSecurity().getCloudSecurityId(),
                     getSubnetIds(context.existingSubnetIds, i, group, multigw),
-                    awsInstanceView.isKmsEnabled(),
+                    awsInstanceView.isKmsCustom(),
                     awsInstanceView.getKmsKey(),
                     snapshotId,
                     encryptedAMI);

@@ -348,7 +348,10 @@
             <#else>
             "Ebs" : {
             <#if group.ebsEncrypted == true>
-              "SnapshotId" : "${group.snapshotId}",
+              "Encrypted" : true,
+              <#if group.kmsKeyDefined>
+              "kmsKeyID": "${group.kmsKey}",
+              </#if>
             <#else>
               "Encrypted" : false,
             </#if>

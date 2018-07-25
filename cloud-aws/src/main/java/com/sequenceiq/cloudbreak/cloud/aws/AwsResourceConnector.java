@@ -197,7 +197,7 @@ public class AwsResourceConnector implements ResourceConnector<Object> {
                     .withAuthenticatedContext(ac)
                     .withStack(stack)
                     .withExistingVpc(existingVPC)
-                    .withSnapshotId(getEbsSnapshotIdIfNeeded(ac, stack, resourceNotifier))
+//                    .withSnapshotId(getEbsSnapshotIdIfNeeded(ac, stack, resourceNotifier))
                     .withExistingIGW(awsNetworkView.isExistingIGW())
                     .withExistingSubnetCidr(existingSubnet ? getExistingSubnetCidr(ac, stack) : null)
                     .withExistingSubnetIds(existingSubnet ? awsNetworkView.getSubnetList() : null)
