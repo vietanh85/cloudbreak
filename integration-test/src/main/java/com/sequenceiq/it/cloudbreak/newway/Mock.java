@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 import com.sequenceiq.it.IntegrationTestContext;
+import com.sequenceiq.it.cloudbreak.v2.mock.StackCreationMock;
 import com.sequenceiq.it.spark.MockSparkServer;
 import com.sequenceiq.it.verification.Call;
 
@@ -25,8 +26,9 @@ public class Mock extends Entity {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Mock.class);
 
+    private static Service singletonSparkService ; //= Service.ignite();
 
-    private static final Service singletonSparkService = Service.ignite();
+    private static StackCreationMock mockServer;
 
     private final Map<Call, Response> requestResponseMap = new HashMap<>();
 
@@ -44,8 +46,15 @@ public class Mock extends Entity {
         return mock;
     }
 
+    public static Mock isCreated2() {
+        Mock mock = new Mock();
+        mock.setCreationStrategy(Mock::startCreateClusterInGiven);
+        return mock;
+    }
+
     private static void startInGiven(IntegrationTestContext integrationTestContext, Entity entity) {
         Mock mock = (Mock) entity;
+        singletonSparkService = Service.ignite();
         singletonSparkService.port(9443);
         File keystoreFile = createTempFileFromClasspath("/keystore_server");
         singletonSparkService.secure(keystoreFile.getPath(), "secret", null, null);
@@ -53,6 +62,20 @@ public class Mock extends Entity {
         singletonSparkService.after((request, response) -> mock.requestResponseMap.put(Call.fromRequest(request), response));
 
         MockSparkServer.mockImageCatalogResponse();
+    }
+
+    private static void startCreateClusterInGiven(IntegrationTestContext integrationTestContext, Entity entity) {
+        mockServer = new StackCreationMock(9443, 2020, 3);
+        mockServer.setMockServerAddress("localhost");
+        mockServer.initInstanceMap();
+        mockServer.addSPIEndpoints();
+        mockServer.mockImageCatalogResponse(integrationTestContext);
+        mockServer.addSaltMappings();
+        mockServer.addAmbariMappings("mockcluster");
+    }
+
+    public static void stop() {
+        singletonSparkService.stop();
     }
 
     private static File createTempFileFromClasspath(String file) {

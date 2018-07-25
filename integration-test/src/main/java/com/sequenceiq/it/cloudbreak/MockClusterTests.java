@@ -2,13 +2,16 @@ package com.sequenceiq.it.cloudbreak;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.sequenceiq.it.cloudbreak.newway.CloudbreakClient;
 import com.sequenceiq.it.cloudbreak.newway.CloudbreakTest;
-import com.sequenceiq.it.cloudbreak.newway.ImageCatalog;
+import com.sequenceiq.it.cloudbreak.newway.Cluster;
 import com.sequenceiq.it.cloudbreak.newway.Mock;
+import com.sequenceiq.it.cloudbreak.newway.Stack;
+import com.sequenceiq.it.cloudbreak.newway.cloud.CloudProvider;
+import com.sequenceiq.it.cloudbreak.newway.cloud.CloudProviderHelper;
+import com.sequenceiq.it.cloudbreak.newway.cloud.MockCloudProvider;
 
 public class MockClusterTests extends CloudbreakTest {
 
@@ -17,39 +20,56 @@ public class MockClusterTests extends CloudbreakTest {
     private static final String VALID_IMAGECATALOG_URL = "https://localhost:9443/imagecatalog";
     private static final String VALID_IMAGECATALOG_NAME = "mock-image-catalog";
 
-    @Test
-    public void testSetNewDefaultImageCatalog() throws Exception {
-        given(CloudbreakClient.isCreated());
-        given(Mock.isCreated());
-        given(ImageCatalog.request()
-                .withName(VALID_IMAGECATALOG_NAME)
-                .withUrl(VALID_IMAGECATALOG_URL), "an imagecatalog request and set as default"
-
-        );
-        when(ImageCatalog.post());
-        when(ImageCatalog.setDefault());
-        then(ImageCatalog.assertThis(
-                (imageCatalog, t) -> {
-                    Assert.assertEquals(imageCatalog.getResponse().getName(), VALID_IMAGECATALOG_NAME);
-                    Assert.assertEquals(imageCatalog.getResponse().isUsedAsDefault(), true);
-                }),  "check imagecatalog is created and set as default");
-    }
-
 //    @Test
-//    public void testCreateNewRegularCluster() throws Exception {
-//        CloudProvider cloudProvider = CloudProviderHelper.providerFactory(MockCloudProvider.MOCK, getTestParameter());
-//        String blueprintName = "Data Science: Apache Spark 2, Apache Zeppelin";
-//        String clusterName = "mockcluster";
-//        given(Mock.isCreated());
+//    public void testSetNewDefaultImageCatalog() throws Exception {
 //        given(CloudbreakClient.isCreated());
-//        given(cloudProvider.aValidCredential());
-//        given(Cluster.request()
-//                        .withAmbariRequest(cloudProvider.ambariRequestWithBlueprintName(blueprintName)),
-//                "a cluster request");
-//        given(cloudProvider.aValidStackRequest()
-//                .withName(clusterName), "a stack request");
-//        when(Stack.post(), "post the stack request");
+//        given(Mock.isCreated());
+//        given(ImageCatalog.request()
+//                .withName(VALID_IMAGECATALOG_NAME)
+//                .withUrl(VALID_IMAGECATALOG_URL), "an imagecatalog request and set as default"
+//
+//        );
+//        when(ImageCatalog.post());
+//        when(ImageCatalog.setDefault());
+//        then(ImageCatalog.assertThis(
+//                (imageCatalog, t) -> {
+//                    Assert.assertEquals(imageCatalog.getResponse().getName(), VALID_IMAGECATALOG_NAME);
+//                    Assert.assertEquals(imageCatalog.getResponse().isUsedAsDefault(), true);
+//                }),  "check imagecatalog is created and set as default");
 //    }
+//
+//    @Test
+//    public void testDeleteDefaultImageCatalog() throws Exception {
+//        given(CloudbreakClient.isCreated());
+//        given(Mock.isCreated());
+//        given(ImageCatalog.request()
+//                .withName(VALID_IMAGECATALOG_NAME), "an imagecatalog request and set as default"
+//        );
+//        when(ImageCatalog.delete());
+//    }
+//
+//    @AfterMethod
+//    public void stopMock() {
+//        Mock.stop();
+//    }
+
+    @Test
+    public void testCreateNewRegularCluster() throws Exception {
+        CloudProvider cloudProvider = CloudProviderHelper.providerFactory(MockCloudProvider.MOCK, getTestParameter());
+        String blueprintName = "Data Science: Apache Spark 2, Apache Zeppelin";
+        String clusterName = "mockcluster";
+        given(Mock.isCreated2());
+        given(CloudbreakClient.isCreated());
+        given(cloudProvider.aValidCredential());
+        given(Cluster.request()
+                        .withAmbariRequest(cloudProvider.ambariRequestWithBlueprintName(blueprintName)),
+                "a cluster request");
+        given(cloudProvider.aValidStackRequest()
+                .withName(clusterName), "a stack request");
+        when(Stack.post(), "post the stack request");
+        then(Stack.waitAndCheckClusterAndStackAvailabilityStatus(),
+                "wait and check availability");
+    }
 
 //
 //    @Test(dataProvider = "providernameblueprintimage", priority = 10)

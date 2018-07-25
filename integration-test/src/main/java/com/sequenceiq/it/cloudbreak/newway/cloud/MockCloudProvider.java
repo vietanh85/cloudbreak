@@ -52,37 +52,17 @@ public class MockCloudProvider extends CloudProviderHelper {
 
     @Override
     public CredentialEntity aValidCredential(boolean create) {
-        String credentialType = getTestParameter().get("awsCredentialType");
-        Map<String, Object> credentialParameters;
-        credentialParameters = KEY_BASED_CREDENTIAL.equals(credentialType) ? awsCredentialDetailsKey() : awsCredentialDetailsArn();
         CredentialEntity credential = create ? Credential.isCreated() : Credential.request();
         return credential
                 .withName(getCredentialName())
                 .withDescription(CREDENTIAL_DEFAULT_DESCRIPTION)
-                .withCloudPlatform(MOCK_CAPITAL)
-                .withParameters(credentialParameters);
-    }
-
-    public Map<String, Object> awsCredentialDetailsArn() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("selector", "role-based");
-        map.put("roleArn", getTestParameter().get("integrationtest.awscredential.roleArn"));
-
-        return map;
-    }
-
-    public Map<String, Object> awsCredentialDetailsInvalidArn() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("selector", "role-based");
-        map.put("roleArn", "arn:aws:iam::123456789012:role/fake");
-
-        return map;
+                .withCloudPlatform(MOCK_CAPITAL);
     }
 
     @Override
     public String availabilityZone() {
         String availabilityZone = "eu-west-1a";
-        String availabilityZoneParam = getTestParameter().get("awsAvailabilityZone");
+        String availabilityZoneParam = getTestParameter().get("mockAvailabilityZone");
 
         return availabilityZoneParam == null ? availabilityZone : availabilityZoneParam;
     }
@@ -100,7 +80,7 @@ public class MockCloudProvider extends CloudProviderHelper {
     @Override
     public String region() {
         String region = "eu-west-1";
-        String regionParam = getTestParameter().get("awsRegion");
+        String regionParam = getTestParameter().get("mockRegion");
 
         return regionParam == null ? region : regionParam;
     }
@@ -116,27 +96,27 @@ public class MockCloudProvider extends CloudProviderHelper {
     @Override
     TemplateV2Request template() {
         TemplateV2Request t = new TemplateV2Request();
-        String instanceTypeDefaultValue = "m4.xlarge";
-        String instanceTypeParam = getTestParameter().get("awsInstanceType");
+        String instanceTypeDefaultValue = "large";
+        String instanceTypeParam = getTestParameter().get("mockInstanceType");
         t.setInstanceType(instanceTypeParam == null ? instanceTypeDefaultValue : instanceTypeParam);
 
         int volumeCountDefault = 1;
-        String volumeCountParam = getTestParameter().get("awsInstanceVolumeCount");
+        String volumeCountParam = getTestParameter().get("mockInstanceVolumeCount");
         t.setVolumeCount(volumeCountParam == null ? volumeCountDefault : Integer.parseInt(volumeCountParam));
 
         int volumeSizeDefault = 100;
-        String volumeSizeParam = getTestParameter().get("awsInstanceVolumeSize");
+        String volumeSizeParam = getTestParameter().get("mockInstanceVolumeSize");
         t.setVolumeSize(volumeSizeParam == null ? volumeSizeDefault : Integer.parseInt(volumeSizeParam));
 
-        String volumeTypeDefault = "gp2";
-        String volumeTypeParam = getTestParameter().get("awsInstanceVolumeType");
+        String volumeTypeDefault = "magnetic";
+        String volumeTypeParam = getTestParameter().get("mockInstanceVolumeType");
         t.setVolumeType(volumeTypeParam == null ? volumeTypeDefault : volumeTypeParam);
         return t;
     }
 
     @Override
     public String getClusterName() {
-        String clustername = getTestParameter().get("awsClusterName");
+        String clustername = getTestParameter().get("mockClusterName");
         clustername = clustername == null ? MOCK_CLUSTER_DEFAULT_NAME : clustername;
         return clustername + getClusterNamePostfix();
     }
@@ -236,33 +216,6 @@ public class MockCloudProvider extends CloudProviderHelper {
         NetworkV2Request network = new NetworkV2Request();
         network.setParameters(subnetProperties());
         return network;
-    }
-
-    public Map<String, Object> awsCredentialDetailsKey() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("selector", "key-based");
-        map.put("accessKey", getTestParameter().get("integrationtest.awscredential.accessKey"));
-        map.put("secretKey", getTestParameter().get("integrationtest.awscredential.secretKey"));
-
-        return map;
-    }
-
-    public Map<String, Object> awsCredentialDetailsInvalidAccessKey() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("selector", "key-based");
-        map.put("accessKey", "ABCDEFGHIJKLMNOPQRST");
-        map.put("secretKey", getTestParameter().get("integrationtest.awscredential.secretKey"));
-
-        return map;
-    }
-
-    public Map<String, Object> awsCredentialDetailsInvalidSecretKey() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("selector", "key-based");
-        map.put("accessKey", getTestParameter().get("integrationtest.awscredential.accessKey"));
-        map.put("secretKey", "123456789ABCDEFGHIJKLMNOP0123456789=ABC+");
-
-        return map;
     }
 
     private S3CloudStorageParameters s3CloudStorage() {
