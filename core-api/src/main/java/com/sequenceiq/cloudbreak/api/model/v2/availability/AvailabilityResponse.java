@@ -1,6 +1,9 @@
 package com.sequenceiq.cloudbreak.api.model.v2.availability;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions;
@@ -19,52 +22,8 @@ public class AvailabilityResponse {
     @ApiModelProperty(ModelDescriptions.NetworkModelDescription.SUBNET_CIDR)
     private String subnetCIDR;
 
-    @ApiModelProperty
-    private AwsParameters awsParameters;
-
-    @ApiModelProperty
-    private AzureParameters azureParameters;
-
-    @ApiModelProperty
-    private GcpParameters gcpParameters;
-
-    @ApiModelProperty
-    private OpenStackParameters openStackParameters;
-
-    @ApiModelProperty
-    private YarnParameters yarnParameters;
-
-    public AwsParameters getAwsParameters() {
-        return awsParameters;
-    }
-
-    public void setAwsParameters(AwsParameters awsParameters) {
-        this.awsParameters = awsParameters;
-    }
-
-    public AzureParameters getAzureParameters() {
-        return azureParameters;
-    }
-
-    public void setAzureParameters(AzureParameters azureParameters) {
-        this.azureParameters = azureParameters;
-    }
-
-    public GcpParameters getGcpParameters() {
-        return gcpParameters;
-    }
-
-    public void setGcpParameters(GcpParameters gcpParameters) {
-        this.gcpParameters = gcpParameters;
-    }
-
-    public OpenStackParameters getOpenStackParameters() {
-        return openStackParameters;
-    }
-
-    public void setOpenStackParameters(OpenStackParameters openStackParameters) {
-        this.openStackParameters = openStackParameters;
-    }
+    @ApiModelProperty(ModelDescriptions.NetworkModelDescription.PARAMETERS)
+    private Map<String, Object> parameters = new HashMap<>();
 
     public String getAvailabilityZone() {
         return availabilityZone;
@@ -82,11 +41,11 @@ public class AvailabilityResponse {
         this.subnetCIDR = subnetCIDR;
     }
 
-    public YarnParameters getYarnParameters() {
-        return yarnParameters;
+    public Map<String, Object> getParameters() {
+        return parameters;
     }
 
-    public void setYarnParameters(YarnParameters yarnParameters) {
-        this.yarnParameters = yarnParameters;
+    public void setParameters(Map<String, Object> parameters) {
+        this.parameters = parameters;
     }
 }

@@ -21,30 +21,35 @@ import com.sequenceiq.cloudbreak.service.EntityType;
 @HasPermission
 public interface StackRepository extends BaseRepository<Stack, Long> {
 
-    @Query("SELECT s from Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData "
+    @Query("SELECT s from Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig "
+            + "LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs "
             + "WHERE s.cluster.ambariIp= :ambariIp AND s.stackStatus.status <> 'DELETE_COMPLETED'")
     Stack findByAmbari(@Param("ambariIp") String ambariIp);
 
-    @Query("SELECT s FROM Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData "
+    @Query("SELECT s FROM Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig "
+            + "LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs "
             + "WHERE s.owner= :user AND s.stackStatus.status <> 'DELETE_COMPLETED'")
     Set<Stack> findForUserWithLists(@Param("user") String user);
 
     @Query("SELECT s FROM Stack s WHERE s.owner= :user AND s.stackStatus.status <> 'DELETE_COMPLETED'")
     Set<Stack> findForUser(@Param("user") String user);
 
-    @Query("SELECT s FROM Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData "
+    @Query("SELECT s FROM Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig "
+            + "LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs "
             + "LEFT JOIN FETCH s.cluster c LEFT JOIN FETCH c.hostGroups WHERE ((s.account= :account AND s.publicInAccount= true) OR s.owner= :user) "
             + "AND s.stackStatus.status <> 'DELETE_COMPLETED'")
     Set<Stack> findPublicInAccountForUser(@Param("user") String user, @Param("account") String account);
 
-    @Query("SELECT s FROM Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData "
+    @Query("SELECT s FROM Stack s LEFT JOIN FETCH s.resources LEFT JOIN FETCH s.instanceGroups ig "
+            + "LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs "
             + "LEFT JOIN FETCH s.cluster c LEFT JOIN FETCH c.hostGroups WHERE s.account= :account AND s.stackStatus.status <> 'DELETE_COMPLETED'")
     Set<Stack> findAllInAccountWithLists(@Param("account") String account);
 
     @Query("SELECT s FROM Stack s WHERE s.account= :account AND s.stackStatus.status <> 'DELETE_COMPLETED'")
     Set<Stack> findAllInAccount(@Param("account") String account);
 
-    @Query("SELECT c FROM Stack c LEFT JOIN FETCH c.resources LEFT JOIN FETCH c.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData WHERE c.id= :id")
+    @Query("SELECT c FROM Stack c LEFT JOIN FETCH c.resources LEFT JOIN FETCH c.instanceGroups ig "
+            + "LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs WHERE c.id= :id")
     Stack findOneWithLists(@Param("id") Long id);
 
     @Query("SELECT s FROM Stack s "
@@ -67,14 +72,16 @@ public interface StackRepository extends BaseRepository<Stack, Long> {
     @Query("SELECT s FROM Stack s WHERE s.name= :name and ((s.account= :account and s.publicInAccount=true) or s.owner= :owner)")
     Stack findByNameInAccountOrOwner(@Param("name") String name, @Param("account") String account, @Param("owner") String owner);
 
-    @Query("SELECT c FROM Stack c LEFT JOIN FETCH c.resources LEFT JOIN FETCH c.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData "
+    @Query("SELECT c FROM Stack c LEFT JOIN FETCH c.resources LEFT JOIN FETCH c.instanceGroups ig "
+            + "LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs "
             + "WHERE c.name= :name and c.account= :account")
     Stack findByNameInAccountWithLists(@Param("name") String name, @Param("account") String account);
 
     @Query("SELECT c FROM Stack c WHERE c.name= :name and c.account= :account")
     Stack findByNameInAccount(@Param("name") String name, @Param("account") String account);
 
-    @Query("SELECT t FROM Stack t LEFT JOIN FETCH t.resources LEFT JOIN FETCH t.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData "
+    @Query("SELECT t FROM Stack t LEFT JOIN FETCH t.resources LEFT JOIN FETCH t.instanceGroups ig "
+            + "LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs "
             + "WHERE t.owner= :owner and t.name= :name")
     Stack findByNameInUserWithLists(@Param("name") String name, @Param("owner") String owner);
 
@@ -95,8 +102,9 @@ public interface StackRepository extends BaseRepository<Stack, Long> {
     List<Stack> findByStatuses(@Param("statuses") List<Status> statuses);
 
     @Query("SELECT s FROM Stack s LEFT JOIN FETCH s.cluster LEFT JOIN FETCH s.credential LEFT JOIN FETCH s.network LEFT JOIN FETCH s.orchestrator "
-            + "LEFT JOIN FETCH s.stackStatus LEFT JOIN FETCH s.securityConfig LEFT JOIN FETCH s.failurePolicy LEFT JOIN FETCH"
-            + " s.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData WHERE s.stackStatus.status <> 'DELETE_COMPLETED' "
+            + "LEFT JOIN FETCH s.stackStatus LEFT JOIN FETCH s.securityConfig LEFT JOIN FETCH s.failurePolicy LEFT JOIN FETCH "
+            + "s.instanceGroups ig LEFT JOIN FETCH ig.instanceMetaData LEFT JOIN FETCH ig.availabilityConfigs "
+            + "WHERE s.stackStatus.status <> 'DELETE_COMPLETED' "
             + "AND s.stackStatus.status <> 'DELETE_IN_PROGRESS'")
     Set<Stack> findAliveOnes();
 
