@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
@@ -13,6 +14,7 @@ import javax.persistence.UniqueConstraint;
 
 import com.sequenceiq.cloudbreak.domain.json.EncryptedJsonToString;
 import com.sequenceiq.cloudbreak.domain.json.Json;
+import com.sequenceiq.cloudbreak.domain.security.Organization;
 
 @Entity
 @Table(name = "UserProfile", uniqueConstraints = @UniqueConstraint(columnNames = {"account", "owner"}))
@@ -41,6 +43,9 @@ public class UserProfile {
     @Convert(converter = EncryptedJsonToString.class)
     @Column(columnDefinition = "TEXT")
     private Json uiProperties;
+
+    @ManyToOne
+    private Organization organization;
 
     public Long getId() {
         return id;
@@ -96,5 +101,13 @@ public class UserProfile {
 
     public void setImageCatalog(ImageCatalog imageCatalog) {
         this.imageCatalog = imageCatalog;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 }

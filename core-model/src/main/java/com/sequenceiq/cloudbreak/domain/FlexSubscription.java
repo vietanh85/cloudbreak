@@ -10,6 +10,8 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import com.sequenceiq.cloudbreak.domain.security.Organization;
+
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"account", "name"}))
 public class FlexSubscription implements ProvisionEntity {
@@ -42,6 +44,9 @@ public class FlexSubscription implements ProvisionEntity {
 
     @Column
     private boolean usedForController;
+
+    @ManyToOne
+    private Organization organization;
 
     public Long getId() {
         return id;
@@ -113,6 +118,14 @@ public class FlexSubscription implements ProvisionEntity {
 
     public void setUsedForController(boolean usedForController) {
         this.usedForController = usedForController;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 
     @Override

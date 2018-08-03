@@ -99,6 +99,62 @@ FROM (SELECT userprofile.owner AS up_owner, users.userid AS u_email, user_org_pe
       INNER JOIN user_org_permissions ON users.id=user_org_permissions.user_id) AS subquery
 WHERE owner=up_owner;
 
+-- flexsubscription resource
+ALTER TABLE flexsubscription
+    ADD organization_id int8,
+    ADD CONSTRAINT flexsubscriptionname_in_org_unique UNIQUE (name, organization_id),
+    ADD CONSTRAINT fk_flexsubscription_organization FOREIGN KEY (organization_id) REFERENCES organization(id);
+
+UPDATE flexsubscription
+SET organization_id = subquery.org_id
+FROM (SELECT userprofile.owner AS up_owner, users.userid AS u_email, user_org_permissions.organization_id AS org_id
+      FROM userprofile
+      INNER JOIN users ON userprofile.username=users.userid
+      INNER JOIN user_org_permissions ON users.id=user_org_permissions.user_id) AS subquery
+WHERE owner=up_owner;
+
+-- smartsense resource
+ALTER TABLE smartsensesubscription
+    ADD organization_id int8,
+    ADD CONSTRAINT smartsensesubscriptionsubscriptionid_in_org_unique UNIQUE (name, organization_id),
+    ADD CONSTRAINT fk_smartsensesubscription_organization FOREIGN KEY (organization_id) REFERENCES organization(id);
+
+UPDATE smartsensesubscription
+SET organization_id = subquery.org_id
+FROM (SELECT userprofile.owner AS up_owner, users.userid AS u_email, user_org_permissions.organization_id AS org_id
+      FROM userprofile
+      INNER JOIN users ON userprofile.username=users.userid
+      INNER JOIN user_org_permissions ON users.id=user_org_permissions.user_id) AS subquery
+WHERE owner=up_owner;
+
+-- filesystem resource
+ALTER TABLE filesystem
+    ADD organization_id int8,
+    ADD CONSTRAINT filesystemname_in_org_unique UNIQUE (name, organization_id),
+    ADD CONSTRAINT fk_filesystem_organization FOREIGN KEY (organization_id) REFERENCES organization(id);
+
+UPDATE filesystem
+SET organization_id = subquery.org_id
+FROM (SELECT userprofile.owner AS up_owner, users.userid AS u_email, user_org_permissions.organization_id AS org_id
+      FROM userprofile
+      INNER JOIN users ON userprofile.username=users.userid
+      INNER JOIN user_org_permissions ON users.id=user_org_permissions.user_id) AS subquery
+WHERE owner=up_owner;
+
+-- userprofile resource
+ALTER TABLE userprofile
+    ADD organization_id int8,
+    ADD CONSTRAINT userprofileusername_in_org_unique UNIQUE (username, organization_id),
+    ADD CONSTRAINT fk_userprofile_organization FOREIGN KEY (organization_id) REFERENCES organization(id);
+
+UPDATE userprofile
+SET organization_id = subquery.org_id
+FROM (SELECT userprofile.owner AS up_owner, users.userid AS u_email, user_org_permissions.organization_id AS org_id
+      FROM userprofile
+      INNER JOIN users ON userprofile.username=users.userid
+      INNER JOIN user_org_permissions ON users.id=user_org_permissions.user_id) AS subquery
+WHERE owner=up_owner;
+
 -- //@UNDO
 -- SQL to undo the change goes here.
 
@@ -142,4 +198,28 @@ ALTER TABLE securitygroup
 ALTER TABLE topology
     DROP CONSTRAINT IF EXISTS topologyname_in_org_unique,
     DROP CONSTRAINT IF EXISTS fk_topology_organization,
+    DROP COLUMN IF EXISTS organization_id;
+
+-- flexsubscription resource
+ALTER TABLE flexsubscription
+    DROP CONSTRAINT IF EXISTS flexsubscriptionname_in_org_unique,
+    DROP CONSTRAINT IF EXISTS fk_flexsubscription_organization,
+    DROP COLUMN IF EXISTS organization_id;
+
+-- smartsense resource
+ALTER TABLE smartsensesubscription
+    DROP CONSTRAINT IF EXISTS smartsensesubscriptionsubscriptionid_in_org_unique,
+    DROP CONSTRAINT IF EXISTS fk_smartsensesubscription_organization,
+    DROP COLUMN IF EXISTS organization_id;
+
+-- filesystem resource
+ALTER TABLE filesystem
+    DROP CONSTRAINT IF EXISTS filesystemname_in_org_unique,
+    DROP CONSTRAINT IF EXISTS fk_filesystem_organization,
+    DROP COLUMN IF EXISTS organization_id;
+
+-- userprofile resource
+ALTER TABLE userprofile
+    DROP CONSTRAINT IF EXISTS userprofileusername_in_org_unique,
+    DROP CONSTRAINT IF EXISTS fk_userprofile_organization,
     DROP COLUMN IF EXISTS organization_id;

@@ -16,6 +16,7 @@ import javax.persistence.UniqueConstraint;
 import com.sequenceiq.cloudbreak.api.model.ResourceStatus;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.domain.json.JsonToString;
+import com.sequenceiq.cloudbreak.domain.security.Organization;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"account", "name"}))
@@ -56,6 +57,9 @@ public class Network implements ProvisionEntity {
 
     @ManyToOne
     private Topology topology;
+
+    @ManyToOne
+    private Organization organization;
 
     public Long getId() {
         return id;
@@ -143,5 +147,13 @@ public class Network implements ProvisionEntity {
 
     public void setTopology(Topology topology) {
         this.topology = topology;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 }
