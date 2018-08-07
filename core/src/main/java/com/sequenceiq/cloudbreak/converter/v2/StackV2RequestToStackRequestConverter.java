@@ -106,6 +106,7 @@ public class StackV2RequestToStackRequestConverter extends AbstractConversionSer
         convertClusterRequest(source, stackRequest);
         stackRequest.setCloudPlatform(credentialService.get(stackRequest.getCredentialName(), stackRequest.getAccount()).cloudPlatform());
         convertCustomInputs(source, stackRequest);
+        stackRequest.setGatewayPort(source.getGatewayPort());
         return stackRequest;
     }
 
