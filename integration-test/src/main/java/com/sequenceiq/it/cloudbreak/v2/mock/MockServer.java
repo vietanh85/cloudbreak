@@ -27,7 +27,6 @@ import com.sequenceiq.cloudbreak.cloud.model.CloudVmMetaDataStatus;
 import com.sequenceiq.cloudbreak.cloud.model.InstanceAuthentication;
 import com.sequenceiq.cloudbreak.cloud.model.InstanceStatus;
 import com.sequenceiq.cloudbreak.cloud.model.InstanceTemplate;
-import com.sequenceiq.it.spark.ITResponse;
 import com.sequenceiq.it.util.ServerAddressGenerator;
 import com.sequenceiq.it.verification.Call;
 import com.sequenceiq.it.verification.Verification;

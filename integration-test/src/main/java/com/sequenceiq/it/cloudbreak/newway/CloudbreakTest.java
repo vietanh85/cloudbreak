@@ -1,6 +1,10 @@
 package com.sequenceiq.it.cloudbreak.newway;
 
-import com.sequenceiq.it.IntegrationTestContext;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,11 +14,11 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.StringUtils;
 import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.BeforeTest;
 
-import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
+import com.sequenceiq.it.IntegrationTestContext;
 
 public class CloudbreakTest extends GherkinTest {
     public static final String CLOUDBREAK_SERVER_ROOT = "CLOUDBREAK_SERVER_ROOT";
@@ -72,6 +76,8 @@ public class CloudbreakTest extends GherkinTest {
         testParameter = tp;
     }
 
+    @BeforeSuite
+    @BeforeClass
     @BeforeTest(alwaysRun = true)
     public void digestParameters(ITestContext testngContext) {
         LOGGER.info("CloudbreakTest load test parameters ::: ");

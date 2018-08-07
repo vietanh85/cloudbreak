@@ -15,6 +15,8 @@ import com.sequenceiq.cloudbreak.api.model.v2.TemplateV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.S3CloudStorageParameters;
 import com.sequenceiq.it.cloudbreak.newway.Credential;
 import com.sequenceiq.it.cloudbreak.newway.CredentialEntity;
+import com.sequenceiq.it.cloudbreak.newway.EntityCreationStrategy;
+import com.sequenceiq.it.cloudbreak.newway.PostCredentialWithNameFromMockStrategy;
 import com.sequenceiq.it.cloudbreak.newway.Stack;
 import com.sequenceiq.it.cloudbreak.newway.TestParameter;
 
@@ -53,6 +55,7 @@ public class MockCloudProvider extends CloudProviderHelper {
     @Override
     public CredentialEntity aValidCredential(boolean create) {
         CredentialEntity credential = create ? Credential.isCreated() : Credential.request();
+        credential = new EntityCreationStrategy<CredentialEntity>().setCreationStrategy(credential, new PostCredentialWithNameFromMockStrategy());
         return credential
                 .withName(getCredentialName())
                 .withDescription(CREDENTIAL_DEFAULT_DESCRIPTION)

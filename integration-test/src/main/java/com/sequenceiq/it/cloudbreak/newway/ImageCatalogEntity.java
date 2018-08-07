@@ -7,6 +7,8 @@ import com.sequenceiq.cloudbreak.api.model.imagecatalog.ImagesResponse;
 public class ImageCatalogEntity extends AbstractCloudbreakEntity<ImageCatalogRequest, ImageCatalogResponse> {
     public static final String IMAGE_CATALOG = "IMAGE_CATALOG";
 
+    public static final String IMAGE_CATALOG_URL = "IMAGE_CATALOG_URL";
+
     private ImagesResponse response;
 
     private ImageCatalogRequest request;
