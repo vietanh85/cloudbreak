@@ -4,7 +4,7 @@ threadCount: 2
 listeners:
   - com.sequenceiq.it.cloudbreak.newway.listener.StructuredEventsReporterOnFailingCluster
 tests:
-  - name: "mockstar"
+  - name: "mockclusters"
     classes:
       - com.sequenceiq.it.cloudbreak.test.MockScaleClusterTest
       - com.sequenceiq.it.cloudbreak.test.MockClusterTests
