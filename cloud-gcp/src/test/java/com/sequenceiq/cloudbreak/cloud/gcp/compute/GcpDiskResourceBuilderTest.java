@@ -136,7 +136,7 @@ class GcpDiskResourceBuilderTest {
         InstanceTemplate instanceTemplate = new InstanceTemplate(flavor, name, privateId, volumes, InstanceStatus.CREATE_REQUESTED, params,
                 0L, "cb-centos66-amb200-2015-05-25");
         CloudInstance cloudInstance =  new CloudInstance(instanceId, instanceTemplate, instanceAuthentication);
-        group = new Group(name, InstanceGroupType.CORE, Collections.singletonList(cloudInstance), security, null,
+        group = new Group(name, InstanceGroupType.CORE, Collections.singletonList(cloudInstance), emptyList(), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), 50);
 
         buildableResource = List.of(CloudResource.builder()

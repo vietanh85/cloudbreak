@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiModel;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class AzureParameters implements AvailabilityParameters {
 
-
     @Override
     public String getType() {
         return "AZURE";

@@ -99,7 +99,6 @@ public class CloudStack {
         return groups.get(0).getCloudAvailabilities().get(0);
     }
 
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CloudStack{");

@@ -1,7 +1,9 @@
 package com.sequenceiq.cloudbreak.cloud.azure;
 
 import static com.sequenceiq.cloudbreak.cloud.azure.subnetstrategy.AzureSubnetStrategy.SubnetStratgyType.FILL;
+import static freemarker.template.utility.Collections12.singletonList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
@@ -14,7 +16,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import com.sequenceiq.cloudbreak.cloud.azure.view.AzureStackView;
 import com.sequenceiq.cloudbreak.cloud.azure.view.AzureStorageView;
 import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
 import com.sequenceiq.cloudbreak.cloud.model.AvailabilityZone;
+import com.sequenceiq.cloudbreak.cloud.model.CloudAvailability;
 import com.sequenceiq.cloudbreak.cloud.model.CloudCredential;
 import com.sequenceiq.cloudbreak.cloud.model.CloudInstance;
 import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
@@ -57,6 +59,7 @@ import com.sequenceiq.cloudbreak.cloud.model.PortDefinition;
 import com.sequenceiq.cloudbreak.cloud.model.Region;
 import com.sequenceiq.cloudbreak.cloud.model.Security;
 import com.sequenceiq.cloudbreak.cloud.model.SecurityRule;
+import com.sequenceiq.cloudbreak.cloud.model.Subnet;
 import com.sequenceiq.cloudbreak.cloud.model.Volume;
 import com.sequenceiq.cloudbreak.common.service.DefaultCostTaggingService;
 import com.sequenceiq.cloudbreak.common.type.CloudbreakResourceType;
@@ -76,6 +79,8 @@ public class AzureTemplateBuilderTest {
     public static final String LATEST_TEMPLATE_PATH = "templates/arm-v2.ftl";
 
     public static final int ROOT_VOLUME_SIZE = 50;
+
+    public static final CloudAvailability AVAILABILITY = new CloudAvailability(new Subnet("10.0.0.6/16", emptyMap()), "AZ");
 
     @Mock
     private AzureUtils azureUtils;
@@ -165,7 +170,7 @@ public class AzureTemplateBuilderTest {
         params.put(CloudInstance.SUBNET_ID, "existingSubnet");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
         instance = new CloudInstance("SOME_ID", instanceTemplate, instanceAuthentication, params);
-        List<SecurityRule> rules = Collections.singletonList(new SecurityRule("0.0.0.0/0",
+        List<SecurityRule> rules = singletonList(new SecurityRule("0.0.0.0/0",
                 new PortDefinition[]{new PortDefinition("22", "22"), new PortDefinition("443", "443")}, "tcp"));
         security = new Security(rules, emptyList());
         image = new Image("cb-centos66-amb200-2015-05-25", userData, "redhat6", "redhat6", "", "default", "default-id", new HashMap<>());
@@ -174,7 +179,7 @@ public class AzureTemplateBuilderTest {
         azureCredentialView = new AzureCredentialView(cloudCredential());
         azureStorageView = new AzureStorageView(azureCredentialView, cloudContext, azureStorage, null);
 
-        azureSubnetStrategy = AzureSubnetStrategy.getAzureSubnetStrategy(FILL, Collections.singletonList("existingSubnet"),
+        azureSubnetStrategy = AzureSubnetStrategy.getAzureSubnetStrategy(FILL, singletonList("existingSubnet"),
                 ImmutableMap.of("existingSubnet", 100));
         defaultTags.put(CloudbreakResourceType.DISK.templateVariable(), CloudbreakResourceType.DISK.key());
         defaultTags.put(CloudbreakResourceType.INSTANCE.templateVariable(), CloudbreakResourceType.INSTANCE.key());
@@ -197,12 +202,12 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
 
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
         when(azureStorage.getImageStorageName(any(AzureCredentialView.class), any(CloudContext.class), any(CloudStack.class))).thenReturn("test");
@@ -225,7 +230,7 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         Map<String, String> userDefinedTags = Maps.newHashMap();
         userDefinedTags.put("testtagkey1", "testtagvalue1");
@@ -233,7 +238,7 @@ public class AzureTemplateBuilderTest {
 
         cloudStack = new CloudStack(groups, network, image, parameters, userDefinedTags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
         when(azureStorage.getImageStorageName(any(AzureCredentialView.class), any(CloudContext.class), any(CloudStack.class))).thenReturn("test");
@@ -254,7 +259,7 @@ public class AzureTemplateBuilderTest {
         when(azureUtils.isExistingNetwork(any())).thenReturn(true);
         when(azureUtils.getCustomNetworkId(any())).thenReturn("existingNetworkName");
         when(azureUtils.getCustomResourceGroupName(any())).thenReturn("existingResourceGroup");
-        when(azureUtils.getCustomSubnetIds(any())).thenReturn(Collections.singletonList("existingSubnet"));
+        when(azureUtils.getCustomSubnetIds(any())).thenReturn(singletonList("existingSubnet"));
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
 
         Network network = new Network(new HashMap<>());
@@ -265,11 +270,11 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(azureStorage.getImageStorageName(any(AzureCredentialView.class), any(CloudContext.class), any(CloudStack.class))).thenReturn("test");
@@ -294,11 +299,11 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(azureStorage.getImageStorageName(any(AzureCredentialView.class), any(CloudContext.class), any(CloudStack.class))).thenReturn("test");
@@ -323,11 +328,11 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(azureStorage.getImageStorageName(any(AzureCredentialView.class), any(CloudContext.class), any(CloudStack.class))).thenReturn("test");
@@ -352,11 +357,11 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -378,11 +383,11 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -404,11 +409,11 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -430,11 +435,11 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -456,13 +461,13 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(), security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY), security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -485,13 +490,13 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -510,20 +515,20 @@ public class AzureTemplateBuilderTest {
         when(azureUtils.isExistingNetwork(any())).thenReturn(true);
         when(azureUtils.getCustomNetworkId(any())).thenReturn("existingNetworkName");
         when(azureUtils.getCustomResourceGroupName(any())).thenReturn("existingResourceGroup");
-        when(azureUtils.getCustomSubnetIds(any())).thenReturn(Collections.singletonList("existingSubnet"));
+        when(azureUtils.getCustomSubnetIds(any())).thenReturn(singletonList("existingSubnet"));
         Network network = new Network(new HashMap<>());
         Map<String, String> parameters = new HashMap<>();
         parameters.put("persistentStorage", "persistentStorageTest");
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -547,13 +552,13 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -575,13 +580,13 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -603,13 +608,13 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -631,13 +636,13 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);
@@ -661,13 +666,13 @@ public class AzureTemplateBuilderTest {
         parameters.put("attachedStorageOption", "attachedStorageOptionTest");
         InstanceAuthentication instanceAuthentication = new InstanceAuthentication("sshkey", "", "cloudbreak");
 
-        groups.add(new Group(name, InstanceGroupType.GATEWAY, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.GATEWAY, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
-        groups.add(new Group(name, InstanceGroupType.CORE, Collections.singletonList(instance), new ArrayList<>(),  security, null,
+        groups.add(new Group(name, InstanceGroupType.CORE, singletonList(instance), singletonList(AVAILABILITY),  security, null,
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), ROOT_VOLUME_SIZE));
         cloudStack = new CloudStack(groups, network, image, parameters, tags, azureTemplateBuilder.getTemplateString(),
                 instanceAuthentication, instanceAuthentication.getLoginUserName(), instanceAuthentication.getPublicKey(), null);
-        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, Collections.emptyMap());
+        azureStackView = new AzureStackView("mystack", 3, groups, azureStorageView, azureSubnetStrategy, emptyMap());
 
         //WHEN
         when(defaultCostTaggingService.prepareAllTagsForTemplate()).thenReturn(defaultTags);

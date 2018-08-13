@@ -101,8 +101,8 @@ public class HeatTemplateBuilder {
                 parameters.put("router_id", neutronView.getCustomRouterId());
             }
         }
-        parameters.put("app_net_cidr", isBlank(existingSubnetCidr) ?
-                subnet.getCidr()
+        parameters.put("app_net_cidr", isBlank(existingSubnetCidr)
+                ? subnet.getCidr()
                 : existingSubnetCidr);
         return parameters;
     }
