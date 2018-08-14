@@ -4,6 +4,7 @@ import static com.sequenceiq.cloudbreak.util.NameUtil.generateArchiveName;
 import static com.sequenceiq.cloudbreak.util.SqlUtil.getProperSqlErrorMessage;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -12,6 +13,9 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.controller.exception.NotFoundException;
+import com.sequenceiq.cloudbreak.repository.OrganizationResourceRepository;
+import com.sequenceiq.cloudbreak.service.AbstractOrganizationAwareResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -41,7 +45,7 @@ import com.sequenceiq.cloudbreak.service.stack.connector.adapter.ServiceProvider
 import com.sequenceiq.cloudbreak.service.user.UserProfileHandler;
 
 @Service
-public class CredentialService {
+public class CredentialService extends AbstractOrganizationAwareResourceService<Credential> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CredentialService.class);
 
@@ -200,7 +204,30 @@ public class CredentialService {
         return credentialAdapter.update(get(id));
     }
 
-    private void delete(Credential credential) {
+    @Override
+    public Credential delete(Credential credential) {
+        if (canDelete(credential)) {
+            userProfileHandler.destroyProfileCredentialPreparation(credential);
+            archiveCredential(credential);
+        }
+        return credential;
+    }
+
+    @Override
+    protected OrganizationResourceRepository<Credential, Long> repository() {
+        return credentialRepository;
+    }
+
+    @Override
+    protected String resourceName() {
+        return "credential";
+    }
+
+    @Override
+    protected boolean canDelete(Credential credential) {
+        if (credential == null) {
+            throw new NotFoundException("Credential not found.");
+        }
         Set<Stack> stacksForCredential = stackRepository.findByCredential(credential);
         if (!stacksForCredential.isEmpty()) {
             String clusters;
@@ -218,8 +245,12 @@ public class CredentialService {
             }
             throw new BadRequestException(String.format(message, credential.getName(), clusters));
         }
-        userProfileHandler.destroyProfileCredentialPreparation(credential);
-        archiveCredential(credential);
+        return true;
+    }
+
+    @Override
+    protected void prepareCreation(Credential resource) {
+
     }
 
     public void archiveCredential(Credential credential) {

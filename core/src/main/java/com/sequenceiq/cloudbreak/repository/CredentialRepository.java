@@ -16,7 +16,7 @@ import com.sequenceiq.cloudbreak.service.EntityType;
 @EntityType(entityClass = Credential.class)
 @Transactional(Transactional.TxType.REQUIRED)
 @HasPermission
-public interface CredentialRepository extends BaseRepository<Credential, Long> {
+public interface CredentialRepository extends OrganizationResourceRepository<Credential, Long> {
 
     Set<Credential> findAllByCloudPlatform(@Param("cloudPlatform") String cloudPlatform);
 

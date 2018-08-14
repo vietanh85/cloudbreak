@@ -14,10 +14,12 @@ import javax.persistence.UniqueConstraint;
 import com.sequenceiq.cloudbreak.domain.json.EncryptedJsonToString;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.domain.organization.Organization;
+import com.sequenceiq.cloudbreak.domain.organization.OrganizationAwareResource;
+import com.sequenceiq.cloudbreak.validation.OrganizationPermissions;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"account", "name"}))
-public class Credential implements ProvisionEntity {
+public class Credential implements ProvisionEntity, OrganizationAwareResource {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "credential_generator")
@@ -141,5 +143,10 @@ public class Credential implements ProvisionEntity {
 
     public void setOrganization(Organization organization) {
         this.organization = organization;
+    }
+
+    @Override
+    public OrganizationPermissions.Resource getResource() {
+        return OrganizationPermissions.Resource.CREDENTIAL;
     }
 }
