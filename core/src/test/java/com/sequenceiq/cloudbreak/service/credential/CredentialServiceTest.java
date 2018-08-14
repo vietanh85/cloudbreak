@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
-import com.sequenceiq.cloudbreak.api.model.v2.OrganizationStatus;
 import com.sequenceiq.cloudbreak.domain.organization.Organization;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.repository.StackRepository;
@@ -124,7 +123,6 @@ public class CredentialServiceTest {
         when(testCredential.getName()).thenReturn(TEST_CREDENTIAL_NAME);
         when(organizationService.getDefaultOrganizationForCurrentUser()).thenReturn(defaultOrg);
         when(defaultOrg.getId()).thenReturn(DEFAULT_ORG_ID);
-        when(defaultOrg.getStatus()).thenReturn(OrganizationStatus.ACTIVE);
     }
 
     @Test
@@ -263,7 +261,7 @@ public class CredentialServiceTest {
     public void testDeleteWhenCredentialIsNullThenNotFoundExceptionShouldCome() {
         thrown.expect(NotFoundException.class);
 
-        credentialService.delete(0L);
+        credentialService.delete(null);
 
         verify(stackRepository, times(0)).findByCredential(any(Credential.class));
         verify(userProfileHandler, times(0)).destroyProfileCredentialPreparation(testCredential);
