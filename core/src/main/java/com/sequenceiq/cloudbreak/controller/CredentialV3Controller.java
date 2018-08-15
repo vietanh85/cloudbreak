@@ -61,4 +61,9 @@ public class CredentialV3Controller extends NotificationController implements Cr
         notify(identityUser, ResourceEvent.CREDENTIAL_DELETED);
         return conversionService.convert(deleted, CredentialResponse.class);
     }
+
+    @Override
+    public CredentialResponse putInOrganization(Long organizationId, CredentialRequest credentialRequest) {
+        return null;
+    }
 }
