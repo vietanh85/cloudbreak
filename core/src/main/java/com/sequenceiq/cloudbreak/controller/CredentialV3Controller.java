@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.controller;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,11 @@ public class CredentialV3Controller extends NotificationController implements Cr
 
     @Override
     public CredentialResponse putInOrganization(Long organizationId, CredentialRequest credentialRequest) {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> interactiveLogin(Long organizationId, CredentialRequest credentialRequest) {
         return null;
     }
 }
