@@ -38,14 +38,12 @@ public class CredentialController extends NotificationController implements Cred
 
     @Override
     public CredentialResponse postPrivate(CredentialRequest credentialRequest) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        return createCredential(user, credentialRequest, false);
+        return createCredential(credentialRequest, false);
     }
 
     @Override
     public CredentialResponse postPublic(CredentialRequest credentialRequest) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        return createCredential(user, credentialRequest, true);
+        return createCredential(credentialRequest, true);
     }
 
     @Override
@@ -62,34 +60,27 @@ public class CredentialController extends NotificationController implements Cred
 
     @Override
     public Set<CredentialResponse> getPrivates() {
-        return convertCredentials(credentialService.retrievePrivateCredentials());
+        return getPublics();
     }
 
     @Override
     public Set<CredentialResponse> getPublics() {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        Set<Credential> credentials = credentialService.retrieveAccountCredentials(user);
-        return convertCredentials(credentials);
+        return convertCredentials(credentialService.listForUsersDefaultOrganization());
     }
 
     @Override
     public CredentialResponse getPrivate(String name) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        Credential credentials = credentialService.getPrivateCredential(name, user);
-        return convert(credentials);
+        return getPublic(name);
     }
 
     @Override
     public CredentialResponse getPublic(String name) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        Credential credentials = credentialService.getPublicCredential(name, user);
-        return convert(credentials);
+        return convert(credentialService.getByNameForOrganization(name));
     }
 
     @Override
     public CredentialResponse get(Long id) {
-        Credential credential = credentialService.get(id);
-        return convert(credential);
+        return convert(credentialService.get(id));
     }
 
     @Override
@@ -109,24 +100,22 @@ public class CredentialController extends NotificationController implements Cred
 
     @Override
     public Map<String, String> privateInteractiveLogin(CredentialRequest credentialRequest) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        return interactiveLogin(user, credentialRequest, false);
+        return interactiveLogin(credentialRequest, false);
     }
 
     @Override
     public Map<String, String> publicInteractiveLogin(CredentialRequest credentialRequest) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        return interactiveLogin(user, credentialRequest, true);
+        return interactiveLogin(credentialRequest, true);
     }
 
-    private Map<String, String> interactiveLogin(IdentityUser user, CredentialRequest credentialRequest, boolean publicInAccount) {
+    private Map<String, String> interactiveLogin(CredentialRequest credentialRequest, boolean publicInAccount) {
         Credential credential = convert(credentialRequest, publicInAccount);
-        return credentialService.interactiveLogin(user, credential);
+        return credentialService.interactiveLogin(credential);
     }
 
-    private CredentialResponse createCredential(IdentityUser user, CredentialRequest credentialRequest, boolean publicInAccount) {
+    private CredentialResponse createCredential(CredentialRequest credentialRequest, boolean publicInAccount) {
         Credential credential = convert(credentialRequest, publicInAccount);
-        credential = credentialService.create(user, credential);
+        credential = credentialService.create(credential);
         return convert(credential);
     }
 

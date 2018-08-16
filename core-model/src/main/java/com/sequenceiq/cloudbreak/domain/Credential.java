@@ -10,11 +10,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
+import com.sequenceiq.cloudbreak.authorization.OrganizationResource;
 import com.sequenceiq.cloudbreak.domain.json.EncryptedJsonToString;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.domain.organization.Organization;
 import com.sequenceiq.cloudbreak.domain.organization.OrganizationAwareResource;
-import com.sequenceiq.cloudbreak.validation.OrganizationPermissions;
 
 @Entity
 @Table
@@ -143,7 +143,7 @@ public class Credential implements ProvisionEntity, OrganizationAwareResource {
     }
 
     @Override
-    public OrganizationPermissions.Resource getResource() {
-        return OrganizationPermissions.Resource.CREDENTIAL;
+    public OrganizationResource getResource() {
+        return OrganizationResource.CREDENTIAL;
     }
 }

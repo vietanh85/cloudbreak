@@ -37,15 +37,14 @@ public class CredentialV3Controller extends NotificationController implements Cr
 
     @Override
     public Set<CredentialResponse> listByOrganization(Long organizationId) {
-        return credentialService.listByOrganization(organizationId).stream()
+        return credentialService.listAvailablesByOrganizationId(organizationId).stream()
                 .map(credential -> conversionService.convert(credential, CredentialResponse.class))
                 .collect(Collectors.toSet());
     }
 
     @Override
     public CredentialResponse getByNameInOrganization(Long organizationId, String name) {
-        Credential credential = credentialService.getByNameForOrganization(name, organizationId);
-        return conversionService.convert(credential, CredentialResponse.class);
+        return conversionService.convert(credentialService.getByNameForOrganization(name, organizationId), CredentialResponse.class);
     }
 
     @Override
@@ -65,11 +64,12 @@ public class CredentialV3Controller extends NotificationController implements Cr
 
     @Override
     public CredentialResponse putInOrganization(Long organizationId, CredentialRequest credentialRequest) {
-        return null;
+        return conversionService.convert(credentialService.updateByOrganization(
+                organizationId, conversionService.convert(credentialRequest, Credential.class)), CredentialResponse.class);
     }
 
     @Override
     public Map<String, String> interactiveLogin(Long organizationId, CredentialRequest credentialRequest) {
-        return null;
+        return credentialService.interactiveLogin(organizationId, conversionService.convert(credentialRequest, Credential.class));
     }
 }
