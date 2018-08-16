@@ -8,11 +8,13 @@ import java.util.Set;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.sequenceiq.cloudbreak.api.model.stack.StackAuthenticationRequest;
+import com.sequenceiq.cloudbreak.api.model.v2.AmbariV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.NetworkV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.StorageLocationRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.TemplateV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.S3CloudStorageParameters;
+import com.sequenceiq.it.cloudbreak.newway.Cluster;
 import com.sequenceiq.it.cloudbreak.newway.Credential;
 import com.sequenceiq.it.cloudbreak.newway.CredentialEntity;
 import com.sequenceiq.it.cloudbreak.newway.EntityCreationStrategy;
@@ -71,11 +73,29 @@ public class MockCloudProvider extends CloudProviderHelper {
     }
 
     @Override
+    public AmbariV2Request getAmbariRequestWithNoConfigStrategyAndEmptyMpacks(String blueprintName) {
+        return null;
+    }
+
+    @Override
+    public ResourceHelper<?> getResourceHelper() {
+        return null;
+    }
+
+    @Override
+    public Cluster aValidDatalakeCluster() {
+        return null;
+    }
+
+    @Override
+    public Cluster aValidAttachedCluster(String datalakeClusterName) {
+        return null;
+    }
+
     public Stack aValidDatalakeStackIsCreated() {
         throw new NotImplementedException("Unimplemented operation!");
     }
 
-    @Override
     public CloudStorageRequest fileSystemForDatalake() {
         throw new NotImplementedException("Unimplemented operation!");
     }
@@ -97,7 +117,7 @@ public class MockCloudProvider extends CloudProviderHelper {
     }
 
     @Override
-    TemplateV2Request template() {
+    public TemplateV2Request template() {
         TemplateV2Request t = new TemplateV2Request();
         String instanceTypeDefaultValue = "large";
         String instanceTypeParam = getTestParameter().get("mockInstanceType");
@@ -121,7 +141,7 @@ public class MockCloudProvider extends CloudProviderHelper {
     public String getClusterName() {
         String clustername = getTestParameter().get("mockClusterName");
         clustername = clustername == null ? MOCK_CLUSTER_DEFAULT_NAME : clustername;
-        return clustername + getClusterNamePostfix();
+        return clustername;
     }
 
     public StackAuthenticationRequest stackAuthentication() {
@@ -240,7 +260,7 @@ public class MockCloudProvider extends CloudProviderHelper {
         return request;
     }
 
-    private StorageLocationRequest createLocation(String value, String propertyFile, String propertyName) {
+    protected StorageLocationRequest createLocation(String value, String propertyFile, String propertyName) {
         StorageLocationRequest location = new StorageLocationRequest();
         location.setValue(value);
         location.setPropertyFile(propertyFile);

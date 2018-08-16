@@ -23,7 +23,11 @@ public class AssertMock extends Assertion<Mock> {
 
     AssertMock(Verification[] verifications) {
         super(Mock.getTestContextMock(), AssertMock::checkVerifications);
-        verificationArray = Arrays.asList(verifications);
+        setVerificationArray(Arrays.asList(verifications));
+    }
+
+    private static void setVerificationArray(List<Verification> verifications) {
+        verificationArray = verifications;
     }
 
     private static void checkVerifications(Mock mock, IntegrationTestContext integrationTestContext) {
