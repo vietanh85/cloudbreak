@@ -102,7 +102,6 @@ cb:
   custom.user.data: |
     touch /tmp/custom-user-data
     date >> /tmp/custom-user-data
-
   mail:
     smtp:
       auth: true

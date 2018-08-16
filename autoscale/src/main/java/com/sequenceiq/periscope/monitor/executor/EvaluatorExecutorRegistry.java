@@ -31,6 +31,7 @@ public class EvaluatorExecutorRegistry {
         long now = clock.getCurrentTime();
         Element elementToSubmit = new Element(evaluator, resourceId, now);
         Element elementAlreadyPresent = submittedEvaluators.putIfAbsent(elementToSubmit, elementToSubmit);
+
         if (elementAlreadyPresent == null) {
             return true;
         } else if (now - elementAlreadyPresent.getTimestampMillis() > timeout) {
