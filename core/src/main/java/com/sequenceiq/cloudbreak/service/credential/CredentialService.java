@@ -50,6 +50,10 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CredentialService.class);
 
+    private static final String ACCESS_DENIED_FORMAT_MESS_ID = "Unable to access credential with id '%s' in organization: %s";
+
+    private static final String ACCESS_DENIED_FORMAT_MESS_NAME = "Unable to access credential with name '%s' in organization: %s";
+
     @Inject
     private CredentialRepository credentialRepository;
 
@@ -81,42 +85,27 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
         return credentialRepository.findForOrganization(getDefaultOrg().getId());
     }
 
-    public Credential getByNameForOrganization(String name) {
-        return getByNameForOrganization(name, getDefaultOrg().getId());
-    }
-
-    @Override
-    public Credential create(Credential credential, Long orgId) {
-        return super.create(credentialAdapter.init(credential), orgId);
-    }
-
     public Set<Credential> listAvailablesByOrganizationId(Long orgId) {
         return credentialRepository.findForOrganization(orgId);
     }
 
-    public Set<Credential> retrieveAccountCredentials(IdentityUser user) {
-        Set<String> platforms = accountPreferencesService.enabledPlatforms();
-        return user.getRoles().contains(IdentityUserRole.ADMIN)
-                ? credentialRepository.findAllByOrganizationFilterByPlatforms(getDefaultOrg().getId(), platforms)
-                : credentialRepository.findByOrganizationFilterByPlatforms(getDefaultOrg().getId(), platforms);
-    }
-
     public Credential get(Long id) {
-        return credentialRepository.findById(id)
-                .orElseThrow(accessDenied(String.format("Access is denied: Credential not found by id '%d'.", id)));
+        return Optional.ofNullable(credentialRepository.findByIdAndOrganization(id, getDefaultOrg().getId()))
+                .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_ID, id, getDefaultOrg().getName())));
     }
 
-    public Credential getActiveCredentialById(Long id) {
-        return Optional.ofNullable(
-                credentialRepository.findByIdAndOrganization(id, getDefaultOrg().getId()))
-                .orElseThrow(accessDenied(String.format("Access is denied: Credential not found by id '%d' in %s organization.",
-                        id, getDefaultOrg().getName())));
+    public Credential getByNameForOrganization(String name) {
+        return getByNameForOrganizationId(name, getDefaultOrg().getId());
     }
 
-    public Credential getActiveCredentialByName(String name) {
-        return Optional.ofNullable(credentialRepository.findOneByName(name, getDefaultOrg().getId()))
-                .orElseThrow(accessDenied(String.format("Access is denied: Credential not found by name '%s' in %s organization.",
-                        name, getDefaultOrg().getName())));
+    @Override
+    public Credential getByNameForOrganizationId(String name, Long organizationId) {
+        try {
+            return super.getByNameForOrganizationId(name, organizationId);
+        } catch (NotFoundException ignore) {
+            throw accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_NAME,
+                    name, organizationService.get(organizationId).getName())).get();
+        }
     }
 
     public Map<String, String> interactiveLogin(Credential credential) {
@@ -129,30 +118,6 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
         return credentialAdapter.interactiveLogin(credential);
     }
 
-    public Credential create(IdentityUser user, Credential credential) {
-        credential.setOrganization(organizationService.getDefaultOrganizationForCurrentUser());
-        return saveCredentialAndNotify(credential, ResourceEvent.CREDENTIAL_CREATED);
-    }
-
-    public Credential modify(IdentityUser user, Credential credential) {
-        LOGGER.debug("Modifying credential: [User: '{}', Account: '{}']", user.getUsername(), user.getAccount());
-        Credential credentialToModify = credential.isPublicInAccount() ? getPublicCredential(credential.getName(), user)
-                : getPrivateCredential(credential.getName(), user);
-        if (!credentialToModify.cloudPlatform().equals(credential.cloudPlatform())) {
-            throw new BadRequestException("Modifying credential platform is forbidden");
-        }
-        if (credential.getAttributes() != null) {
-            credentialToModify.setAttributes(credential.getAttributes());
-        }
-        if (credential.getDescription() != null) {
-            credentialToModify.setDescription(credential.getDescription());
-        }
-        if (credential.getTopology() != null) {
-            credentialToModify.setTopology(credential.getTopology());
-        }
-        return saveCredentialAndNotify(credentialToModify, ResourceEvent.CREDENTIAL_MODIFIED);
-    }
-
     @Retryable(value = BadRequestException.class, maxAttempts = 30, backoff = @Backoff(delay = 2000))
     public Credential createWithRetry(Credential credential) {
         return create(credential);
@@ -160,46 +125,27 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
 
     public Credential create(Credential credential) {
         LOGGER.debug("Creating credential for organization: {}", getDefaultOrg().getName());
-        Organization organization = organizationService.getDefaultOrganizationForCurrentUser();
-        credential.setOrganization(organization);
-        return create(credential, organization.getId());
+        credential.setOrganization(getDefaultOrg());
+        return create(credential, getDefaultOrg().getId());
     }
 
-    public Credential getPublicCredential(String name, IdentityUser user) {
-        return Optional.ofNullable(credentialRepository.findOneByName(name, getDefaultOrg().getId()))
-                .orElseThrow(accessDenied(String.format("Unable to access credential with name '%s' in organization: %s", name, getDefaultOrg().getName())));
-    }
-
-    public Credential getPrivateCredential(String name, IdentityUser user) {
-        return Optional.ofNullable(
-                credentialRepository.findByNameAndOrganization(name, getDefaultOrg().getId()))
-                .orElseThrow(accessDenied(String.format("Unable to access credential with name '%s' in organization: %s", name, getDefaultOrg().getName())));
+    @Override
+    public Credential create(Credential credential, Long orgId) {
+        return super.create(credentialAdapter.init(credential), orgId);
     }
 
     public void delete(Long id) {
         Credential credential = Optional.ofNullable(
                 credentialRepository.findByIdAndOrganization(id, getDefaultOrg().getId()))
-                .orElseThrow(accessDenied(String.format("Unable to access credential with id '%s' in organization: %s", id, getDefaultOrg().getName())));
+                .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_ID, id, getDefaultOrg().getName())));
         delete(credential);
     }
 
     public void delete(String name) {
         Credential credential = Optional.ofNullable(
                 credentialRepository.findActiveByNameAndOrgId(name, getDefaultOrg().getId()))
-                .orElseThrow(accessDenied(String.format("Unable to access credential with name '%s' in organization: %s", name, getDefaultOrg().getName())));
+                .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_NAME, name, getDefaultOrg().getName())));
         delete(credential);
-    }
-
-    public Credential updateByOrganization(Long organizationId, Credential credential) {
-        Credential original = Optional.ofNullable(credentialRepository.findActiveByNameAndOrgId(credential.getName(), organizationId))
-                .orElseThrow(accessDenied(String.format("Unable to access credential with name '%s' in organization: %s",
-                        credential.getName(), organizationService.get(organizationId).getName())));
-        if (original.cloudPlatform() != null && !Objects.equals(credential.cloudPlatform(), original.cloudPlatform())) {
-            throw new BadRequestException("Modifying credential platform is forbidden");
-        }
-        credential.setId(original.getId());
-        credential.setOrganization(organizationService.get(organizationId));
-        return create(credential, organizationId);
     }
 
     @Override
@@ -209,16 +155,6 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
             archiveCredential(credential);
         }
         return credential;
-    }
-
-    @Override
-    protected OrganizationResourceRepository<Credential, Long> repository() {
-        return credentialRepository;
-    }
-
-    @Override
-    protected OrganizationResource resource() {
-        return OrganizationResource.CREDENTIAL;
     }
 
     @Override
@@ -246,14 +182,30 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
         return true;
     }
 
-    @Override
-    public Credential getByNameForOrganization(String name, Long organizationId) {
-        try {
-            return super.getByNameForOrganization(name, organizationId);
-        } catch (NotFoundException ignore) {
-            throw accessDenied(String.format("Unable to access credential with name '%s' in organization: %s",
-                    name, organizationService.get(organizationId))).get();
+    public Credential update(Credential credential) {
+        return updateByOrganizationId(getDefaultOrg().getId(), credential);
+    }
+
+    public Credential updateByOrganizationId(Long organizationId, Credential credential) {
+        Credential original = Optional.ofNullable(credentialRepository.findActiveByNameAndOrgId(credential.getName(), organizationId))
+                .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_NAME,
+                        credential.getName(), organizationService.get(organizationId).getName())));
+        if (original.cloudPlatform() != null && !Objects.equals(credential.cloudPlatform(), original.cloudPlatform())) {
+            throw new BadRequestException("Modifying credential platform is forbidden");
         }
+        credential.setId(original.getId());
+        credential.setOrganization(organizationService.get(organizationId));
+        return create(credential, organizationId);
+    }
+
+    @Override
+    protected OrganizationResourceRepository<Credential, Long> repository() {
+        return credentialRepository;
+    }
+
+    @Override
+    protected OrganizationResource resource() {
+        return OrganizationResource.CREDENTIAL;
     }
 
     @Override
@@ -268,6 +220,7 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
         credentialRepository.save(credential);
     }
 
+    @Deprecated
     private Credential saveCredentialAndNotify(Credential credential, ResourceEvent resourceEvent) {
         credential = credentialAdapter.init(credential);
         Credential savedCredential;

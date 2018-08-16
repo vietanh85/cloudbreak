@@ -16,10 +16,8 @@ import org.springframework.stereotype.Component;
 import com.sequenceiq.cloudbreak.api.endpoint.v1.CredentialEndpoint;
 import com.sequenceiq.cloudbreak.api.model.CredentialRequest;
 import com.sequenceiq.cloudbreak.api.model.CredentialResponse;
-import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
 import com.sequenceiq.cloudbreak.common.type.ResourceEvent;
 import com.sequenceiq.cloudbreak.domain.Credential;
-import com.sequenceiq.cloudbreak.service.AuthenticatedUserService;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
 
 @Component
@@ -33,9 +31,6 @@ public class CredentialController extends NotificationController implements Cred
     @Autowired
     private CredentialService credentialService;
 
-    @Autowired
-    private AuthenticatedUserService authenticatedUserService;
-
     @Override
     public CredentialResponse postPrivate(CredentialRequest credentialRequest) {
         return createCredential(credentialRequest, false);
@@ -48,14 +43,12 @@ public class CredentialController extends NotificationController implements Cred
 
     @Override
     public CredentialResponse putPrivate(CredentialRequest credentialRequest) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        return modifyCredential(user, credentialRequest, false);
+        return modifyCredential(credentialRequest, false);
     }
 
     @Override
     public CredentialResponse putPublic(CredentialRequest credentialRequest) {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        return modifyCredential(user, credentialRequest, true);
+        return modifyCredential(credentialRequest, true);
     }
 
     @Override
@@ -109,20 +102,15 @@ public class CredentialController extends NotificationController implements Cred
     }
 
     private Map<String, String> interactiveLogin(CredentialRequest credentialRequest, boolean publicInAccount) {
-        Credential credential = convert(credentialRequest, publicInAccount);
-        return credentialService.interactiveLogin(credential);
+        return credentialService.interactiveLogin(convert(credentialRequest, publicInAccount));
     }
 
     private CredentialResponse createCredential(CredentialRequest credentialRequest, boolean publicInAccount) {
-        Credential credential = convert(credentialRequest, publicInAccount);
-        credential = credentialService.create(credential);
-        return convert(credential);
+        return convert(credentialService.create(convert(credentialRequest, publicInAccount)));
     }
 
-    private CredentialResponse modifyCredential(IdentityUser user, CredentialRequest credentialRequest, boolean publicInAccount) {
-        Credential credential = convert(credentialRequest, publicInAccount);
-        credential = credentialService.modify(user, credential);
-        return convert(credential);
+    private CredentialResponse modifyCredential(CredentialRequest credentialRequest, boolean publicInAccount) {
+        return convert(credentialService.update(convert(credentialRequest, publicInAccount)));
     }
 
     private Credential convert(CredentialRequest json, boolean publicInAccount) {

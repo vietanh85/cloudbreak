@@ -351,7 +351,7 @@ public class StackRequestToBlueprintPreparationObjectConverterTest {
         String account = "testAccount";
         when(cloudStorageValidationUtil.isCloudStorageConfigured(cloudStorageRequest)).thenReturn(true);
         when(user.getAccount()).thenReturn(account);
-        when(credentialService.getActiveCredentialByName(TEST_CREDENTIAL_NAME)).thenReturn(credential);
+        when(credentialService.getByNameForOrganization(TEST_CREDENTIAL_NAME)).thenReturn(credential);
         when(cluster.getCloudStorage()).thenReturn(cloudStorageRequest);
         when(conversionService.convert(cloudStorageRequest, FileSystem.class)).thenReturn(fileSystem);
         when(fileSystemConfigurationProvider.fileSystemConfiguration(fileSystem, source, credential)).thenReturn(expected);

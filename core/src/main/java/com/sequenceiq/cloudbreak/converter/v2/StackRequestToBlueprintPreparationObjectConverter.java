@@ -109,7 +109,7 @@ public class StackRequestToBlueprintPreparationObjectConverter extends AbstractC
     public BlueprintPreparationObject convert(StackV2Request source) {
         try {
             IdentityUser identityUser = cachedUserDetailsService.getDetails(source.getOwner(), UserFilterField.USERID);
-            Credential credential = credentialService.getActiveCredentialByName(source.getGeneral().getCredentialName());
+            Credential credential = credentialService.getByNameForOrganization(source.getGeneral().getCredentialName());
             Optional<FlexSubscription> flexSubscription = getFlexSubscription(source);
             SmartSenseSubscription smartsenseSubscription = flexSubscription.isPresent() ? flexSubscription.get().getSmartSenseSubscription() : null;
             KerberosConfig kerberosConfig = getKerberosConfig(source);

@@ -97,10 +97,10 @@ public class UserProfileService {
     public void put(UserProfileRequest request, IdentityUser user) {
         UserProfile userProfile = getOrCreate(user.getAccount(), user.getUserId(), user.getUsername());
         if (request.getCredentialId() != null) {
-            Credential credential = credentialService.getActiveCredentialById(request.getCredentialId());
+            Credential credential = credentialService.get(request.getCredentialId());
             userProfile.setCredential(credential);
         } else if (request.getCredentialName() != null) {
-            Credential credential = credentialService.getActiveCredentialByName(request.getCredentialName());
+            Credential credential = credentialService.getByNameForOrganization(request.getCredentialName());
             userProfile.setCredential(credential);
         }
         if (request.getImageCatalogName() != null) {

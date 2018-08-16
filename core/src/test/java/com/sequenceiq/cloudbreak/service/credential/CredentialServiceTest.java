@@ -1,6 +1,5 @@
 package com.sequenceiq.cloudbreak.service.credential;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -29,10 +28,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import com.google.common.collect.Sets;
 import com.sequenceiq.cloudbreak.controller.exception.NotFoundException;
 import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
-import com.sequenceiq.cloudbreak.common.model.user.IdentityUserRole;
 import com.sequenceiq.cloudbreak.controller.exception.BadRequestException;
 import com.sequenceiq.cloudbreak.domain.Credential;
 import com.sequenceiq.cloudbreak.domain.Topology;
@@ -44,6 +41,7 @@ import com.sequenceiq.cloudbreak.service.messages.CloudbreakMessagesService;
 import com.sequenceiq.cloudbreak.service.notification.NotificationSender;
 import com.sequenceiq.cloudbreak.service.stack.connector.adapter.ServiceProviderCredentialAdapter;
 import com.sequenceiq.cloudbreak.service.user.UserProfileHandler;
+import org.springframework.security.access.AccessDeniedException;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CredentialServiceTest {
@@ -51,6 +49,8 @@ public class CredentialServiceTest {
     private static final String PLATFORM = "OPENSTACK";
 
     private static final String TEST_CREDENTIAL_NAME = "testCredentialName";
+
+    private static final String TEST_ORGANIZATION_NAME = "test@org.name";
 
     private static final Long DEFAULT_ORG_ID = 1L;
 
@@ -104,9 +104,6 @@ public class CredentialServiceTest {
 
     @Before
     public void init() throws Exception {
-        doNothing().when(notificationSender).send(any());
-        when(credentialAdapter.init(any(Credential.class))).then(invocation -> invocation.getArgument(0));
-
         credentialToModify = new Credential();
         credentialToModify.setId(1L);
         credentialToModify.setCloudPlatform(PLATFORM);
@@ -116,91 +113,13 @@ public class CredentialServiceTest {
         credentialToModify.setDescription(originalDescription);
         originalAttributes = new Json("test");
         credentialToModify.setAttributes(originalAttributes);
-        when(credentialRepository.findByNameAndOrganization(nullable(String.class), nullable(Long.class))).thenReturn(credentialToModify);
         when(credentialRepository.save(any(Credential.class))).then(invocation -> invocation.getArgument(0));
         user = new IdentityUser("asef", "asdf", "asdf", null, "ASdf", "asdf", new Date());
         testCredential = mock(Credential.class);
         when(testCredential.getName()).thenReturn(TEST_CREDENTIAL_NAME);
         when(organizationService.getDefaultOrganizationForCurrentUser()).thenReturn(defaultOrg);
         when(defaultOrg.getId()).thenReturn(DEFAULT_ORG_ID);
-    }
-
-    @Test
-    public void testModifyMapAllField() throws Exception {
-        Credential credential = new Credential();
-        credential.setCloudPlatform(PLATFORM);
-        credential.setTopology(new Topology());
-        credential.setAttributes(new Json("other"));
-        credential.setDescription("mod-desc");
-        Credential modify = credentialService.modify(user, credential);
-        assertEquals(credential.getTopology(), modify.getTopology());
-        assertEquals(credential.getAttributes(), modify.getAttributes());
-        assertEquals(credential.getDescription(), modify.getDescription());
-        assertNotEquals(originalTopology, modify.getTopology());
-        assertNotEquals(originalAttributes, modify.getAttributes());
-        assertNotEquals(originalAttributes, modify.getDescription());
-        assertEquals(credential.cloudPlatform(), modify.cloudPlatform());
-    }
-
-    @Test
-    public void testModifyMapNone() {
-        Credential credential = new Credential();
-        credential.setCloudPlatform(PLATFORM);
-        Credential modify = credentialService.modify(user, credential);
-        assertEquals(credentialToModify.getTopology(), modify.getTopology());
-        assertEquals(credentialToModify.getAttributes(), modify.getAttributes());
-        assertEquals(credentialToModify.getDescription(), modify.getDescription());
-        assertEquals(originalTopology, modify.getTopology());
-        assertEquals(originalAttributes, modify.getAttributes());
-        assertEquals(originalDescription, modify.getDescription());
-        assertEquals(credential.cloudPlatform(), modify.cloudPlatform());
-    }
-
-    @Test
-    public void testModifyDifferentPlatform() {
-        Credential credential = new Credential();
-        credential.setCloudPlatform("BAD");
-
-        thrown.expect(BadRequestException.class);
-        thrown.expectMessage("Modifying credential platform is forbidden");
-
-        credentialService.modify(user, credential);
-    }
-
-    @Test
-    public void testRetrieveAccountCredentialsWhenUserIsAdmin() {
-        IdentityUser user = mock(IdentityUser.class);
-        Set<String> platforms = Sets.newHashSet("AWS");
-        Credential credential = new Credential();
-        credential.setCloudPlatform("AWS");
-
-        when(user.getRoles()).thenReturn(Collections.singletonList(IdentityUserRole.fromString("ADMIN")));
-        when(accountPreferencesService.enabledPlatforms()).thenReturn(platforms);
-        when(credentialRepository.findAllByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms)).thenReturn(Sets.newHashSet(credential));
-
-        Set<Credential> actual = credentialService.retrieveAccountCredentials(user);
-
-        assertEquals("AWS", actual.stream().findFirst().get().cloudPlatform());
-
-        verify(credentialRepository, times(1)).findAllByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms);
-    }
-
-    @Test
-    public void testRetrieveAccountCredentialsWhenUserIsNotAdmin() {
-        IdentityUser user = mock(IdentityUser.class);
-        Set<String> platforms = Sets.newHashSet("AWS");
-        Credential credential = new Credential();
-        credential.setCloudPlatform("AWS");
-
-        when(user.getRoles()).thenReturn(Collections.singletonList(IdentityUserRole.fromString("USER")));
-        when(accountPreferencesService.enabledPlatforms()).thenReturn(platforms);
-        when(credentialRepository.findByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms)).thenReturn(Sets.newHashSet(credential));
-
-        Set<Credential> actual = credentialService.retrieveAccountCredentials(user);
-
-        assertEquals("AWS", actual.stream().findFirst().get().cloudPlatform());
-
-        verify(credentialRepository, times(1)).findByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms);
+        when(defaultOrg.getName()).thenReturn(TEST_ORGANIZATION_NAME);
     }
 
     @Test
@@ -259,7 +178,7 @@ public class CredentialServiceTest {
 
     @Test
     public void testDeleteWhenCredentialIsNullThenNotFoundExceptionShouldCome() {
-        thrown.expect(NotFoundException.class);
+        thrown.expect(AccessDeniedException.class);
 
         credentialService.delete(null);
 

@@ -148,7 +148,7 @@ public class StackRequestValidator implements Validator<StackRequest> {
 
     private void checkEncryptionKeyValidityForInstanceGroupWhenKeysAreListable(InstanceGroupRequest instanceGroupRequest, String credentialName,
                     String region, ValidationResultBuilder validationBuilder) {
-        Credential cred = credentialService.getActiveCredentialByName(credentialName);
+        Credential cred = credentialService.getByNameForOrganization(credentialName);
         Optional<PlatformEncryptionKeysResponse> keys = getEncryptionKeysWithExceptionHandling(cred.getId(), region, cred.getOwner(), cred.getOwner());
         if (keys.isPresent() && !keys.get().getEncryptionKeyConfigs().isEmpty()) {
             if (!instanceGroupRequest.getTemplate().getParameters().containsKey(KEY)) {

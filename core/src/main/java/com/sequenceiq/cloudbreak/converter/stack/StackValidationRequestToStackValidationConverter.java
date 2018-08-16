@@ -93,7 +93,7 @@ public class StackValidationRequestToStackValidationConverter extends AbstractCo
             Credential credential = credentialService.get(stackValidationRequest.getCredentialId());
             stackValidation.setCredential(credential);
         } else if (stackValidationRequest.getCredentialName() != null) {
-            Credential credential = credentialService.getActiveCredentialByName(stackValidationRequest.getCredentialName());
+            Credential credential = credentialService.getByNameForOrganization(stackValidationRequest.getCredentialName());
             stackValidation.setCredential(credential);
         } else if (stackValidationRequest.getCredential() != null) {
             Credential credential = conversionService.convert(stackValidationRequest.getCredential(), Credential.class);
