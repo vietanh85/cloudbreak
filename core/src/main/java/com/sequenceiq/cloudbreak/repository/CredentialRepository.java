@@ -28,16 +28,16 @@ public interface CredentialRepository extends OrganizationResourceRepository<Cre
     Set<Credential> findAllByCloudPlatform(@Param("cloudPlatform") String cloudPlatform);
 
     @CheckPermissionsByOrganizationId(action = READ)
-    @Query("SELECT c FROM Credential c WHERE c.organization.id= :orgId AND c.archived IS FALSE")
-    Set<Credential> findForOrganization(@Param("orgId") Long orgId);
+    @Query("SELECT c FROM Credential c WHERE c.organization.id= :orgId AND c.archived IS FALSE AND cloudPlatform IN (:cloudPlatforms)")
+    Set<Credential> findForOrganization(@Param("orgId") Long orgId, @Param("cloudPlatforms") Collection<String> cloudPlatforms);
 
     @CheckPermissionsByOrganizationId(action = READ, organizationIdIndex = 1)
-    @Query("SELECT c FROM Credential c WHERE c.name= :name AND c.organization.id= :orgId AND c.archived IS FALSE")
-    Credential findActiveByNameAndOrgId(@Param("name") String name, @Param("orgId") Long orgId);
+    @Query("SELECT c FROM Credential c WHERE c.name= :name AND c.organization.id= :orgId AND c.archived IS FALSE AND cloudPlatform IN (:cloudPlatforms)")
+    Credential findActiveByNameAndOrgId(@Param("name") String name, @Param("orgId") Long orgId, @Param("cloudPlatforms") Collection<String> cloudPlatforms);
 
     @CheckPermissionsByOrganizationId(action = READ, organizationIdIndex = 1)
-    @Query("SELECT c FROM Credential c WHERE c.id= :id AND c.organization.id= :orgId AND c.archived IS FALSE")
-    Credential findByIdAndOrganization(@Param("id") Long id, @Param("orgId") Long orgId);
+    @Query("SELECT c FROM Credential c WHERE c.id= :id AND c.organization.id= :orgId AND c.archived IS FALSE AND cloudPlatform IN (:cloudPlatforms)")
+    Credential findByIdAndOrganization(@Param("id") Long id, @Param("orgId") Long orgId, @Param("cloudPlatforms") Collection<String> cloudPlatforms);
 
     Set<Credential> findByTopology(Topology topology);
 }

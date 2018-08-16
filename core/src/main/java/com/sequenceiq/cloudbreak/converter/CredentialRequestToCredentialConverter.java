@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.service.account.AccountPreferencesService;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,12 +26,18 @@ public class CredentialRequestToCredentialConverter extends AbstractConversionSe
     @Inject
     private TopologyService topologyService;
 
+    @Inject
+    private AccountPreferencesService accountPreferencesService;
+
     @Override
     public Credential convert(CredentialRequest source) {
         Credential credential = new Credential();
         credential.setName(source.getName());
         credential.setDescription(source.getDescription());
         String cloudPlatform = source.getCloudPlatform();
+        if (!accountPreferencesService.enabledPlatforms().contains(cloudPlatform)) {
+            throw new BadRequestException(String.format("There is no such cloud platform as '%s'", cloudPlatform));
+        }
         credential.setCloudPlatform(cloudPlatform);
         Map<String, Object> parameters = credentialDefinitionService.processProperties(platform(cloudPlatform), source.getParameters());
         if (parameters != null && !parameters.isEmpty()) {

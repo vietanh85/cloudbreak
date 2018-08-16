@@ -26,8 +26,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.api.model.CloudbreakEventsJson;
-import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
-import com.sequenceiq.cloudbreak.common.model.user.IdentityUserRole;
 import com.sequenceiq.cloudbreak.common.type.APIResourceType;
 import com.sequenceiq.cloudbreak.common.type.ResourceEvent;
 import com.sequenceiq.cloudbreak.controller.exception.BadRequestException;
@@ -82,15 +80,15 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
     private OrganizationService organizationService;
 
     public Set<Credential> listForUsersDefaultOrganization() {
-        return credentialRepository.findForOrganization(getDefaultOrg().getId());
+        return credentialRepository.findForOrganization(getDefaultOrg().getId(), accountPreferencesService.enabledPlatforms());
     }
 
     public Set<Credential> listAvailablesByOrganizationId(Long orgId) {
-        return credentialRepository.findForOrganization(orgId);
+        return credentialRepository.findForOrganization(orgId, accountPreferencesService.enabledPlatforms());
     }
 
     public Credential get(Long id) {
-        return Optional.ofNullable(credentialRepository.findByIdAndOrganization(id, getDefaultOrg().getId()))
+        return Optional.ofNullable(credentialRepository.findByIdAndOrganization(id, getDefaultOrg().getId(), accountPreferencesService.enabledPlatforms()))
                 .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_ID, id, getDefaultOrg().getName())));
     }
 
@@ -109,8 +107,7 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
     }
 
     public Map<String, String> interactiveLogin(Credential credential) {
-        credential.setOrganization(organizationService.getDefaultOrganizationForCurrentUser());
-        return credentialAdapter.interactiveLogin(credential);
+        return interactiveLogin(getDefaultOrg().getId(), credential);
     }
 
     public Map<String, String> interactiveLogin(Long organizationId, Credential credential) {
@@ -119,8 +116,8 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
     }
 
     @Retryable(value = BadRequestException.class, maxAttempts = 30, backoff = @Backoff(delay = 2000))
-    public Credential createWithRetry(Credential credential) {
-        return create(credential);
+    public void createWithRetry(Credential credential) {
+        create(credential);
     }
 
     public Credential create(Credential credential) {
@@ -131,19 +128,20 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
 
     @Override
     public Credential create(Credential credential, Long orgId) {
+        checkCredentialCloudPlatform(credential.cloudPlatform());
         return super.create(credentialAdapter.init(credential), orgId);
     }
 
     public void delete(Long id) {
         Credential credential = Optional.ofNullable(
-                credentialRepository.findByIdAndOrganization(id, getDefaultOrg().getId()))
+                credentialRepository.findByIdAndOrganization(id, getDefaultOrg().getId(), accountPreferencesService.enabledPlatforms()))
                 .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_ID, id, getDefaultOrg().getName())));
         delete(credential);
     }
 
     public void delete(String name) {
         Credential credential = Optional.ofNullable(
-                credentialRepository.findActiveByNameAndOrgId(name, getDefaultOrg().getId()))
+                credentialRepository.findActiveByNameAndOrgId(name, getDefaultOrg().getId(), accountPreferencesService.enabledPlatforms()))
                 .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_NAME, name, getDefaultOrg().getName())));
         delete(credential);
     }
@@ -187,7 +185,9 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
     }
 
     public Credential updateByOrganizationId(Long organizationId, Credential credential) {
-        Credential original = Optional.ofNullable(credentialRepository.findActiveByNameAndOrgId(credential.getName(), organizationId))
+        checkCredentialCloudPlatform(credential.cloudPlatform());
+        Credential original = Optional.ofNullable(
+                credentialRepository.findActiveByNameAndOrgId(credential.getName(), organizationId, accountPreferencesService.enabledPlatforms()))
                 .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_NAME,
                         credential.getName(), organizationService.get(organizationId).getName())));
         if (original.cloudPlatform() != null && !Objects.equals(credential.cloudPlatform(), original.cloudPlatform())) {
@@ -248,6 +248,12 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
 
     private Supplier<AccessDeniedException> accessDenied(String accessDeniedMessage) {
         return () -> new AccessDeniedException(accessDeniedMessage);
+    }
+
+    private void checkCredentialCloudPlatform(String cloudPlatform) {
+        if (!accountPreferencesService.enabledPlatforms().contains(cloudPlatform)) {
+            throw new BadRequestException(String.format("There is no such cloud platform as '%s'", cloudPlatform));
+        }
     }
 
     private Organization getDefaultOrg() {

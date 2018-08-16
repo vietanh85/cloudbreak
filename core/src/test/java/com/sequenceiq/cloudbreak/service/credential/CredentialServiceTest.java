@@ -3,9 +3,7 @@ package com.sequenceiq.cloudbreak.service.credential;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -180,7 +178,7 @@ public class CredentialServiceTest {
     public void testDeleteWhenCredentialIsNullThenNotFoundExceptionShouldCome() {
         thrown.expect(AccessDeniedException.class);
 
-        credentialService.delete(null);
+        credentialService.delete(DEFAULT_ORG_ID);
 
         verify(stackRepository, times(0)).findByCredential(any(Credential.class));
         verify(userProfileHandler, times(0)).destroyProfileCredentialPreparation(testCredential);
