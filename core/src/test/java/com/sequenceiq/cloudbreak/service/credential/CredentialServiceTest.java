@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.Set;
 
 import com.sequenceiq.cloudbreak.domain.organization.Organization;
@@ -27,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.sequenceiq.cloudbreak.controller.exception.NotFoundException;
-import com.sequenceiq.cloudbreak.common.model.user.IdentityUser;
 import com.sequenceiq.cloudbreak.controller.exception.BadRequestException;
 import com.sequenceiq.cloudbreak.domain.Credential;
 import com.sequenceiq.cloudbreak.domain.Topology;
@@ -90,8 +88,6 @@ public class CredentialServiceTest {
 
     private Credential credentialToModify;
 
-    private IdentityUser user;
-
     private Topology originalTopology;
 
     private String originalDescription;
@@ -112,7 +108,6 @@ public class CredentialServiceTest {
         originalAttributes = new Json("test");
         credentialToModify.setAttributes(originalAttributes);
         when(credentialRepository.save(any(Credential.class))).then(invocation -> invocation.getArgument(0));
-        user = new IdentityUser("asef", "asdf", "asdf", null, "ASdf", "asdf", new Date());
         testCredential = mock(Credential.class);
         when(testCredential.getName()).thenReturn(TEST_CREDENTIAL_NAME);
         when(organizationService.getDefaultOrganizationForCurrentUser()).thenReturn(defaultOrg);

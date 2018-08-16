@@ -1,7 +1,6 @@
 package com.sequenceiq.cloudbreak.service.credential;
 
 import static com.sequenceiq.cloudbreak.util.NameUtil.generateArchiveName;
-import static com.sequenceiq.cloudbreak.util.SqlUtil.getProperSqlErrorMessage;
 
 import java.util.Date;
 import java.util.Map;
@@ -19,14 +18,12 @@ import com.sequenceiq.cloudbreak.repository.OrganizationResourceRepository;
 import com.sequenceiq.cloudbreak.service.AbstractOrganizationAwareResourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.api.model.CloudbreakEventsJson;
-import com.sequenceiq.cloudbreak.common.type.APIResourceType;
 import com.sequenceiq.cloudbreak.common.type.ResourceEvent;
 import com.sequenceiq.cloudbreak.controller.exception.BadRequestException;
 import com.sequenceiq.cloudbreak.domain.Credential;
@@ -115,6 +112,26 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
         return credentialAdapter.interactiveLogin(credential);
     }
 
+    public Credential update(Credential credential) {
+        return updateByOrganizationId(getDefaultOrg().getId(), credential);
+    }
+
+    public Credential updateByOrganizationId(Long organizationId, Credential credential) {
+        checkCredentialCloudPlatform(credential.cloudPlatform());
+        Credential original = Optional.ofNullable(
+                credentialRepository.findActiveByNameAndOrgId(credential.getName(), organizationId, accountPreferencesService.enabledPlatforms()))
+                .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_NAME,
+                        credential.getName(), organizationService.get(organizationId).getName())));
+        if (original.cloudPlatform() != null && !Objects.equals(credential.cloudPlatform(), original.cloudPlatform())) {
+            throw new BadRequestException("Modifying credential platform is forbidden");
+        }
+        credential.setId(original.getId());
+        credential.setOrganization(organizationService.get(organizationId));
+        Credential updated = super.create(credentialAdapter.init(credential), organizationId);
+        sendCredentialNotification(credential, ResourceEvent.CREDENTIAL_MODIFIED);
+        return updated;
+    }
+
     @Retryable(value = BadRequestException.class, maxAttempts = 30, backoff = @Backoff(delay = 2000))
     public void createWithRetry(Credential credential) {
         create(credential);
@@ -129,7 +146,9 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
     @Override
     public Credential create(Credential credential, Long orgId) {
         checkCredentialCloudPlatform(credential.cloudPlatform());
-        return super.create(credentialAdapter.init(credential), orgId);
+        Credential created = super.create(credentialAdapter.init(credential), orgId);
+        sendCredentialNotification(credential, ResourceEvent.CREDENTIAL_CREATED);
+        return created;
     }
 
     public void delete(Long id) {
@@ -149,14 +168,17 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
     @Override
     public Credential delete(Credential credential) {
         if (canDelete(credential)) {
+            LOGGER.info(String.format("Starting to delete credential [name: %s, organization: %s]", credential.getName(), getDefaultOrg().getName()));
             userProfileHandler.destroyProfileCredentialPreparation(credential);
             archiveCredential(credential);
+            sendCredentialNotification(credential, ResourceEvent.CREDENTIAL_DELETED);
         }
         return credential;
     }
 
     @Override
     protected boolean canDelete(Credential credential) {
+        LOGGER.info("Checking whether the desired credential is able to delete or not.");
         if (credential == null) {
             throw new NotFoundException("Credential not found.");
         }
@@ -178,24 +200,6 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
             throw new BadRequestException(String.format(message, credential.getName(), clusters));
         }
         return true;
-    }
-
-    public Credential update(Credential credential) {
-        return updateByOrganizationId(getDefaultOrg().getId(), credential);
-    }
-
-    public Credential updateByOrganizationId(Long organizationId, Credential credential) {
-        checkCredentialCloudPlatform(credential.cloudPlatform());
-        Credential original = Optional.ofNullable(
-                credentialRepository.findActiveByNameAndOrgId(credential.getName(), organizationId, accountPreferencesService.enabledPlatforms()))
-                .orElseThrow(accessDenied(String.format(ACCESS_DENIED_FORMAT_MESS_NAME,
-                        credential.getName(), organizationService.get(organizationId).getName())));
-        if (original.cloudPlatform() != null && !Objects.equals(credential.cloudPlatform(), original.cloudPlatform())) {
-            throw new BadRequestException("Modifying credential platform is forbidden");
-        }
-        credential.setId(original.getId());
-        credential.setOrganization(organizationService.get(organizationId));
-        return create(credential, organizationId);
     }
 
     @Override
@@ -220,28 +224,11 @@ public class CredentialService extends AbstractOrganizationAwareResourceService<
         credentialRepository.save(credential);
     }
 
-    @Deprecated
-    private Credential saveCredentialAndNotify(Credential credential, ResourceEvent resourceEvent) {
-        credential = credentialAdapter.init(credential);
-        Credential savedCredential;
-        try {
-            savedCredential = credentialRepository.save(credential);
-            userProfileHandler.createProfilePreparation(credential);
-            sendCredentialNotification(credential, resourceEvent);
-        } catch (DataIntegrityViolationException ex) {
-            String msg = String.format("Error with resource [%s], %s", APIResourceType.CREDENTIAL, getProperSqlErrorMessage(ex));
-            throw new BadRequestException(msg);
-        }
-        return savedCredential;
-    }
-
     private void sendCredentialNotification(Credential credential, ResourceEvent resourceEvent) {
         CloudbreakEventsJson notification = new CloudbreakEventsJson();
         notification.setEventType(resourceEvent.name());
         notification.setEventTimestamp(new Date().getTime());
         notification.setEventMessage(messagesService.getMessage(resourceEvent.getMessage()));
-        notification.setOwner(credential.getOwner());
-        notification.setAccount(credential.getAccount());
         notification.setCloud(credential.cloudPlatform());
         notificationSender.send(new Notification<>(notification));
     }
