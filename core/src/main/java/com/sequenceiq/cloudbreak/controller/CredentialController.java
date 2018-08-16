@@ -62,9 +62,7 @@ public class CredentialController extends NotificationController implements Cred
 
     @Override
     public Set<CredentialResponse> getPrivates() {
-        IdentityUser user = authenticatedUserService.getCbUser();
-        Set<Credential> credentials = credentialService.retrievePrivateCredentials(user);
-        return convertCredentials(credentials);
+        return convertCredentials(credentialService.retrievePrivateCredentials());
     }
 
     @Override
@@ -96,17 +94,17 @@ public class CredentialController extends NotificationController implements Cred
 
     @Override
     public void delete(Long id) {
-        executeAndNotify(user -> credentialService.delete(id, user), ResourceEvent.CREDENTIAL_DELETED);
+        executeAndNotify(user -> credentialService.delete(id), ResourceEvent.CREDENTIAL_DELETED);
     }
 
     @Override
     public void deletePublic(String name) {
-        executeAndNotify(user -> credentialService.delete(name, user), ResourceEvent.CREDENTIAL_DELETED);
+        executeAndNotify(user -> credentialService.delete(name), ResourceEvent.CREDENTIAL_DELETED);
     }
 
     @Override
     public void deletePrivate(String name) {
-        executeAndNotify(user -> credentialService.delete(name, user), ResourceEvent.CREDENTIAL_DELETED);
+        executeAndNotify(user -> credentialService.delete(name), ResourceEvent.CREDENTIAL_DELETED);
     }
 
     @Override

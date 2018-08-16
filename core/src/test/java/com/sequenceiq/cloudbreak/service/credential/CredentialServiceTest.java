@@ -16,8 +16,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Set;
 
+import com.sequenceiq.cloudbreak.api.model.v2.OrganizationStatus;
+import com.sequenceiq.cloudbreak.domain.organization.Organization;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.repository.StackRepository;
+import com.sequenceiq.cloudbreak.service.organization.OrganizationService;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,6 +53,8 @@ public class CredentialServiceTest {
 
     private static final String TEST_CREDENTIAL_NAME = "testCredentialName";
 
+    private static final Long DEFAULT_ORG_ID = 1L;
+
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
 
@@ -76,6 +81,12 @@ public class CredentialServiceTest {
 
     @Mock
     private StackRepository stackRepository;
+
+    @Mock
+    private OrganizationService organizationService;
+
+    @Mock
+    private Organization defaultOrg;
 
     @InjectMocks
     private final CredentialService credentialService = new CredentialService();
@@ -106,11 +117,14 @@ public class CredentialServiceTest {
         credentialToModify.setDescription(originalDescription);
         originalAttributes = new Json("test");
         credentialToModify.setAttributes(originalAttributes);
-        when(credentialRepository.findByNameInUser(nullable(String.class), nullable(String.class))).thenReturn(credentialToModify);
+        when(credentialRepository.findByNameAndOrganization(nullable(String.class), nullable(Long.class))).thenReturn(credentialToModify);
         when(credentialRepository.save(any(Credential.class))).then(invocation -> invocation.getArgument(0));
         user = new IdentityUser("asef", "asdf", "asdf", null, "ASdf", "asdf", new Date());
         testCredential = mock(Credential.class);
         when(testCredential.getName()).thenReturn(TEST_CREDENTIAL_NAME);
+        when(organizationService.getDefaultOrganizationForCurrentUser()).thenReturn(defaultOrg);
+        when(defaultOrg.getId()).thenReturn(DEFAULT_ORG_ID);
+        when(defaultOrg.getStatus()).thenReturn(OrganizationStatus.ACTIVE);
     }
 
     @Test
@@ -163,15 +177,14 @@ public class CredentialServiceTest {
         credential.setCloudPlatform("AWS");
 
         when(user.getRoles()).thenReturn(Collections.singletonList(IdentityUserRole.fromString("ADMIN")));
-        when(user.getAccount()).thenReturn("account");
         when(accountPreferencesService.enabledPlatforms()).thenReturn(platforms);
-        when(credentialRepository.findAllInAccountAndFilterByPlatforms(user.getAccount(), platforms)).thenReturn(Sets.newHashSet(credential));
+        when(credentialRepository.findAllByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms)).thenReturn(Sets.newHashSet(credential));
 
         Set<Credential> actual = credentialService.retrieveAccountCredentials(user);
 
         assertEquals("AWS", actual.stream().findFirst().get().cloudPlatform());
 
-        verify(credentialRepository, times(1)).findAllInAccountAndFilterByPlatforms("account", platforms);
+        verify(credentialRepository, times(1)).findAllByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms);
     }
 
     @Test
@@ -182,16 +195,14 @@ public class CredentialServiceTest {
         credential.setCloudPlatform("AWS");
 
         when(user.getRoles()).thenReturn(Collections.singletonList(IdentityUserRole.fromString("USER")));
-        when(user.getAccount()).thenReturn("account");
-        when(user.getUserId()).thenReturn("userId");
         when(accountPreferencesService.enabledPlatforms()).thenReturn(platforms);
-        when(credentialRepository.findPublicInAccountForUserFilterByPlatforms("userId", "account", platforms)).thenReturn(Sets.newHashSet(credential));
+        when(credentialRepository.findByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms)).thenReturn(Sets.newHashSet(credential));
 
         Set<Credential> actual = credentialService.retrieveAccountCredentials(user);
 
         assertEquals("AWS", actual.stream().findFirst().get().cloudPlatform());
 
-        verify(credentialRepository, times(1)).findPublicInAccountForUserFilterByPlatforms("userId", "account", platforms);
+        verify(credentialRepository, times(1)).findByOrganizationFilterByPlatforms(DEFAULT_ORG_ID, platforms);
     }
 
     @Test
@@ -252,7 +263,7 @@ public class CredentialServiceTest {
     public void testDeleteWhenCredentialIsNullThenNotFoundExceptionShouldCome() {
         thrown.expect(NotFoundException.class);
 
-        credentialService.delete(null);
+        credentialService.delete(0L);
 
         verify(stackRepository, times(0)).findByCredential(any(Credential.class));
         verify(userProfileHandler, times(0)).destroyProfileCredentialPreparation(testCredential);

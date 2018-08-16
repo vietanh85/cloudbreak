@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.api.model.users.OrganizationResourceResponse;
 import org.springframework.stereotype.Component;
 
 import com.sequenceiq.cloudbreak.api.model.CredentialResponse;
@@ -44,6 +45,8 @@ public class CredentialToCredentialResponseConverter extends AbstractConversionS
             credentialJson.setTopologyId(source.getTopology().getId());
         }
         coverSensitiveData(credentialJson);
+        OrganizationResourceResponse organization = getConversionService().convert(source.getOrganization(), OrganizationResourceResponse.class);
+        credentialJson.setOrganization(organization);
         return credentialJson;
     }
 

@@ -89,7 +89,7 @@ public class StackV2RequestToStackRequestConverterTest {
         credentialService = mock(CredentialService.class);
         MockitoAnnotations.initMocks(this);
         when(authenticatedUserService.getCbUser()).thenReturn(cbUser);
-        when(credentialService.get(anyString(), any())).thenReturn(credential);
+        when(credentialService.getActiveCredentialByName(anyString())).thenReturn(credential);
         when(credential.cloudPlatform()).thenReturn(CLOUD_PLATFORM);
         when(conversionService.convert(any(NetworkV2Request.class), any())).thenReturn(NETWORK_REQUEST);
     }

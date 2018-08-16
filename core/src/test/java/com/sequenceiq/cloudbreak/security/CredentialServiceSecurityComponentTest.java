@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -17,12 +18,18 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.domain.organization.Organization;
+import com.sequenceiq.cloudbreak.security.CredentialServiceSecurityComponentTest.TestConfig;
+import com.sequenceiq.cloudbreak.security.HasPermissionAspectForMockitoTest.StubbingDeactivator;
+import com.sequenceiq.cloudbreak.security.SecurityComponentTestBase.SecurityComponentTestBaseConfig;
+import com.sequenceiq.cloudbreak.service.TransactionService;
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
@@ -48,7 +55,7 @@ import com.sequenceiq.cloudbreak.service.user.UserProfileHandler;
 import com.sequenceiq.cloudbreak.service.user.UserProfileService;
 import com.sequenceiq.cloudbreak.service.user.UserService;
 
-@SpringBootTest(classes = CredentialServiceSecurityComponentTest.TestConfig.class)
+@SpringBootTest(classes = TestConfig.class)
 public class CredentialServiceSecurityComponentTest extends SecurityComponentTestBase {
 
     @Inject
@@ -70,17 +77,20 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     private HasPermissionServiceForMockitoTest hasPermissionServiceForMockitoTest;
 
     @Inject
+    private OrganizationService organizationService;
+
+    @Inject
     private StackService stackService;
 
     @Test
     public void testRetrievePrivateCredential() throws Exception {
         Set<Credential> credentials = new HashSet<>(Collections.singleton(getACredential()));
-        when(credentialRepository.findForUser(anyString())).thenReturn(credentials);
+        when(credentialRepository.findForOrganization(nullable(Long.class))).thenReturn(credentials);
         IdentityUser loggedInUser = getOwner(false);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.retrievePrivateCredentials(loggedInUser);
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.retrievePrivateCredentials();
         }
 
         verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(credentials), eq(PERMISSION_READ));
@@ -89,11 +99,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test
     public void testRetrieveAccountCredentialsForAdmin() throws Exception {
         Set<Credential> credentials = new HashSet<>(Arrays.asList(getACredential(), getACredential(USER_B_ID, false)));
-        when(credentialRepository.findAllInAccountAndFilterByPlatforms(anyString(), any())).thenReturn(credentials);
+        when(credentialRepository.findAllByOrganizationFilterByPlatforms(nullable(Long.class), any())).thenReturn(credentials);
         IdentityUser loggedInUser = getOwner(true);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.retrieveAccountCredentials(loggedInUser);
         }
 
@@ -103,11 +113,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test
     public void testRetrieveAccountCredentialsForUser() throws Exception {
         Set<Credential> credentials = new HashSet<>(Arrays.asList(getACredential(), getACredential(USER_B_ID, true)));
-        when(credentialRepository.findPublicInAccountForUserFilterByPlatforms(anyString(), anyString(), any())).thenReturn(credentials);
+        when(credentialRepository.findByOrganizationFilterByPlatforms(nullable(Long.class), any())).thenReturn(credentials);
         IdentityUser loggedInUser = getOwner(false);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.retrieveAccountCredentials(loggedInUser);
         }
 
@@ -120,7 +130,7 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.of(credential));
         setupLoggedInUser(getUserFromDifferentAccount(true));
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.get(1L);
 
         } catch (AccessDeniedException e) {
@@ -134,7 +144,7 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
         when(credentialRepository.findById(anyLong())).thenReturn(Optional.empty());
         setupLoggedInUser(getAUser());
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.get(1L);
 
         } catch (AccessDeniedException e) {
@@ -146,11 +156,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testGetByIdAndAccountNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential();
-        when(credentialRepository.findByIdInAccount(anyLong(), anyString())).thenReturn(credential);
+        when(credentialRepository.findByIdAndOrganization(anyLong(), nullable(Long.class))).thenReturn(credential);
         setupLoggedInUser(getUserFromDifferentAccount(true));
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.get(1L, "account");
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.getActiveCredentialById(1L);
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(credential), eq(PERMISSION_READ));
@@ -160,11 +170,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
 
     @Test(expected = AccessDeniedException.class)
     public void testGetByIdAndAccountThrowsWhenNotFound() throws Exception {
-        when(credentialRepository.findByIdInAccount(anyLong(), anyString())).thenReturn(null);
+        when(credentialRepository.findByIdAndOrganization(anyLong(), nullable(Long.class))).thenReturn(null);
         setupLoggedInUser(getAUser());
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.get(1L, "account");
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.getActiveCredentialById(1L);
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(null), eq(PERMISSION_READ));
@@ -175,11 +185,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testGetByNameAndAccountNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential();
-        when(credentialRepository.findOneByName(anyString(), anyString())).thenReturn(credential);
+        when(credentialRepository.findOneByName(anyString(), nullable(Long.class))).thenReturn(credential);
         setupLoggedInUser(getUserFromDifferentAccount(true));
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.get("name", "account");
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.getActiveCredentialByName("name");
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(credential), eq(PERMISSION_READ));
@@ -189,11 +199,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
 
     @Test(expected = AccessDeniedException.class)
     public void testGetByNameAndAccountThrowsWhenNotFound() throws Exception {
-        when(credentialRepository.findOneByName(anyString(), anyString())).thenReturn(null);
+        when(credentialRepository.findOneByName(anyString(), nullable(Long.class))).thenReturn(null);
         setupLoggedInUser(getAUser());
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.get("name", "account");
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.getActiveCredentialByName("name");
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(null), eq(PERMISSION_READ));
@@ -208,7 +218,7 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
         IdentityUser loggedInUser = getAUser();
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.create(loggedInUser, credential);
         }
 
@@ -222,8 +232,8 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
         IdentityUser loggedInUser = getAUser();
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.create(loggedInUser.getUserId(), loggedInUser.getAccount(), credential, loggedInUser);
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.create(credential);
         }
 
         verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(credential), eq(PERMISSION_WRITE));
@@ -232,11 +242,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testGetPublicCredentialNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential();
-        when(credentialRepository.findOneByName(anyString(), anyString())).thenReturn(credential);
+        when(credentialRepository.findOneByName(anyString(), nullable(Long.class))).thenReturn(credential);
         IdentityUser loggedInUser = getUserFromDifferentAccount(true);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.getPublicCredential("name", loggedInUser);
 
         } catch (AccessDeniedException e) {
@@ -247,11 +257,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
 
     @Test(expected = AccessDeniedException.class)
     public void testGetPublicCredentialThrowsWhenNotFound() throws Exception {
-        when(credentialRepository.findOneByName(anyString(), anyString())).thenReturn(null);
+        when(credentialRepository.findOneByName(anyString(), nullable(Long.class))).thenReturn(null);
         IdentityUser loggedInUser = getAUser();
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.getPublicCredential("name", loggedInUser);
 
         } catch (AccessDeniedException e) {
@@ -263,11 +273,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testGetPrivateCredentialNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential();
-        when(credentialRepository.findByNameInUser(anyString(), anyString())).thenReturn(credential);
+        when(credentialRepository.findByNameAndOrganization(anyString(), nullable(Long.class))).thenReturn(credential);
         IdentityUser loggedInUser = getUserFromDifferentAccount(true);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.getPrivateCredential("name", loggedInUser);
 
         } catch (AccessDeniedException e) {
@@ -278,11 +288,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
 
     @Test(expected = AccessDeniedException.class)
     public void testGetPrivateCredentialThrowsWhenNotFound() throws Exception {
-        when(credentialRepository.findByNameInUser(anyString(), anyString())).thenReturn(null);
+        when(credentialRepository.findByNameAndOrganization(anyString(), nullable(Long.class))).thenReturn(null);
         IdentityUser loggedInUser = getAUser();
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.getPrivateCredential("name", loggedInUser);
 
         } catch (AccessDeniedException e) {
@@ -294,11 +304,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testModifyWithPrivateCredentialNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential();
-        when(credentialRepository.findByNameInUser(anyString(), anyString())).thenReturn(credential);
+        when(credentialRepository.findByNameAndOrganization(anyString(), nullable(Long.class))).thenReturn(credential);
         IdentityUser loggedInUser = getUserFromDifferentAccount(true);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.modify(loggedInUser, credential);
 
         } catch (AccessDeniedException e) {
@@ -310,11 +320,11 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testModifyWithPublicCredentialNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential(true);
-        when(credentialRepository.findOneByName(anyString(), anyString())).thenReturn(credential);
+        when(credentialRepository.findOneByName(anyString(), nullable(Long.class))).thenReturn(credential);
         IdentityUser loggedInUser = getUserFromDifferentAccount(true);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
             underTest.modify(loggedInUser, credential);
 
         } catch (AccessDeniedException e) {
@@ -326,12 +336,12 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testDeleteByIdNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential();
-        when(credentialRepository.findByIdInAccount(anyLong(), anyString())).thenReturn(credential);
+        when(credentialRepository.findByIdAndOrganization(anyLong(), nullable(Long.class))).thenReturn(credential);
         IdentityUser loggedInUser = getUserFromDifferentAccount(true);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.delete(1L, loggedInUser);
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.delete(1L);
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(credential), eq(PERMISSION_READ));
@@ -342,12 +352,12 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
 
     @Test(expected = AccessDeniedException.class)
     public void testDeleteByIdThrowsWhenNotFound() throws Exception {
-        when(credentialRepository.findByIdInAccount(anyLong(), anyString())).thenReturn(null);
+        when(credentialRepository.findByIdAndOrganization(anyLong(), nullable(Long.class))).thenReturn(null);
         IdentityUser loggedInUser = getAUser();
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.delete(1L, loggedInUser);
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.delete(1L);
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(null), eq(PERMISSION_READ));
@@ -358,12 +368,12 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     @Test(expected = AccessDeniedException.class)
     public void testDeleteByNameNotAccessibleForUserOfDifferentAccount() throws Exception {
         Credential credential = getACredential();
-        when(credentialRepository.findByNameInAccount(anyString(), anyString(), anyString())).thenReturn(credential);
+        when(credentialRepository.findPublicByNameByOrganization(anyString(), nullable(Long.class))).thenReturn(credential);
         IdentityUser loggedInUser = getUserFromDifferentAccount(true);
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.delete("credentialName", loggedInUser);
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.delete("credentialName");
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(credential), eq(PERMISSION_READ));
@@ -374,12 +384,14 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
 
     @Test(expected = AccessDeniedException.class)
     public void testDeleteByNameThrowsWhenNotFound() throws Exception {
-        when(credentialRepository.findByNameInAccount(anyString(), anyString(), anyString())).thenReturn(null);
+        var defOrg = mock(Organization.class);
+        when(organizationService.getDefaultOrganizationForCurrentUser()).thenReturn(defOrg);
+        when(credentialRepository.findPublicByNameByOrganization(anyString(), nullable(Long.class))).thenReturn(null);
         IdentityUser loggedInUser = getAUser();
         setupLoggedInUser(loggedInUser);
 
-        try (HasPermissionAspectForMockitoTest.StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
-            underTest.delete("credentialName", loggedInUser);
+        try (StubbingDeactivator deactivator = hasPermissionAspectForMockitoTest.new StubbingDeactivator()) {
+            underTest.delete("credentialName");
 
         } catch (AccessDeniedException e) {
             verify(ownerBasedPermissionEvaluator).hasPermission(any(), eq(null), eq(PERMISSION_READ));
@@ -405,18 +417,13 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
     }
 
     @Configuration
-    @ComponentScan(basePackages =
-            {"com.sequenceiq.cloudbreak"},
-            useDefaultFilters = false,
-            includeFilters = {
-                    @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
-                            CredentialService.class,
-                            UserProfileHandler.class,
-                            UserProfileService.class,
-                    })
-            })
+    @ComponentScan(basePackages = "com.sequenceiq.cloudbreak", useDefaultFilters = false, includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, value = {
+            CredentialService.class,
+            UserProfileHandler.class,
+            UserProfileService.class,
+    }))
     @EnableAspectJAutoProxy(proxyTargetClass = true)
-    public static class TestConfig extends SecurityComponentTestBase.SecurityComponentTestBaseConfig {
+    public static class TestConfig extends SecurityComponentTestBaseConfig {
         @MockBean
         private UserProfileRepository userProfileRepository;
 
@@ -452,6 +459,9 @@ public class CredentialServiceSecurityComponentTest extends SecurityComponentTes
 
         @MockBean
         private ImageCatalogService imageCatalogService;
+
+        @MockBean
+        private TransactionService transactionService;
 
         @Bean
         public CredentialRepository credentialRepository() {
