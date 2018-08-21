@@ -96,6 +96,11 @@ cb:
     defaultQueue: "default"
     defaultLifeTime: -1
 
+  k8s:
+    domain: default.com
+    defaultNameSpace: "default"
+    defaultLifeTime: -1
+
   blueprint:
      defaults: >
                 EDW-ETL: Apache Hive, Apache Spark 2=hdp26-etl-edw-spark2;
@@ -141,7 +146,8 @@ cb:
     gcp.resource.name.length: 63
     aws.resource.name.length: 50
     openstack.resource.name.length: 120
-    yarn.resource.name.length: 63
+    yarn.resource.name.length: 120
+    k8s.resource.name.length: 120
 
     salt.new.service.retry: 90
     salt.recipe.execution.retry: 90
@@ -153,7 +159,7 @@ cb:
 
   platform.default:
     variants: OPENSTACK:HEAT
-    regions: AWS:eu-west-1,AZURE:North Europe,GCP:europe-west1,YARN:default,CUMULUS_YARN:default,MOCK:USA
+    regions: AWS:eu-west-1,AZURE:North Europe,GCP:europe-west1,YARN:default,CUMULUS_YARN:default,K8S:default,MOCK:USA
 
   gcp:
     hostkey.verify: false
