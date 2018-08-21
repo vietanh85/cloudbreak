@@ -58,7 +58,8 @@ public class HostGroupDecorator {
     @Inject
     private ClusterService clusterService;
 
-    public HostGroup decorate(HostGroup subject, HostGroupRequest hostGroupRequest, Stack stack, boolean postRequest, Organization organization, User user) {
+    public HostGroup decorate(HostGroup subject, HostGroupRequest hostGroupRequest, Stack stack,
+            boolean postRequest, Organization organization, User user) {
         ConstraintJson constraintJson = hostGroupRequest.getConstraint();
         Set<Long> recipeIds = hostGroupRequest.getRecipeIds();
         Set<RecipeRequest> recipes = hostGroupRequest.getRecipes();
