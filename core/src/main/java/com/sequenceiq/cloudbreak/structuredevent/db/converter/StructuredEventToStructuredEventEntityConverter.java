@@ -9,6 +9,7 @@ import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConvert
 import com.sequenceiq.cloudbreak.domain.StructuredEventEntity;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.service.organization.OrganizationService;
+import com.sequenceiq.cloudbreak.service.user.UserService;
 import com.sequenceiq.cloudbreak.structuredevent.event.OperationDetails;
 import com.sequenceiq.cloudbreak.structuredevent.event.StructuredEvent;
 
@@ -17,6 +18,9 @@ public class StructuredEventToStructuredEventEntityConverter extends AbstractCon
 
     @Inject
     private OrganizationService organizationService;
+
+    @Inject
+    private UserService userService;
 
     @Override
     public StructuredEventEntity convert(StructuredEvent source) {
@@ -31,6 +35,7 @@ public class StructuredEventToStructuredEventEntityConverter extends AbstractCon
             structuredEventEntity.setOwner(operationDetails.getUserId());
             structuredEventEntity.setOrganization(organizationService.getByIdWithoutPermissionCheck(source.getOrgId()));
             structuredEventEntity.setStructuredEventJson(new Json(source));
+            structuredEventEntity.setUser(userService.getByUserId(operationDetails.getUserIdV3()));
             return structuredEventEntity;
         } catch (JsonProcessingException e) {
             // TODO What should we do in case of json processing error

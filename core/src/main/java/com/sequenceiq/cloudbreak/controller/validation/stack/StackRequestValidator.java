@@ -30,8 +30,10 @@ import com.sequenceiq.cloudbreak.domain.Credential;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.repository.StackRepository;
+import com.sequenceiq.cloudbreak.service.RestRequestThreadLocalService;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
+import com.sequenceiq.cloudbreak.service.organization.OrganizationService;
 
 @Component
 public class StackRequestValidator implements Validator<StackRequest> {
@@ -51,6 +53,12 @@ public class StackRequestValidator implements Validator<StackRequest> {
 
     @Inject
     private CredentialService credentialService;
+
+    @Inject
+    private OrganizationService organizationService;
+
+    @Inject
+    private RestRequestThreadLocalService restRequestThreadLocalService;
 
     private final Validator<TemplateRequest> templateRequestValidator;
 
@@ -148,7 +156,12 @@ public class StackRequestValidator implements Validator<StackRequest> {
 
     private void checkEncryptionKeyValidityForInstanceGroupWhenKeysAreListable(InstanceGroupRequest instanceGroupRequest, String credentialName,
                     String region, ValidationResultBuilder validationBuilder) {
-        Credential cred = credentialService.getByNameFromUsersDefaultOrganization(credentialName);
+
+        Long orgId = restRequestThreadLocalService.getRequestedOrgId();
+        if (orgId == null) {
+            orgId = organizationService.getDefaultOrganizationForCurrentUser().getId();
+        }
+        Credential cred = credentialService.getByNameForOrganizationId(credentialName, orgId);
         Optional<PlatformEncryptionKeysResponse> keys = getEncryptionKeysWithExceptionHandling(cred.getId(), region, cred.getOwner(), cred.getOwner());
         if (keys.isPresent() && !keys.get().getEncryptionKeyConfigs().isEmpty()) {
             if (!instanceGroupRequest.getTemplate().getParameters().containsKey(KEY)) {
