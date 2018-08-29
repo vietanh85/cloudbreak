@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupType;
 import com.sequenceiq.cloudbreak.blueprint.ConfigProperty;
 import com.sequenceiq.cloudbreak.blueprint.ServiceConfig;
-import com.sequenceiq.cloudbreak.blueprint.template.views.HostgroupView;
+import com.sequenceiq.cloudbreak.template.views.HostgroupView;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigUtilsTest {

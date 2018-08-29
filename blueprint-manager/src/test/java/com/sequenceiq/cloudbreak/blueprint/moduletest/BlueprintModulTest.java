@@ -54,8 +54,8 @@ import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.TestContextManager;
 
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject;
 import com.sequenceiq.cloudbreak.blueprint.testrepeater.TestFile;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
 
 @RunWith(Parameterized.class)
 @BootstrapWith(SpringBootTestContextBootstrapper.class)
@@ -74,7 +74,7 @@ public class BlueprintModulTest extends CentralBlueprintContext {
     public String outputFileName;
 
     @Parameter(2)
-    public BlueprintPreparationObject testData;
+    public TemplatePreparationObject testData;
 
     @Parameters(name = "{index}: module-test/inputs/{0}.bp should equals module-test/outputs/{1}.bp")
     public static Collection<Object[]> data() throws IOException {
@@ -167,11 +167,11 @@ public class BlueprintModulTest extends CentralBlueprintContext {
         TestFile inputFile = getTestFile(getFileName(BLUEPRINT_UPDATER_TEST_INPUTS, inputFileName));
         TestFile outputFile = getTestFile(getFileName(BLUEPRINT_UPDATER_TEST_OUTPUTS, outputFileName));
 
-        BlueprintPreparationObject blueprintPreparationObject =
+        TemplatePreparationObject templatePreparationObject =
                 prepareBlueprintPreparationObjectWithBlueprintText(inputFile);
 
         JSONObject expected = toJSON(outputFile.getFileContent());
-        JSONObject resultBlueprintText = toJSON(getUnderTest().getBlueprintText(blueprintPreparationObject));
+        JSONObject resultBlueprintText = toJSON(getUnderTest().getBlueprintText(templatePreparationObject));
         StringBuilder messageBuilder = new StringBuilder();
         messageBuilder.append("The result has not matched with the expected output ").append(outputFile.getFileName());
         messageBuilder.append("\nexpected:\n");
@@ -183,10 +183,10 @@ public class BlueprintModulTest extends CentralBlueprintContext {
         assertJsonEquals(expected.toString(), resultBlueprintText.toString(), when(IGNORING_ARRAY_ORDER));
     }
 
-    private BlueprintPreparationObject prepareBlueprintPreparationObjectWithBlueprintText(TestFile inputFile) {
-        BlueprintPreparationObject blueprintPreparationObject = testData;
-        blueprintPreparationObject.getBlueprintView().setBlueprintText(inputFile.getFileContent());
-        return blueprintPreparationObject;
+    private TemplatePreparationObject prepareBlueprintPreparationObjectWithBlueprintText(TestFile inputFile) {
+        TemplatePreparationObject templatePreparationObject = testData;
+        templatePreparationObject.getBlueprintView().setBlueprintText(inputFile.getFileContent());
+        return templatePreparationObject;
     }
 
     private JSONObject toJSON(String jsonText) throws JSONException {

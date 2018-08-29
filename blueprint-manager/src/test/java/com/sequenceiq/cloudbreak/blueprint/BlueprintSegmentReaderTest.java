@@ -11,8 +11,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.sequenceiq.cloudbreak.blueprint.templates.ServiceName;
-import com.sequenceiq.cloudbreak.blueprint.templates.TemplateFiles;
+import com.sequenceiq.cloudbreak.template.model.ServiceName;
+import com.sequenceiq.cloudbreak.template.model.TemplateFiles;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BlueprintSegmentReaderTest {

@@ -8,7 +8,11 @@ import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
 
-import com.sequenceiq.cloudbreak.blueprint.configuration.HostgroupConfigurations;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
+import com.sequenceiq.cloudbreak.template.processor.configuration.BlueprintConfigurationEntry;
+import com.sequenceiq.cloudbreak.template.processor.configuration.HostgroupConfigurations;
+import com.sequenceiq.cloudbreak.template.processor.configuration.HostgroupEntry;
 
 @Component
 public class BlueprintComponentProviderProcessor {
@@ -19,7 +23,7 @@ public class BlueprintComponentProviderProcessor {
     @Inject
     private BlueprintProcessorFactory blueprintProcessorFactory;
 
-    public String process(BlueprintPreparationObject source, String blueprintText) throws IOException {
+    public String process(TemplatePreparationObject source, String blueprintText) throws IOException {
         BlueprintTextProcessor blueprintProcessor = blueprintProcessorFactory.get(blueprintText);
         for (BlueprintComponentConfigProvider provider : blueprintComponentConfigProviders) {
             if (blueprintProcessor.componentsExistsInBlueprint(provider.components()) || provider.specialCondition(source, blueprintText)) {

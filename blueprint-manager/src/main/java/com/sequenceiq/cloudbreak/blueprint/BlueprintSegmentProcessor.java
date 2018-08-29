@@ -17,10 +17,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.sequenceiq.cloudbreak.blueprint.template.BlueprintTemplateProcessor;
-import com.sequenceiq.cloudbreak.blueprint.templates.RelatedServices;
-import com.sequenceiq.cloudbreak.blueprint.templates.ServiceName;
-import com.sequenceiq.cloudbreak.blueprint.templates.TemplateFiles;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.TemplateProcessor;
+import com.sequenceiq.cloudbreak.template.model.RelatedServices;
+import com.sequenceiq.cloudbreak.template.model.ServiceName;
+import com.sequenceiq.cloudbreak.template.model.TemplateFiles;
 import com.sequenceiq.cloudbreak.util.JsonUtil;
 
 @Component
@@ -31,7 +32,7 @@ public class BlueprintSegmentProcessor {
     private static final String SERVICES_JSON = "services.json";
 
     @Inject
-    private BlueprintTemplateProcessor blueprintTemplateProcessor;
+    private TemplateProcessor templateProcessor;
 
     @Inject
     private BlueprintSegmentReader blueprintSegmentReader;
@@ -39,7 +40,7 @@ public class BlueprintSegmentProcessor {
     @Inject
     private BlueprintProcessorFactory blueprintProcessorFactory;
 
-    public String process(String blueprintText, BlueprintPreparationObject source) {
+    public String process(String blueprintText, TemplatePreparationObject source) {
         Map<String, Object> customProperties = new HashMap<>();
         AtomicReference<String> resultBlueprint = new AtomicReference<>(blueprintText);
 
@@ -91,11 +92,11 @@ public class BlueprintSegmentProcessor {
         return value.getFiles().stream().filter(item -> !item.endsWith(SERVICES_JSON)).collect(Collectors.toList());
     }
 
-    private String prepareContent(final String filePath, BlueprintPreparationObject source, Map<String, Object> configs) {
+    private String prepareContent(final String filePath, TemplatePreparationObject source, Map<String, Object> configs) {
         String result;
         String content = readFileFromClasspathQuietly(filePath);
         try {
-            result = blueprintTemplateProcessor.process(content, source, configs);
+            result = templateProcessor.process(content, source, configs);
         } catch (IOException e) {
             LOGGER.error("Could not open {} file to generate result based on template.", filePath);
             result = content;

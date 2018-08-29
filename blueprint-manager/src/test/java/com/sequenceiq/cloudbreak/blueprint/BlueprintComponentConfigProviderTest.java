@@ -5,7 +5,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject.Builder;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject.Builder;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 
 public class BlueprintComponentConfigProviderTest {
@@ -14,7 +16,7 @@ public class BlueprintComponentConfigProviderTest {
     public void testBlueprintComponentConfigProviderTestWhenSimpleImplementationExist() throws IOException {
         String blueprintText = FileReaderUtils.readFileFromClasspath("blueprints-jackson/bp-kerberized-test.bp");
 
-        BlueprintPreparationObject object = Builder.builder().build();
+        TemplatePreparationObject object = Builder.builder().build();
 
         BlueprintComponentConfigProviderTestImpl blueprintComponentConfigProviderTest = new BlueprintComponentConfigProviderTestImpl();
 

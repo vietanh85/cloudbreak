@@ -9,8 +9,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessorFactory;
-import com.sequenceiq.cloudbreak.blueprint.configuration.HostgroupConfigurations;
-import com.sequenceiq.cloudbreak.blueprint.configuration.SiteConfigurations;
+import com.sequenceiq.cloudbreak.template.processor.configuration.HostgroupConfigurations;
+import com.sequenceiq.cloudbreak.template.processor.configuration.SiteConfigurations;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 import com.sequenceiq.cloudbreak.util.JsonUtil;
 

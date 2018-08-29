@@ -15,9 +15,10 @@ import javax.inject.Inject;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.sequenceiq.cloudbreak.blueprint.template.views.HostgroupView;
 import com.sequenceiq.cloudbreak.blueprint.utils.ConfigUtils;
 import com.sequenceiq.cloudbreak.blueprint.utils.HadoopConfigurationUtils;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
+import com.sequenceiq.cloudbreak.template.views.HostgroupView;
 
 @Service
 public class ConfigService {

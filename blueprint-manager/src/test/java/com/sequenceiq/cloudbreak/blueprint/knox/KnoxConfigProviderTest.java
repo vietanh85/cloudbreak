@@ -14,13 +14,13 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sequenceiq.cloudbreak.TestUtil;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject.Builder;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintTextProcessor;
 import com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil;
-import com.sequenceiq.cloudbreak.blueprint.template.views.HostgroupView;
-import com.sequenceiq.cloudbreak.blueprint.templates.GeneralClusterConfigs;
 import com.sequenceiq.cloudbreak.domain.Blueprint;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject.Builder;
+import com.sequenceiq.cloudbreak.template.model.GeneralClusterConfigs;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
+import com.sequenceiq.cloudbreak.template.views.HostgroupView;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 import com.sequenceiq.cloudbreak.util.JsonUtil;
 
@@ -33,7 +33,7 @@ public class KnoxConfigProviderTest {
         String baseBlueprint = FileReaderUtils.readFileFromClasspath("blueprints-jackson/test-bp-with-core-site-with-knox.bp");
         String expectedBlueprint = FileReaderUtils.readFileFromClasspath("blueprints-jackson/test-bp-with-core-site-with-knox-result.bp");
         Blueprint blueprint = TestUtil.blueprint("name", baseBlueprint);
-        BlueprintPreparationObject object = buildPreparationObjectWithGateway();
+        TemplatePreparationObject object = buildPreparationObjectWithGateway();
 
         BlueprintTextProcessor b = new BlueprintTextProcessor(blueprint.getBlueprintText());
         String actualBlueprint = configProvider.customTextManipulation(object, b).asText();
@@ -45,7 +45,7 @@ public class KnoxConfigProviderTest {
 
     @Test
     public void specialConditionFalse() {
-        BlueprintPreparationObject object = Builder.builder()
+        TemplatePreparationObject object = Builder.builder()
                 .withGeneralClusterConfigs(BlueprintTestUtil.generalClusterConfigs())
                 .build();
         assertFalse(configProvider.specialCondition(object, ""));
@@ -53,11 +53,11 @@ public class KnoxConfigProviderTest {
 
     @Test
     public void specialConditionTrue() {
-        BlueprintPreparationObject object = buildPreparationObjectWithGateway();
+        TemplatePreparationObject object = buildPreparationObjectWithGateway();
         assertTrue(configProvider.specialCondition(object, ""));
     }
 
-    private BlueprintPreparationObject buildPreparationObjectWithGateway() {
+    private TemplatePreparationObject buildPreparationObjectWithGateway() {
         GeneralClusterConfigs config = BlueprintTestUtil.generalClusterConfigs();
         Set<HostgroupView> hostGroupsView = new HashSet<>();
         HostgroupView hg1 = new HostgroupView("master", 0,  GATEWAY, 2);

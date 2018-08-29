@@ -22,6 +22,8 @@ include 'autoscale-api'
 include 'structuredevent-model'
 include 'blueprint-manager'
 include 'yarn-service'
+include 'template-manager-core'
 
 rootProject.name = 'cloudbreak'
+include 'recipe-manager'
 

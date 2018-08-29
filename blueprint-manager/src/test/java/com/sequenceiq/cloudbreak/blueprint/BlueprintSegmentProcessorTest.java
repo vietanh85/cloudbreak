@@ -1,7 +1,7 @@
 package com.sequenceiq.cloudbreak.blueprint;
 
-import static com.sequenceiq.cloudbreak.blueprint.templates.ServiceName.serviceName;
-import static com.sequenceiq.cloudbreak.blueprint.templates.TemplateFiles.templateFiles;
+import static com.sequenceiq.cloudbreak.template.model.ServiceName.serviceName;
+import static com.sequenceiq.cloudbreak.template.model.TemplateFiles.templateFiles;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyMap;
@@ -22,17 +22,19 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.google.common.collect.Lists;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject.Builder;
-import com.sequenceiq.cloudbreak.blueprint.template.BlueprintTemplateProcessor;
-import com.sequenceiq.cloudbreak.blueprint.templates.ServiceName;
-import com.sequenceiq.cloudbreak.blueprint.templates.TemplateFiles;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject.Builder;
+import com.sequenceiq.cloudbreak.template.TemplateProcessor;
+import com.sequenceiq.cloudbreak.template.model.ServiceName;
+import com.sequenceiq.cloudbreak.template.model.TemplateFiles;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BlueprintSegmentProcessorTest {
 
     @Mock
-    private BlueprintTemplateProcessor blueprintTemplateProcessor;
+    private TemplateProcessor templateProcessor;
 
     @Mock
     private BlueprintSegmentReader blueprintSegmentReader;
@@ -48,7 +50,7 @@ public class BlueprintSegmentProcessorTest {
 
     private String expectedBlueprint;
 
-    private final BlueprintPreparationObject object = Builder.builder().build();
+    private final TemplatePreparationObject object = Builder.builder().build();
 
     @Before
     public void before() throws IOException {
@@ -65,7 +67,7 @@ public class BlueprintSegmentProcessorTest {
         when(blueprintSegmentReader.collectAllConfigFile()).thenReturn(configFiles);
         when(blueprintSegmentReader.collectAllServiceFile()).thenReturn(serviceFiles);
         when(blueprintProcessor.componentsExistsInBlueprint(anySet())).thenReturn(true);
-        when(blueprintTemplateProcessor.process(anyString(), any(BlueprintPreparationObject.class), anyMap())).thenReturn(expectedBlueprint);
+        when(templateProcessor.process(anyString(), any(TemplatePreparationObject.class), anyMap())).thenReturn(expectedBlueprint);
         when(blueprintProcessor.addConfigEntryStringToBlueprint(anyString(), anyBoolean())).thenReturn(blueprintProcessor);
         when(blueprintProcessor.asText()).thenReturn(expectedBlueprint);
         when(blueprintProcessorFactory.get(anyString())).thenReturn(blueprintProcessor);

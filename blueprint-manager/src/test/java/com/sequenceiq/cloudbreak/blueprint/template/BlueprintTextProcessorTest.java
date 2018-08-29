@@ -21,10 +21,10 @@ import org.junit.rules.ExpectedException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintConfigurationEntry;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessingException;
+import com.sequenceiq.cloudbreak.template.processor.configuration.BlueprintConfigurationEntry;
+import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
 import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessorFactory;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintTextProcessor;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 import com.sequenceiq.cloudbreak.util.JsonUtil;
 

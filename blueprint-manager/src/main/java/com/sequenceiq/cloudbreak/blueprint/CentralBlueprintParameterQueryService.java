@@ -9,12 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.sequenceiq.cloudbreak.blueprint.filesystem.FileSystemConfigQueryObject;
-import com.sequenceiq.cloudbreak.blueprint.filesystem.query.ConfigQueryEntry;
-import com.sequenceiq.cloudbreak.blueprint.filesystem.query.FileSystemConfigQueryService;
-import com.sequenceiq.cloudbreak.blueprint.template.BlueprintTemplateProcessor;
-import com.sequenceiq.cloudbreak.blueprint.template.HandleBarModelKey;
-import com.sequenceiq.cloudbreak.blueprint.template.TemplateParameterFilter;
+import com.sequenceiq.cloudbreak.blueprint.filesystem.FileSystemConfigQueryService;
+import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
+import com.sequenceiq.cloudbreak.template.HandleBarModelKey;
+import com.sequenceiq.cloudbreak.template.TemplateParameterFilter;
+import com.sequenceiq.cloudbreak.template.TemplateProcessor;
+import com.sequenceiq.cloudbreak.template.filesystem.FileSystemConfigQueryObject;
+import com.sequenceiq.cloudbreak.template.filesystem.query.ConfigQueryEntry;
 
 @Component
 public class CentralBlueprintParameterQueryService {
@@ -22,7 +23,7 @@ public class CentralBlueprintParameterQueryService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CentralBlueprintParameterQueryService.class);
 
     @Inject
-    private BlueprintTemplateProcessor blueprintTemplateProcessor;
+    private TemplateProcessor templateProcessor;
 
     @Inject
     private TemplateParameterFilter templateParameterFilter;
@@ -35,7 +36,7 @@ public class CentralBlueprintParameterQueryService {
         try {
             blueprintParameters = templateParameterFilter.queryForDatalakeParameters(
                     HandleBarModelKey.DATALAKE,
-                    blueprintTemplateProcessor.queryParameters(sourceTemplate));
+                    templateProcessor.queryParameters(sourceTemplate));
         } catch (IOException e) {
             String message = String.format("Unable to query blueprint parameters from blueprint which was: %s", sourceTemplate);
             LOGGER.warn(message);
@@ -47,7 +48,7 @@ public class CentralBlueprintParameterQueryService {
     public Set<String> queryCustomParameters(String sourceTemplate) throws BlueprintProcessingException {
         Set<String> blueprintParameters;
         try {
-            blueprintParameters = templateParameterFilter.queryForCustomParameters(blueprintTemplateProcessor.queryParameters(sourceTemplate));
+            blueprintParameters = templateParameterFilter.queryForCustomParameters(templateProcessor.queryParameters(sourceTemplate));
         } catch (IOException e) {
             String message = String.format("Unable to query blueprint parameters from blueprint which was: %s", sourceTemplate);
             LOGGER.warn(message);

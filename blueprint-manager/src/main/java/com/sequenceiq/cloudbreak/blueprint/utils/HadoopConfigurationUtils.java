@@ -4,10 +4,10 @@ import java.util.Collection;
 
 import org.springframework.stereotype.Component;
 
-import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessingException;
 import com.sequenceiq.cloudbreak.blueprint.ConfigProperty;
 import com.sequenceiq.cloudbreak.blueprint.VolumeUtils;
-import com.sequenceiq.cloudbreak.blueprint.template.views.HostgroupView;
+import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
+import com.sequenceiq.cloudbreak.template.views.HostgroupView;
 
 @Component
 public class HadoopConfigurationUtils {

@@ -3,6 +3,8 @@ package com.sequenceiq.cloudbreak.blueprint.nifi;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.sequenceiq.cloudbreak.template.model.HdfConfigs;
+
 public class HdfConfigsTest {
 
     @Test

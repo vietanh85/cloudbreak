@@ -12,6 +12,9 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.sequenceiq.cloudbreak.template.HandleBarModelKey;
+import com.sequenceiq.cloudbreak.template.TemplateParameterFilter;
+
 @RunWith(MockitoJUnitRunner.class)
 public class TemplateParameterFilterTest {
 

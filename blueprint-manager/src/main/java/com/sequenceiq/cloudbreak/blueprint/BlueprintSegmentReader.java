@@ -1,7 +1,7 @@
 package com.sequenceiq.cloudbreak.blueprint;
 
-import static com.sequenceiq.cloudbreak.blueprint.templates.ServiceName.serviceName;
-import static com.sequenceiq.cloudbreak.blueprint.templates.TemplateFiles.templateFiles;
+import static com.sequenceiq.cloudbreak.template.model.ServiceName.serviceName;
+import static com.sequenceiq.cloudbreak.template.model.TemplateFiles.templateFiles;
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
@@ -22,8 +22,9 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
-import com.sequenceiq.cloudbreak.blueprint.templates.ServiceName;
-import com.sequenceiq.cloudbreak.blueprint.templates.TemplateFiles;
+import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
+import com.sequenceiq.cloudbreak.template.model.ServiceName;
+import com.sequenceiq.cloudbreak.template.model.TemplateFiles;
 
 @Component
 public class BlueprintSegmentReader implements ResourceLoaderAware {

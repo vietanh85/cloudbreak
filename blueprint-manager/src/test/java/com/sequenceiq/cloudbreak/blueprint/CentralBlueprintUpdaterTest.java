@@ -18,9 +18,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.google.common.collect.Maps;
 import com.sequenceiq.cloudbreak.TestUtil;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject.Builder;
-import com.sequenceiq.cloudbreak.blueprint.template.BlueprintTemplateProcessor;
-import com.sequenceiq.cloudbreak.blueprint.template.views.BlueprintView;
+import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.TemplateProcessor;
+import com.sequenceiq.cloudbreak.template.views.BlueprintView;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CentralBlueprintUpdaterTest {
@@ -29,7 +30,7 @@ public class CentralBlueprintUpdaterTest {
     public final ExpectedException thrown = ExpectedException.none();
 
     @Mock
-    private BlueprintTemplateProcessor blueprintTemplateProcessor;
+    private TemplateProcessor templateProcessor;
 
     @Mock
     private BlueprintSegmentProcessor blueprintSegmentProcessor;
@@ -40,7 +41,7 @@ public class CentralBlueprintUpdaterTest {
     @InjectMocks
     private CentralBlueprintUpdater underTest;
 
-    private BlueprintPreparationObject object;
+    private TemplatePreparationObject object;
 
     private String testBlueprint;
 
@@ -48,14 +49,14 @@ public class CentralBlueprintUpdaterTest {
     public void before() {
         testBlueprint = TestUtil.blueprint().getBlueprintText();
 
-        object = Builder.builder()
+        object = TemplatePreparationObject.Builder.builder()
                 .withBlueprintView(new BlueprintView(TestUtil.blueprint().getBlueprintText(), "HDP", "2.6"))
                 .build();
     }
 
     @Test
     public void getBlueprintTextWhenEveryThingWorksFineThenShouldReturnWithAnUpdatedBlueprint() throws IOException {
-        when(blueprintTemplateProcessor.process(testBlueprint, object, Maps.newHashMap())).thenReturn(testBlueprint);
+        when(templateProcessor.process(testBlueprint, object, Maps.newHashMap())).thenReturn(testBlueprint);
         when(blueprintSegmentProcessor.process(testBlueprint, object)).thenReturn(testBlueprint);
         when(blueprintComponentProviderProcessor.process(object, testBlueprint)).thenReturn(testBlueprint);
 
@@ -63,14 +64,14 @@ public class CentralBlueprintUpdaterTest {
 
         Assert.assertEquals(testBlueprint, result);
 
-        verify(blueprintTemplateProcessor, times(1)).process(testBlueprint, object, Maps.newHashMap());
+        verify(templateProcessor, times(1)).process(testBlueprint, object, Maps.newHashMap());
         verify(blueprintSegmentProcessor, times(1)).process(testBlueprint, object);
         verify(blueprintComponentProviderProcessor, times(1)).process(object, testBlueprint);
     }
 
     @Test
     public void getBlueprintTextWhenBlueprintTemplateProcessorThrowExceptionThenShouldReturnThrowException() throws IOException {
-        when(blueprintTemplateProcessor.process(testBlueprint, object, Maps.newHashMap())).thenThrow(new IOException("failed to read bp"));
+        when(templateProcessor.process(testBlueprint, object, Maps.newHashMap())).thenThrow(new IOException("failed to read bp"));
 
         String message = String.format("Unable to update blueprint with default properties which was: %s", testBlueprint);
 
@@ -81,7 +82,7 @@ public class CentralBlueprintUpdaterTest {
 
         Assert.assertEquals(testBlueprint, result);
 
-        verify(blueprintTemplateProcessor, times(1)).process(testBlueprint, object, Maps.newHashMap());
+        verify(templateProcessor, times(1)).process(testBlueprint, object, Maps.newHashMap());
         verify(blueprintSegmentProcessor, times(0)).process(testBlueprint, object);
         verify(blueprintComponentProviderProcessor, times(0)).process(object, testBlueprint);
     }

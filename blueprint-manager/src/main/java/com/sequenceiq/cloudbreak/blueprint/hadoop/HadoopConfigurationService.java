@@ -8,12 +8,12 @@ import javax.inject.Inject;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.blueprint.BlueprintComponentConfigProvider;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintTextProcessor;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
 import com.sequenceiq.cloudbreak.blueprint.ConfigService;
-import com.sequenceiq.cloudbreak.blueprint.configuration.HostgroupConfigurations;
-import com.sequenceiq.cloudbreak.blueprint.configuration.SiteConfigurations;
-import com.sequenceiq.cloudbreak.blueprint.template.views.HostgroupView;
+import com.sequenceiq.cloudbreak.template.processor.configuration.HostgroupConfigurations;
+import com.sequenceiq.cloudbreak.template.processor.configuration.SiteConfigurations;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.views.HostgroupView;
 
 @Service
 public class HadoopConfigurationService implements BlueprintComponentConfigProvider {
@@ -22,7 +22,7 @@ public class HadoopConfigurationService implements BlueprintComponentConfigProvi
     private ConfigService configService;
 
     @Override
-    public BlueprintTextProcessor customTextManipulation(BlueprintPreparationObject source, BlueprintTextProcessor blueprintProcessor) {
+    public BlueprintTextProcessor customTextManipulation(TemplatePreparationObject source, BlueprintTextProcessor blueprintProcessor) {
         Map<String, Map<String, Map<String, String>>> hostGroupConfig =
                 configService.getHostGroupConfiguration(blueprintProcessor, source.getHostgroupViews());
         HostgroupConfigurations hostgroupConfigurations = HostgroupConfigurations.fromMap(hostGroupConfig);
@@ -36,7 +36,7 @@ public class HadoopConfigurationService implements BlueprintComponentConfigProvi
     }
 
     @Override
-    public boolean specialCondition(BlueprintPreparationObject source, String blueprintProcessor) {
+    public boolean specialCondition(TemplatePreparationObject source, String blueprintProcessor) {
         return !source.getBlueprintView().isHdf();
     }
 

@@ -29,17 +29,17 @@ import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
 import com.sequenceiq.cloudbreak.api.model.ExecutorType;
 import com.sequenceiq.cloudbreak.api.model.filesystem.S3FileSystem;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject.Builder;
-import com.sequenceiq.cloudbreak.blueprint.filesystem.StorageLocationView;
-import com.sequenceiq.cloudbreak.blueprint.filesystem.s3.S3FileSystemConfigurationsView;
-import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
-import com.sequenceiq.cloudbreak.blueprint.template.views.HostgroupView;
-import com.sequenceiq.cloudbreak.blueprint.template.views.SharedServiceConfigsView;
-import com.sequenceiq.cloudbreak.blueprint.templates.GeneralClusterConfigs;
 import com.sequenceiq.cloudbreak.blueprint.testrepeater.TestFile;
 import com.sequenceiq.cloudbreak.domain.SmartSenseSubscription;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject.Builder;
+import com.sequenceiq.cloudbreak.template.filesystem.StorageLocationView;
+import com.sequenceiq.cloudbreak.template.filesystem.s3.S3FileSystemConfigurationsView;
+import com.sequenceiq.cloudbreak.template.model.GeneralClusterConfigs;
+import com.sequenceiq.cloudbreak.template.model.HdfConfigs;
+import com.sequenceiq.cloudbreak.template.views.HostgroupView;
+import com.sequenceiq.cloudbreak.template.views.SharedServiceConfigsView;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 
 class BlueprintModulTestModelProvider {
@@ -47,56 +47,56 @@ class BlueprintModulTestModelProvider {
     private BlueprintModulTestModelProvider() {
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenHiveAndRdsPresentedThenRdsHiveMetastoreShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenHiveAndRdsPresentedThenRdsHiveMetastoreShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.HIVE))))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenRangerAndRdsPresentedThenRdsRangerShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenRangerAndRdsPresentedThenRdsRangerShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.RANGER))))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenDruidAndRdsPresentedThenRdsDruidShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenDruidAndRdsPresentedThenRdsDruidShouldConfigured() {
         return getPreparedBuilder()
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.DRUID))))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenSuperSetAndRdsPresentedThenRdsDruidShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenSuperSetAndRdsPresentedThenRdsDruidShouldConfigured() {
         return getPreparedBuilder()
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.SUPERSET))))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenDruidSuperSetAndRdsPresentedThenRdsDruidShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenDruidSuperSetAndRdsPresentedThenRdsDruidShouldConfigured() {
         return getPreparedBuilder()
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.SUPERSET))))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenLdapPresentedThenRangerAndHadoopLdapShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenLdapPresentedThenRangerAndHadoopLdapShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withLdapConfig(ldapConfig())
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenADPresentedThenRangerAndHadoopADShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenADPresentedThenRangerAndHadoopADShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withLdapConfig(adConfig())
                 .build();
     }
 
-    static BlueprintPreparationObject bpObjectWithThreeHostAndLdapRangerConfigured() {
+    static TemplatePreparationObject bpObjectWithThreeHostAndLdapRangerConfigured() {
         return getPreparedBuilder()
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.RANGER))))
@@ -104,7 +104,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenKerberosPresentedThenKerberosShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenKerberosPresentedThenKerberosShouldConfigured() {
         GeneralClusterConfigs configWithGateWay = generalClusterConfigs();
         configWithGateWay.setGatewayInstanceMetadataPresented(true);
         Set<HostgroupView> hostGroupsView = new HashSet<>();
@@ -120,19 +120,19 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWithZepelinAndHdp26PresentedThenZeppelinShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWithZepelinAndHdp26PresentedThenZeppelinShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWithZepelinAndHdp25PresentedThenZeppelinShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWithZepelinAndHdp25PresentedThenZeppelinShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.5", "HDP"))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenNifiAndHdfPresentedThenHdfShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenNifiAndHdfPresentedThenHdfShouldConfigured() {
         return getPreparedBuilder("master", "slave_1")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDF"))
                 .withHdfConfigs(new HdfConfigs("<property name=\"Node Identity 10.0.0.1\">CN=10.0.0.1, OU=NIFI</property>",
@@ -141,7 +141,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenNifiAndHdfAndLdapPresentedThenHdfShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenNifiAndHdfAndLdapPresentedThenHdfShouldConfigured() {
         return getPreparedBuilder("master", "slave_1")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDF"))
                 .withLdapConfig(ldapConfig())
@@ -151,7 +151,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenHiveInteractivePresentedTheLlapShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenHiveInteractivePresentedTheLlapShouldConfigured() {
         GeneralClusterConfigs conf = generalClusterConfigs();
         conf.setNodeCount(5);
         return Builder.builder()
@@ -161,7 +161,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenNothingSpecialThere() {
+    static TemplatePreparationObject blueprintObjectWhenNothingSpecialThere() {
         GeneralClusterConfigs conf = generalClusterConfigs();
         conf.setNodeCount(5);
         return Builder.builder()
@@ -171,7 +171,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenLdapConfiguredWithRdsRanger() {
+    static TemplatePreparationObject blueprintObjectWhenLdapConfiguredWithRdsRanger() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.RANGER))))
@@ -179,7 +179,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenADConfiguredWithRdsRanger() {
+    static TemplatePreparationObject blueprintObjectWhenADConfiguredWithRdsRanger() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.RANGER))))
@@ -187,7 +187,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenLdapConfiguredWithOracleRdsRanger() {
+    static TemplatePreparationObject blueprintObjectWhenLdapConfiguredWithOracleRdsRanger() {
         return getPreparedBuilder()
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.RANGER, DatabaseVendor.ORACLE11))))
@@ -195,20 +195,20 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenRdsConfiguredWithRdsOozie() {
+    static TemplatePreparationObject blueprintObjectWhenRdsConfiguredWithRdsOozie() {
         return getPreparedBuilder()
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.OOZIE))))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenWebhcatConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenWebhcatConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenSharedServiceConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenSharedServiceConfigured() {
         GeneralClusterConfigs configs = generalClusterConfigs();
         return Builder.builder()
                 .withHostgroups(getHostGroups("master", "worker", "compute"))
@@ -220,7 +220,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenDefaultBlueprintConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenDefaultBlueprintConfigured() {
         GeneralClusterConfigs configs = generalClusterConfigs();
 
         Set<HostGroup> groups = getHostGroups("master", "worker", "compute");
@@ -236,7 +236,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenDlmBlueprintConfiguredAndLdap(String inputFileName) throws IOException {
+    static TemplatePreparationObject blueprintObjectWhenDlmBlueprintConfiguredAndLdap(String inputFileName) throws IOException {
         GeneralClusterConfigs configs = generalClusterConfigs();
         TestFile testFile = getTestFile(getFileName(BLUEPRINT_UPDATER_TEST_INPUTS, "dlm"));
         return Builder.builder()
@@ -249,7 +249,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenDlmBlueprintConfiguredAndAD(String inputFileName) throws IOException {
+    static TemplatePreparationObject blueprintObjectWhenDlmBlueprintConfiguredAndAD(String inputFileName) throws IOException {
         GeneralClusterConfigs configs = generalClusterConfigs();
         TestFile testFile = getTestFile(getFileName(BLUEPRINT_UPDATER_TEST_INPUTS, inputFileName));
         return Builder.builder()
@@ -262,7 +262,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenDuplicatedStorageLocationKey(String inputFileName) throws IOException {
+    static TemplatePreparationObject blueprintObjectWhenDuplicatedStorageLocationKey(String inputFileName) throws IOException {
         GeneralClusterConfigs configs = generalClusterConfigs();
         TestFile testFile = getTestFile(getFileName(BLUEPRINT_UPDATER_TEST_INPUTS, inputFileName));
         return Builder.builder()
@@ -280,7 +280,7 @@ class BlueprintModulTestModelProvider {
         return Arrays.asList(storageLocationView, storageLocationView2, storageLocationView3);
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenCustomPropertiesBlueprintConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenCustomPropertiesBlueprintConfigured() {
         Map<String, Object> customProperties = new HashMap<>();
 
         customProperties.put("hadoop.security.group.mapping.ldap.url", "10.1.1.2");
@@ -306,7 +306,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenLdapAndDruidRdsConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenLdapAndDruidRdsConfigured() {
         return getPreparedBuilder()
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withRdsConfigs(new HashSet<>(Collections.singleton(rdsConfig(RdsType.DRUID))))
@@ -314,27 +314,27 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenAtlasPresentedShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenAtlasPresentedShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenAtlasAndLdapPresentedThenBothShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenAtlasAndLdapPresentedThenBothShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withLdapConfig(ldapConfig())
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhenAtlasAndADPresentedThenBothShouldConfigured() {
+    static TemplatePreparationObject blueprintObjectWhenAtlasAndADPresentedThenBothShouldConfigured() {
         return getPreparedBuilder("master")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withLdapConfig(adConfig())
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectForHbaseConfigurationForTwoHosts() {
+    static TemplatePreparationObject blueprintObjectForHbaseConfigurationForTwoHosts() {
         return getPreparedBuilder("master", "slave_1")
                 .withBlueprintView(generalBlueprintView("", "2.6", "HDP"))
                 .withHdfConfigs(new HdfConfigs("<property name=\"Node Identity 10.0.0.1\">CN=10.0.0.1, OU=NIFI</property>",
@@ -343,7 +343,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhereExecutioTypeHasConfiguredAsContainer() {
+    static TemplatePreparationObject blueprintObjectWhereExecutioTypeHasConfiguredAsContainer() {
         GeneralClusterConfigs configs = generalClusterConfigs();
         configs.setExecutorType(ExecutorType.CONTAINER);
         return Builder.builder()
@@ -353,7 +353,7 @@ class BlueprintModulTestModelProvider {
                 .build();
     }
 
-    static BlueprintPreparationObject blueprintObjectWhereSmartSenseHasConfigured() {
+    static TemplatePreparationObject blueprintObjectWhereSmartSenseHasConfigured() {
         SmartSenseSubscription smartSenseSubscription = new SmartSenseSubscription();
         smartSenseSubscription.setSubscriptionId("A-99900000-C-00000000");
         return getPreparedBuilder("master", "slave_1")

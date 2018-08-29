@@ -11,12 +11,12 @@ import org.springframework.util.StringUtils;
 
 import com.google.common.collect.ImmutableMap;
 import com.sequenceiq.cloudbreak.blueprint.BlueprintComponentConfigProvider;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessingException;
+import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
 import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessorFactory;
-import com.sequenceiq.cloudbreak.blueprint.BlueprintTextProcessor;
-import com.sequenceiq.cloudbreak.blueprint.configuration.SiteConfigurations;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
+import com.sequenceiq.cloudbreak.template.processor.configuration.SiteConfigurations;
 import com.sequenceiq.cloudbreak.domain.KerberosConfig;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 
 @Service
@@ -35,7 +35,7 @@ public class KerberosBlueprintService implements BlueprintComponentConfigProvide
     private KerberosDetailService kerberosDetailService;
 
     @Override
-    public BlueprintTextProcessor customTextManipulation(BlueprintPreparationObject source, BlueprintTextProcessor blueprintProcessor) {
+    public BlueprintTextProcessor customTextManipulation(TemplatePreparationObject source, BlueprintTextProcessor blueprintProcessor) {
         KerberosConfig kerberosConfig = source.getKerberosConfig().orElse(null);
         if (source.getGeneralClusterConfigs().getInstanceGroupsPresented()) {
             Integer propagationPort = source.getGeneralClusterConfigs().isGatewayInstanceMetadataPresented() ? KERBEROS_DB_PROPAGATION_PORT : null;
@@ -114,7 +114,7 @@ public class KerberosBlueprintService implements BlueprintComponentConfigProvide
     }
 
     @Override
-    public boolean specialCondition(BlueprintPreparationObject source, String blueprintText) {
+    public boolean specialCondition(TemplatePreparationObject source, String blueprintText) {
         return source.getKerberosConfig().isPresent();
     }
 }

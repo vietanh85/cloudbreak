@@ -9,7 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
-import com.sequenceiq.cloudbreak.blueprint.template.BlueprintTemplateProcessor;
+import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.TemplateProcessor;
 
 @Component
 public class CentralBlueprintUpdater {
@@ -17,7 +19,7 @@ public class CentralBlueprintUpdater {
     private static final Logger LOGGER = LoggerFactory.getLogger(CentralBlueprintUpdater.class);
 
     @Inject
-    private BlueprintTemplateProcessor blueprintTemplateProcessor;
+    private TemplateProcessor templateProcessor;
 
     @Inject
     private BlueprintSegmentProcessor blueprintSegmentProcessor;
@@ -25,7 +27,7 @@ public class CentralBlueprintUpdater {
     @Inject
     private BlueprintComponentProviderProcessor blueprintComponentProviderProcessor;
 
-    public String getBlueprintText(BlueprintPreparationObject source) {
+    public String getBlueprintText(TemplatePreparationObject source) {
         String blueprintText = source.getBlueprintView().getBlueprintText();
         try {
             blueprintText = updateBlueprintConfiguration(source, blueprintText);
@@ -37,9 +39,9 @@ public class CentralBlueprintUpdater {
         return blueprintText;
     }
 
-    private String updateBlueprintConfiguration(BlueprintPreparationObject source, String blueprint)
+    private String updateBlueprintConfiguration(TemplatePreparationObject source, String blueprint)
             throws IOException {
-        blueprint = blueprintTemplateProcessor.process(blueprint, source, Maps.newHashMap());
+        blueprint = templateProcessor.process(blueprint, source, Maps.newHashMap());
         blueprint = blueprintSegmentProcessor.process(blueprint, source);
         blueprint = blueprintComponentProviderProcessor.process(source, blueprint);
         return blueprint;

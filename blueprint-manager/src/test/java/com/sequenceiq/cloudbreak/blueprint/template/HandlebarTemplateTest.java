@@ -2,14 +2,14 @@ package com.sequenceiq.cloudbreak.blueprint.template;
 
 import static com.sequenceiq.cloudbreak.TestUtil.adConfig;
 import static com.sequenceiq.cloudbreak.TestUtil.ldapConfig;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.adlsFileSystemConfiguration;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.emptyStorageLocationViews;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.gcsFileSystemConfiguration;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.s3FileSystemConfiguration;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.storageLocationViews;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.storageLocationViewsWithDuplicatedKey;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.wasbSecureFileSystemConfiguration;
-import static com.sequenceiq.cloudbreak.blueprint.filesystem.BlueprintTestUtil.wasbUnSecureFileSystemConfiguration;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.adlsFileSystemConfiguration;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.emptyStorageLocationViews;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.gcsFileSystemConfiguration;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.s3FileSystemConfiguration;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.storageLocationViews;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.storageLocationViewsWithDuplicatedKey;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.wasbSecureFileSystemConfiguration;
+import static com.sequenceiq.cloudbreak.template.filesystem.TemplateCoreTestUtil.wasbUnSecureFileSystemConfiguration;
 import static com.sequenceiq.cloudbreak.util.FileReaderUtils.readFileFromClasspath;
 
 import java.io.IOException;
@@ -33,13 +33,15 @@ import com.sequenceiq.cloudbreak.TestUtil;
 import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
 import com.sequenceiq.cloudbreak.api.model.ExecutorType;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
-import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
-import com.sequenceiq.cloudbreak.blueprint.template.views.BlueprintView;
-import com.sequenceiq.cloudbreak.blueprint.template.views.LdapView;
-import com.sequenceiq.cloudbreak.blueprint.template.views.SharedServiceConfigsView;
-import com.sequenceiq.cloudbreak.blueprint.templates.GeneralClusterConfigs;
 import com.sequenceiq.cloudbreak.common.model.OrchestratorType;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
+import com.sequenceiq.cloudbreak.template.HandlebarUtils;
+import com.sequenceiq.cloudbreak.template.TemplateModelContextBuilder;
+import com.sequenceiq.cloudbreak.template.model.GeneralClusterConfigs;
+import com.sequenceiq.cloudbreak.template.model.HdfConfigs;
+import com.sequenceiq.cloudbreak.template.views.BlueprintView;
+import com.sequenceiq.cloudbreak.template.views.LdapView;
+import com.sequenceiq.cloudbreak.template.views.SharedServiceConfigsView;
 
 @RunWith(Parameterized.class)
 public class HandlebarTemplateTest {
@@ -281,7 +283,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
@@ -290,7 +292,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(adlsFileSystemConfiguration(emptyStorageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -300,7 +302,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(adlsFileSystemConfiguration(storageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -310,7 +312,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(wasbSecureFileSystemConfiguration(emptyStorageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -320,7 +322,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(wasbSecureFileSystemConfiguration(storageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -330,7 +332,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(wasbUnSecureFileSystemConfiguration(storageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -340,7 +342,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(gcsFileSystemConfiguration(emptyStorageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -350,7 +352,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(gcsFileSystemConfiguration(storageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -360,7 +362,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(s3FileSystemConfiguration(storageLocationViews()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -370,14 +372,14 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withFileSystemConfigs(s3FileSystemConfiguration(storageLocationViewsWithDuplicatedKey()))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> beaconWhenRdsPresentedThenShouldReturnWithRdsConfigs() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.BEACON)))
                 .build();
     }
@@ -388,7 +390,7 @@ public class HandlebarTemplateTest {
 
         BlueprintView blueprintView = new BlueprintView("blueprintText", "2.6", "HDP");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withBlueprintView(blueprintView)
                 .withFixInputs(properties)
                 .build();
@@ -400,7 +402,7 @@ public class HandlebarTemplateTest {
 
         BlueprintView blueprintView = new BlueprintView("blueprintText", "2.5", "HDP");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withBlueprintView(blueprintView)
                 .withFixInputs(properties)
                 .build();
@@ -410,7 +412,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setOrchestratorType(OrchestratorType.CONTAINER);
         generalClusterConfigs.setExecutorType(ExecutorType.CONTAINER);
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
@@ -419,7 +421,7 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setOrchestratorType(OrchestratorType.HOST);
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
@@ -428,40 +430,40 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setNodeCount(6);
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withLdap(new LdapView(ldapConfig()))
                 .withGateway(TestUtil.gatewayEnabled())
                 .build();
     }
 
     public static Map<String, Object> ldapConfigWhenLdapPresentedThenShouldReturnWithAdConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withLdap(new LdapView(adConfig()))
                 .withGateway(TestUtil.gatewayEnabled())
                 .build();
     }
 
     public static Map<String, Object> enabledGateway() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGateway(TestUtil.gatewayEnabled())
                 .build();
     }
 
     public static Map<String, Object> enabledGatewayWithoutSSOAndWithRanger() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGateway(TestUtil.gatewayEnabledWithoutSSOAndWithRanger())
                 .withComponents(Sets.newHashSet("RANGER_ADMIN"))
                 .build();
     }
 
     public static Map<String, Object> enabledGatewayWithRanger() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGateway(TestUtil.gatewayEnabled())
                 .withComponents(Sets.newHashSet("RANGER_ADMIN"))
                 .build();
@@ -471,14 +473,14 @@ public class HandlebarTemplateTest {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setPassword("cloudbreak123!");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .withComponents(Sets.newHashSet("RANGER_ADMIN"))
                 .build();
     }
 
     public static Map<String, Object> withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .build();
     }
 
@@ -488,7 +490,7 @@ public class HandlebarTemplateTest {
         generalClusterConfigs.setUserName("lastname");
         generalClusterConfigs.setIdentityUserEmail("admin@example.com");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
@@ -499,7 +501,7 @@ public class HandlebarTemplateTest {
         generalClusterConfigs.setUserName("lastname");
         generalClusterConfigs.setIdentityUserEmail("admin@example.com");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
@@ -510,7 +512,7 @@ public class HandlebarTemplateTest {
         generalClusterConfigs.setUserName("lastname");
         generalClusterConfigs.setIdentityUserEmail("admin@example.com");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.SUPERSET)))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -522,7 +524,7 @@ public class HandlebarTemplateTest {
         generalClusterConfigs.setUserName("lastname");
         generalClusterConfigs.setIdentityUserEmail("admin@example.com");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
@@ -535,7 +537,7 @@ public class HandlebarTemplateTest {
 
         BlueprintView blueprintView = new BlueprintView("blueprintText", "2.6", "HDF");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .withHdfConfigs(new HdfConfigs("nifigtargets", "nifigtargets", "nifigtargets",
                         withProxyHost ? Optional.of("nifiproxyhost") : Optional.empty()))
@@ -557,7 +559,7 @@ public class HandlebarTemplateTest {
         properties.put("blueprints_basics_nifi_identity_providers", "<test>");
         properties.put("blueprints_basics_nifi_authorizers", "<test1>");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .withLdap(new LdapView(ldapConfig()))
                 .withFixInputs(properties)
@@ -575,7 +577,7 @@ public class HandlebarTemplateTest {
 
         BlueprintView blueprintView = new BlueprintView("blueprintText", "2.6", "HDP");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .withHdfConfigs(new HdfConfigs("nifigtargets", "nifigtargets", "nifigtargets", Optional.empty()))
                 .withBlueprintView(blueprintView)
@@ -583,24 +585,24 @@ public class HandlebarTemplateTest {
     }
 
     public static Map<String, Object> hiveRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.HIVE)))
                 .build();
     }
 
     private static Object hiveWhenLdapPresentedThenShouldReturnWithLdapConfigs() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withLdap(new LdapView(ldapConfig()))
                 .build();
     }
 
     private static Object hiveWhenLdapNotPresentedThenShouldReturnWithoutLdapConfigs() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .build();
     }
 
     public static Map<String, Object> sSConfigWhenSSAndDatalakePresentedThenShouldReturnWithSSDatalakeConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withSharedServiceConfigs(datalakeSharedServiceConfig().get())
                 .build();
     }
@@ -609,7 +611,7 @@ public class HandlebarTemplateTest {
         Map<String, Object> fixInputs = new HashMap<>();
         fixInputs.put("remoteClusterName", "datalake-1");
         fixInputs.put("policymgr_external_url", "10.1.1.1:6080");
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withSharedServiceConfigs(attachedClusterSharedServiceConfig().get())
                 .withFixInputs(fixInputs)
                 .build();
@@ -629,7 +631,7 @@ public class HandlebarTemplateTest {
         objects.add("ATLAS_SERVER");
         sharedServiceConfigsView.setDatalakeComponents(objects);
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withSharedServiceConfigs(sharedServiceConfigsView)
                 .withFixInputs(fixInputs)
                 .build();
@@ -637,76 +639,76 @@ public class HandlebarTemplateTest {
 
     public static Map<String, Object> rangerRdsConfigWhenRdsPresentedThenShouldReturnWithPostgresRdsConfig() {
         RDSConfig rdsConfig = TestUtil.rdsConfig(RdsType.RANGER, DatabaseVendor.POSTGRES);
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(rdsConfig))
                 .build();
     }
 
     public static Map<String, Object> rangerRdsConfigWhenRdsPresentedThenShouldReturnWithMySQLRdsConfig() {
         RDSConfig rdsConfig = TestUtil.rdsConfig(RdsType.RANGER, DatabaseVendor.MYSQL);
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(rdsConfig))
                 .build();
     }
 
     public static Map<String, Object> rangerRdsConfigWhenRdsPresentedThenShouldReturnWitOracle11hRdsConfig() {
         RDSConfig rdsConfig = TestUtil.rdsConfig(RdsType.RANGER, DatabaseVendor.ORACLE11);
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(rdsConfig))
                 .build();
     }
 
     public static Map<String, Object> rangerRdsConfigWhenRdsPresentedThenShouldReturnWitOracle12hRdsConfig() {
         RDSConfig rdsConfig = TestUtil.rdsConfig(RdsType.RANGER, DatabaseVendor.ORACLE12);
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(rdsConfig))
                 .build();
     }
 
     public static Map<String, Object> hiveRdsConfigWhenRdsPresentedThenShouldReturnWithPotgresRdsConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.HIVE, DatabaseVendor.POSTGRES)))
                 .build();
     }
 
     public static Map<String, Object> hiveRdsConfigWhenRdsPresentedThenShouldReturnWithOracle11RdsConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.HIVE, DatabaseVendor.ORACLE11)))
                 .build();
     }
 
     public static Map<String, Object> hiveRdsConfigWhenRdsPresentedThenShouldReturnWithOracle12RdsConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.HIVE, DatabaseVendor.ORACLE12)))
                 .build();
     }
 
     public static Map<String, Object> hiveRdsConfigWhenRdsPresentedThenShouldReturnWithMySQLRdsConfig() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.HIVE, DatabaseVendor.MYSQL)))
                 .build();
     }
 
     public static Map<String, Object> oozieWhenRdsPresentedThenShouldReturnWithPostgresRdsConfigs() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.OOZIE, DatabaseVendor.POSTGRES)))
                 .build();
     }
 
     public static Map<String, Object> oozieWhenRdsPresentedThenShouldReturnWithOracle11RdsConfigs() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.OOZIE, DatabaseVendor.ORACLE11)))
                 .build();
     }
 
     public static Map<String, Object> oozieWhenRdsPresentedThenShouldReturnWithOracle12RdsConfigs() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.OOZIE, DatabaseVendor.ORACLE12)))
                 .build();
     }
 
     public static Map<String, Object> oozieWhenRdsPresentedThenShouldReturnWithMySQLRdsConfigs() {
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.OOZIE, DatabaseVendor.MYSQL)))
                 .build();
     }
@@ -717,7 +719,7 @@ public class HandlebarTemplateTest {
         generalClusterConfigs.setUserName("lastname");
         generalClusterConfigs.setIdentityUserEmail("admin@example.com");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.DRUID, DatabaseVendor.POSTGRES)))
                 .build();
@@ -729,7 +731,7 @@ public class HandlebarTemplateTest {
         generalClusterConfigs.setUserName("lastname");
         generalClusterConfigs.setIdentityUserEmail("admin@example.com");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.SUPERSET, DatabaseVendor.MYSQL)))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
@@ -741,7 +743,7 @@ public class HandlebarTemplateTest {
         generalClusterConfigs.setUserName("lastname");
         generalClusterConfigs.setIdentityUserEmail("admin@example.com");
 
-        return new BlueprintTemplateModelContextBuilder()
+        return new TemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.DRUID, DatabaseVendor.MYSQL)))
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();

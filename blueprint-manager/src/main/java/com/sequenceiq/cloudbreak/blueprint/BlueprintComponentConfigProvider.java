@@ -8,27 +8,31 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.sequenceiq.cloudbreak.template.processor.BlueprintTextProcessor;
+import com.sequenceiq.cloudbreak.template.TemplatePreparationObject;
+import com.sequenceiq.cloudbreak.template.processor.configuration.BlueprintConfigurationEntry;
+import com.sequenceiq.cloudbreak.template.processor.configuration.HostgroupEntry;
 
 public interface BlueprintComponentConfigProvider {
 
-    default BlueprintTextProcessor customTextManipulation(BlueprintPreparationObject source, BlueprintTextProcessor blueprintProcessor) {
+    default BlueprintTextProcessor customTextManipulation(TemplatePreparationObject source, BlueprintTextProcessor blueprintProcessor) {
         return blueprintProcessor;
     }
 
-    default List<BlueprintConfigurationEntry> getSettingsEntries(BlueprintPreparationObject source, String blueprintProcessor) {
+    default List<BlueprintConfigurationEntry> getSettingsEntries(TemplatePreparationObject source, String blueprintProcessor) {
         return Lists.newArrayList();
     }
 
-    default List<BlueprintConfigurationEntry> getConfigurationEntries(BlueprintPreparationObject source, String blueprintProcessor) throws IOException {
+    default List<BlueprintConfigurationEntry> getConfigurationEntries(TemplatePreparationObject source, String blueprintProcessor) throws IOException {
         return Lists.newArrayList();
     }
 
-    default Map<HostgroupEntry, List<BlueprintConfigurationEntry>> getHostgroupConfigurationEntries(BlueprintPreparationObject source, String blueprintProcessor)
+    default Map<HostgroupEntry, List<BlueprintConfigurationEntry>> getHostgroupConfigurationEntries(TemplatePreparationObject source, String blueprintProcessor)
             throws IOException {
         return Maps.newHashMap();
     }
 
-    default boolean specialCondition(BlueprintPreparationObject source, String blueprintText) {
+    default boolean specialCondition(TemplatePreparationObject source, String blueprintText) {
         return false;
     }
 
