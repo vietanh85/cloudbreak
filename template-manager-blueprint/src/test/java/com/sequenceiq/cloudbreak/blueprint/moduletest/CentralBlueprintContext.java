@@ -35,7 +35,7 @@ public class CentralBlueprintContext {
     }
 
     @Configuration
-    @ComponentScan("com.sequenceiq.cloudbreak.blueprint")
+    @ComponentScan({ "com.sequenceiq.cloudbreak.blueprint", "com.sequenceiq.cloudbreak.template" })
     public static class SpringConfig {
 
         @Inject
