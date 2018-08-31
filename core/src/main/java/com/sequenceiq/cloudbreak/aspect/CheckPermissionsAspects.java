@@ -26,7 +26,7 @@ public class CheckPermissionsAspects {
     }
 
     @Around("allRepositories()")
-    public Object hasPermission(ProceedingJoinPoint proceedingJoinPoint) {
+    public Object hasPermission(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         return permissionCheckerService.hasPermission(proceedingJoinPoint);
     }
 }
