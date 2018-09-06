@@ -83,7 +83,7 @@ public class CloudbreakMockClusterTest extends CloudbreakTest {
         given(getMockProvider().aValidCredential());
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void cleanMockRoutesAndMockedStacks() throws Exception {
         when(Mock.deleteStack());
         when(Mock.delete());

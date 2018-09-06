@@ -350,7 +350,10 @@ public class StackService {
     public Stack create(IdentityUser identityUser, Stack stack, String platformString, StatedImage imgFromCatalog) {
         stack.setOwner(identityUser.getUserId());
         stack.setAccount(identityUser.getAccount());
-        stack.setGatewayPort(nginxPort);
+        //stack.setGatewayPort(nginxPort);
+        if (stack.getGatewayPort() == null) {
+            stack.setGatewayPort(nginxPort);
+        }
 
         if (stack.getOrganization() == null) {
             Organization organization = organizationService.getDefaultOrganizationForCurrentUser();

@@ -28,7 +28,7 @@ import com.sequenceiq.it.spark.ITResponse;
 import com.sequenceiq.it.verification.Verification;
 
 public class Mock extends MockEntity {
-    public static final int DEFAULT_PORT = 9443;
+    public static final int DEFAULT_PORT = 9444;
 
     public static final String MOCK_SERVER = "MOCK_SERVER";
 
