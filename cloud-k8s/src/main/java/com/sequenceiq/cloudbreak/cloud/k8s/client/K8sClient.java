@@ -27,7 +27,7 @@ public class K8sClient {
         return coreV1Api;
     }
 
-    public AppsV1beta1Api appsV1beta1Api(CoreV1Api coreV1Api) throws IOException {
+    public AppsV1beta1Api appsV1beta1Api() throws IOException {
         ApiClient apiClient = apiClient();
         AppsV1beta1Api appsV1beta1Api = new AppsV1beta1Api(apiClient);
 

@@ -3,8 +3,8 @@ package com.sequenceiq.cloudbreak.cloud.k8s.status;
 import com.sequenceiq.cloudbreak.cloud.k8s.client.model.core.ApplicationState;
 import com.sequenceiq.cloudbreak.cloud.model.ResourceStatus;
 
-public class YarnApplicationStatus {
-    private YarnApplicationStatus() {
+public class K8sApplicationStatus {
+    private K8sApplicationStatus() {
     }
 
     public static ResourceStatus mapResourceStatus(String status) {

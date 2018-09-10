@@ -151,11 +151,11 @@ public class K8sApiUtils {
     public void createK8sApp(String hdpClusterName, K8sComponent component)
             throws Exception {
         String configPropsString = writeParameters(component.getConfiguration().getProperties());
-        createK8sArtifactsForGroup(k8sClient.coreV1Api(), k8sClient.appsV1beta1Api(k8sClient.coreV1Api()), configPropsString, hdpClusterName, component.getName(), component);
+        createK8sArtifactsForGroup(k8sClient.coreV1Api(), k8sClient.appsV1beta1Api(), configPropsString, hdpClusterName, component.getName(), component);
     }
 
     public void deleteK8sApp(String hdpClusterName) throws Exception {
-        deleteK8sArtifacts(k8sClient.coreV1Api(), k8sClient.appsV1beta1Api(k8sClient.coreV1Api()), k8sClient.appsV1beta2Api(), hdpClusterName);
+        deleteK8sArtifacts(k8sClient.coreV1Api(), k8sClient.appsV1beta1Api(), k8sClient.appsV1beta2Api(), hdpClusterName);
     }
 
     private static String writeParameters(Map<String, String> parameters) {
