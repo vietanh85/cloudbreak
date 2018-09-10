@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.api.model.AdjustmentType;
+import com.sequenceiq.cloudbreak.cloud.PlatformParametersConsts;
 import com.sequenceiq.cloudbreak.cloud.ResourceConnector;
 import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
 import com.sequenceiq.cloudbreak.cloud.exception.CloudConnectorException;
@@ -26,13 +27,13 @@ import com.sequenceiq.cloudbreak.cloud.exception.CloudOperationNotSupportedExcep
 import com.sequenceiq.cloudbreak.cloud.exception.TemplatingDoesNotSupportedException;
 import com.sequenceiq.cloudbreak.cloud.k8s.auth.K8sClientUtil;
 import com.sequenceiq.cloudbreak.cloud.k8s.auth.K8sCredentialView;
-import com.sequenceiq.cloudbreak.cloud.k8s.client.model.core.K8sComponent;
 import com.sequenceiq.cloudbreak.cloud.model.CloudInstance;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource.Builder;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResourceStatus;
 import com.sequenceiq.cloudbreak.cloud.model.CloudStack;
 import com.sequenceiq.cloudbreak.cloud.model.Group;
+import com.sequenceiq.cloudbreak.cloud.model.InstanceTemplate;
 import com.sequenceiq.cloudbreak.cloud.model.ResourceStatus;
 import com.sequenceiq.cloudbreak.cloud.model.TlsInfo;
 import com.sequenceiq.cloudbreak.cloud.notification.PersistenceNotifier;
@@ -65,6 +66,9 @@ import io.kubernetes.client.util.authenticators.GCPAuthenticator;
 
 @Service
 public class K8sResourceConnector implements ResourceConnector<Object> {
+    private static final int DEFAULT_CPU_COUNT = 4;
+
+    private static final int DEFAULT_MEM_SIZE_IN_MB = 8192;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(K8sResourceConnector.class);
 
@@ -86,6 +90,9 @@ public class K8sResourceConnector implements ResourceConnector<Object> {
 
     @Inject
     private K8sClientUtil k8sClientUtil;
+
+    @Inject
+    private K8sApiUtils k8sApiUtils;
 
     @Inject
     private K8sResourceNameGenerator k8sResourceNameGenerator;
@@ -152,9 +159,8 @@ public class K8sResourceConnector implements ResourceConnector<Object> {
 
     private V1Service v1Service(String clusterName) {
         V1Service serviceBody = new V1Service();
-
         serviceBody.setMetadata(v1ObjectMeta(clusterName));
-        serviceBody.setSpec(v1ServiceSpec());
+        serviceBody.setSpec(v1ServiceSpec(clusterName));
         return serviceBody;
     }
 
@@ -175,8 +181,8 @@ public class K8sResourceConnector implements ResourceConnector<Object> {
         deployment.setKind("Deployment");
         deployment.setApiVersion("apps/v1beta1");
         deployment.setMetadata(v1ObjectMeta(clusterName));
-        deployment.setSpec(appsV1beta1DeploymentSpec());
-        deployment.getSpec().setTemplate(v1PodTemplateSpec(instanceName, stack.getImage().getImageName(), group));
+        deployment.setSpec(appsV1beta1DeploymentSpec(clusterName));
+        deployment.getSpec().setTemplate(v1PodTemplateSpec(clusterName, instanceName, stack.getImage().getImageName(), group));
         return deployment;
     }
 
@@ -203,9 +209,9 @@ public class K8sResourceConnector implements ResourceConnector<Object> {
         return secContext;
     }
 
-    private V1PodTemplateSpec v1PodTemplateSpec(String instanceName, String imageName, Group group) {
+    private V1PodTemplateSpec v1PodTemplateSpec(String clusterName, String instanceName, String imageName, Group group) {
         V1PodTemplateSpec v1PodTemplateSpec = new V1PodTemplateSpec();
-        v1PodTemplateSpec.setMetadata(v1ObjectMeta());
+        v1PodTemplateSpec.setMetadata(v1ObjectMeta(clusterName));
         v1PodTemplateSpec.setSpec(v1ProdSpec(instanceName, imageName, group));
         return v1PodTemplateSpec;
     }
@@ -241,14 +247,21 @@ public class K8sResourceConnector implements ResourceConnector<Object> {
     private V1ConfigMapVolumeSource configMap() {
         V1ConfigMapVolumeSource configMap = new V1ConfigMapVolumeSource();
         configMap.setDefaultMode(DEFAULT_MODE);
+        // TODO do it
+        String configName = "sdfsdfdsf";
         configMap.setName(configName);
         return configMap;
     }
 
     private V1ResourceRequirements v1ResourceRequirements(Group group) {
         V1ResourceRequirements resources = new V1ResourceRequirements();
-        resources.putLimitsItem("memory", Quantity.fromString(group.getReferenceInstanceConfiguration().getTemplate() + "Mi"));
-        resources.putLimitsItem("cpu", Quantity.fromString(group.getReferenceInstanceConfiguration().getTemplate()..getCpus() + ""));
+        InstanceTemplate template = group.getReferenceInstanceConfiguration().getTemplate();
+        Integer cpuCount = Optional.ofNullable(template.getParameter(PlatformParametersConsts.CUSTOM_INSTANCETYPE_CPUS, Integer.class))
+                .orElse(DEFAULT_CPU_COUNT);
+        Integer memoryInMb = Optional.ofNullable(template.getParameter(PlatformParametersConsts.CUSTOM_INSTANCETYPE_MEMORY, Integer.class))
+                .orElse(DEFAULT_MEM_SIZE_IN_MB);
+        resources.putLimitsItem("memory", Quantity.fromString(memoryInMb + "Mi"));
+        resources.putLimitsItem("cpu", Quantity.fromString(cpuCount + ""));
         return resources;
     }
 
@@ -367,7 +380,7 @@ public class K8sResourceConnector implements ResourceConnector<Object> {
         for (CloudResource resource : cloudResources) {
             switch (resource.getType()) {
                 case K8S_APPLICATION:
-                    K8sApiUtils.deleteK8sApp(resource.getName());
+                    k8sApiUtils.deleteK8sApp(resource.getName());
                     result.add(new CloudResourceStatus(resource, ResourceStatus.DELETED));
                     break;
                 default:

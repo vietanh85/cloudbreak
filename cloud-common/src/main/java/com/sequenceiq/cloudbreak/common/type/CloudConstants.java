@@ -15,7 +15,6 @@ public class CloudConstants {
 
     public static final String K8S = "K8S";
 
-
     private CloudConstants() {
     }
 }

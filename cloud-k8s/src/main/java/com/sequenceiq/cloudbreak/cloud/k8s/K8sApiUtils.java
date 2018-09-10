@@ -1,17 +1,16 @@
 package com.sequenceiq.cloudbreak.cloud.k8s;
 
-import static com.sequenceiq.cloudbreak.cloud.k8s.client.K8sClient.appsV1beta1Api;
-import static com.sequenceiq.cloudbreak.cloud.k8s.client.K8sClient.appsV1beta2Api;
-import static com.sequenceiq.cloudbreak.cloud.k8s.client.K8sClient.coreV1Api;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.cloud.k8s.client.K8sClient;
 import com.sequenceiq.cloudbreak.cloud.k8s.client.model.core.K8sComponent;
@@ -49,6 +48,7 @@ import io.kubernetes.client.models.V1VolumeMount;
 import io.kubernetes.client.models.V1beta2ReplicaSet;
 import io.kubernetes.client.models.V1beta2ReplicaSetList;
 
+@Service
 public class K8sApiUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(K8sApiUtils.class);
 
@@ -72,14 +72,16 @@ public class K8sApiUtils {
 
     private static final int MAX_RETRY_ATTEMPTS = 60;
 
-    private K8sApiUtils() {
-    }
+    private static final String IMAGE_NAME = "";
 
-    public static Map<String, Map<String, K8sServicePodContainer>> collectContainersByGroup(String hdpClusterName)
+    @Inject
+    private K8sClient k8sClient;
+
+    public Map<String, Map<String, K8sServicePodContainer>> collectContainersByGroup(String hdpClusterName)
             throws ApiException, InterruptedException, CloudbreakException {
         Map<String, Map<String, K8sServicePodContainer>> result = new HashMap<>();
 
-        V1ServiceList services = coreV1Api().listServiceForAllNamespaces(null, null, true,
+        V1ServiceList services = k8sClient.coreV1Api().listServiceForAllNamespaces(null, null, true,
                 getClusterLabelSelector(hdpClusterName),
                 0, null, null, 0, false);
 
@@ -97,7 +99,7 @@ public class K8sApiUtils {
                             containersForGroup = new HashMap<>();
                             result.put(group, containersForGroup);
                         }
-                        populateContainerMetadata(api, item, publicIp, group, containersForGroup);
+                        populateContainerMetadata(k8sClient.coreV1Api(), item, publicIp, group, containersForGroup);
                     }
                 }
             }
@@ -105,7 +107,7 @@ public class K8sApiUtils {
             done = totalNumberOfServices == totalSoFar;
             Thread.sleep(API_RETRY_INTERVAL);
             numAttempts--;
-            services = coreV1Api().listServiceForAllNamespaces(null, null, true,
+            services = k8sClient.coreV1Api().listServiceForAllNamespaces(null, null, true,
                     getClusterLabelSelector(hdpClusterName),
                     0, null, null, 0, false);
         }
@@ -146,14 +148,14 @@ public class K8sApiUtils {
         return totalSoFar;
     }
 
-    public static void createK8sApp(String hdpClusterName, K8sComponent component)
+    public void createK8sApp(String hdpClusterName, K8sComponent component)
             throws Exception {
         String configPropsString = writeParameters(component.getConfiguration().getProperties());
-        createK8sArtifactsForGroup(coreV1Api(), appsV1beta1Api(), configPropsString, hdpClusterName, component.getName(), component);
+        createK8sArtifactsForGroup(k8sClient.coreV1Api(), k8sClient.appsV1beta1Api(k8sClient.coreV1Api()), configPropsString, hdpClusterName, component.getName(), component);
     }
 
-    public static void deleteK8sApp(String hdpClusterName) throws Exception {
-        deleteK8sArtifacts(coreV1Api(), appsV1beta1Api(), appsV1beta2Api(), hdpClusterName);
+    public void deleteK8sApp(String hdpClusterName) throws Exception {
+        deleteK8sArtifacts(k8sClient.coreV1Api(), k8sClient.appsV1beta1Api(k8sClient.coreV1Api()), k8sClient.appsV1beta2Api(), hdpClusterName);
     }
 
     private static String writeParameters(Map<String, String> parameters) {
@@ -164,7 +166,7 @@ public class K8sApiUtils {
         return sb.toString();
     }
 
-    private static void createK8sArtifactsForGroup(CoreV1Api api, AppsV1beta1Api appsV1beta1Api, String configPropsString,
+    private void createK8sArtifactsForGroup(CoreV1Api api, AppsV1beta1Api appsV1beta1Api, String configPropsString,
             String hdpClusterName, String group, K8sComponent component) throws ApiException {
         String configName = CB_CONFIG_NAME + "-" + hdpClusterName + "-" + group;
         createConfigMap(api, hdpClusterName, configName, configPropsString);
@@ -305,11 +307,11 @@ public class K8sApiUtils {
         LOGGER.info("Created Service " + appName);
     }
 
-    private static void createConfigMap(CoreV1Api api, String hdpClusterName, String cbConfigName, String configPropsString) throws ApiException {
-        K8sClient.createConfigMap(coreV1Api(), "default", cbConfigName, configPropsString);
+    private void createConfigMap(CoreV1Api api, String hdpClusterName, String cbConfigName, String configPropsString) throws ApiException {
+        createConfigMap(k8sClient.coreV1Api(), "default", cbConfigName, configPropsString);
     }
 
-    private static void createDeployment(AppsV1beta1Api appsV1beta1Api,
+    private void createDeployment(AppsV1beta1Api appsV1beta1Api,
             String hdpClusterName, String group, String configName, String appName,
             String imageName, K8sComponent component) throws ApiException {
         AppsV1beta1Deployment deployment = new AppsV1beta1Deployment();

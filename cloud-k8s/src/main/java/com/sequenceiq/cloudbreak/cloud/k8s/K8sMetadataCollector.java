@@ -1,9 +1,10 @@
 package com.sequenceiq.cloudbreak.cloud.k8s;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+
+import javax.inject.Inject;
 
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,9 @@ import io.kubernetes.client.ApiException;
 @Service
 public class K8sMetadataCollector implements MetadataCollector {
 
+    @Inject
+    private K8sApiUtils k8sApiUtils;
+
     @Override
     public List<CloudVmMetaDataStatus> collect(AuthenticatedContext authenticatedContext, List<CloudResource> resources,
             List<CloudInstance> vms, List<CloudInstance> knownInstances) {
@@ -36,7 +40,7 @@ public class K8sMetadataCollector implements MetadataCollector {
 
             List<CloudVmMetaDataStatus> cloudVmMetaDataStatuses = Lists.newArrayList();
             Map<String, Map<String, K8sServicePodContainer>> groupServicesByInstanceGroup =
-                    K8sApiUtils.collectContainersByGroup(k8sApplication.getName());
+                    k8sApiUtils.collectContainersByGroup(k8sApplication.getName());
 
             ListMultimap<String, CloudInstance> groupInstancesByInstanceGroup = groupInstancesByInstanceGroup(vms);
             for (Map.Entry<String, Map<String, K8sServicePodContainer>> e: groupServicesByInstanceGroup.entrySet()) {
@@ -66,8 +70,6 @@ public class K8sMetadataCollector implements MetadataCollector {
         } catch (InterruptedException ioe) {
             throw new CloudConnectorException(ioe);
         } catch (CloudbreakException ioe) {
-            throw new CloudConnectorException(ioe);
-        } catch (IOException ioe) {
             throw new CloudConnectorException(ioe);
         }
     }
