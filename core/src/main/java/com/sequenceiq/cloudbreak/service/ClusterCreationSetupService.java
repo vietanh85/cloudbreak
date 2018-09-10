@@ -163,7 +163,7 @@ public class ClusterCreationSetupService {
 
         start = System.currentTimeMillis();
 
-        cluster = clusterDecorator.decorate(cluster, request, blueprint, user, stack.getOrganization(), stack);
+        cluster = clusterDecorator.decorate(cluster, request, blueprint, user, organization, stack);
         LOGGER.info("Cluster object decorated in {} ms for stack {}", System.currentTimeMillis() - start, stackName);
 
         start = System.currentTimeMillis();
