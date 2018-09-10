@@ -27,7 +27,7 @@ public class K8sCredentialConnector implements CredentialConnector {
     @Override
     public Map<String, String> interactiveLogin(CloudContext cloudContext, ExtendedCloudCredential extendedCloudCredential,
             CredentialNotifier credentialNotifier) {
-        throw new UnsupportedOperationException("Interactive login not supported on YARN");
+        throw new UnsupportedOperationException("Interactive login not supported on K8S");
     }
 
     @Override

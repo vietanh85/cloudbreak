@@ -16,6 +16,10 @@ public class K8sConstants implements CloudConstant {
 
     public static final String K8S_LIFETIME_PARAMETER = "lifeTime";
 
+    public static final String K8S_ENDPOINT_PARAMETER = "k8sEndpoint";
+
+    public static final String K8S_TOKEN = "k8sToken";
+
     private K8sConstants() {
     }
 

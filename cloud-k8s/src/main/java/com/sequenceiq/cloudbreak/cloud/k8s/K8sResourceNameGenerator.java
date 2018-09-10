@@ -15,7 +15,7 @@ public class K8sResourceNameGenerator {
     private int maxResourceNameLength;
 
     @Value("${cb.k8s.deafult.prefix.configmap:cb-config}")
-    private int configmapPrefix;
+    private String configmapPrefix;
 
     public String getConfigMapName(AuthenticatedContext ac) {
         return splitName(String.format("%s-%s", configmapPrefix, createApplicationName(ac)));
