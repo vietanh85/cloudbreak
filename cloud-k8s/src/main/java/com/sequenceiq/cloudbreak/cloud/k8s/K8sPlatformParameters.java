@@ -49,7 +49,7 @@ public class K8sPlatformParameters implements PlatformParameters {
 
     @Override
     public String resourceDefinition(String resource) {
-        return cloudbreakResourceReaderService.resourceDefinition("yarn", resource);
+        return cloudbreakResourceReaderService.resourceDefinition("k8s", resource);
     }
 
     @Override
