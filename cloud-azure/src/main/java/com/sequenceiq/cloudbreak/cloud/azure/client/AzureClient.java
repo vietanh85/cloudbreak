@@ -578,13 +578,13 @@ public class AzureClient {
         return handleAuthException(() -> azure.networkSecurityGroups());
     }
 
-    public LoadBalancer getLoadBalancer(String name, String loadBalancerName) {
-        return handleAuthException(() -> azure.loadBalancers().getByResourceGroup(name, loadBalancerName));
+    public LoadBalancer getLoadBalancer(String resourceGroupName, String loadBalancerName) {
+        return handleAuthException(() -> azure.loadBalancers().getByResourceGroup(resourceGroupName, loadBalancerName));
     }
 
-    public List<String> getLoadBalancerIps(String name, String loadBalancerName) {
+    public List<String> getLoadBalancerIps(String resourceGroupName, String loadBalancerName) {
         List<String> ipList = new ArrayList<>();
-        List<String> publicIpAddressIds = getLoadBalancer(name, loadBalancerName).publicIPAddressIds();
+        List<String> publicIpAddressIds = getLoadBalancer(resourceGroupName, loadBalancerName).publicIPAddressIds();
         for (String publicIpAddressId : publicIpAddressIds) {
             PublicIPAddress publicIpAddress = getPublicIpAddressById(publicIpAddressId);
             ipList.add(publicIpAddress.ipAddress());

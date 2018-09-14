@@ -99,7 +99,8 @@ public class AzureResourceConnector implements ResourceConnector<Map<String, Map
             AdjustmentType adjustmentType, Long threshold) {
         AzureCredentialView azureCredentialView = new AzureCredentialView(ac.getCloudCredential());
         String stackName = azureUtils.getStackName(ac.getCloudContext());
-        String resourceGroupName = azureUtils.getResourceGroupName(ac.getCloudContext());
+        String resourceGroupName = "tomi-test458";
+//        String resourceGroupName = azureUtils.getResourceGroupName(ac.getCloudContext());
         AzureClient client = ac.getParameter(AzureClient.class);
 
         AzureStackView azureStackView = getAzureStack(azureCredentialView, stack, getNumberOfAvailableIPsInSubnets(client, stack.getNetwork()), ac);
@@ -156,8 +157,11 @@ public class AzureResourceConnector implements ResourceConnector<Map<String, Map
                     LOGGER.info("Checking Azure group stack status of: {}", stackName);
                     try {
                         CloudResourceStatus templateResourceStatus;
-                        if (client.templateDeploymentExists(stackName, stackName)) {
-                            Deployment resourceGroupDeployment = client.getTemplateDeployment(stackName, stackName);
+//                        The existing resource group should be handled here
+                        String resourceGroupName = "tomi-test458";
+//                        String resourceGroupName = stackName;
+                        if (client.templateDeploymentExists(resourceGroupName, stackName)) {
+                            Deployment resourceGroupDeployment = client.getTemplateDeployment(resourceGroupName, stackName);
                             templateResourceStatus = azureUtils.getTemplateStatus(resource, resourceGroupDeployment, client, stackName);
                         } else {
                             templateResourceStatus = new CloudResourceStatus(resource, ResourceStatus.DELETED);

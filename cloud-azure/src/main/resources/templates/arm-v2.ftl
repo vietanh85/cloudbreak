@@ -379,7 +379,7 @@
                            "dataDisks": [
                            <#list instance.volumes as volume>
                                {
-                                   "name": "[concat('datadisk', '${instance.instanceId}', '${volume_index}')]",
+                                   "name": "[concat(parameters('vmNamePrefix'), 'datadisk', '${instance.instanceId}', '${volume_index}')]",
                                    "diskSizeGB": ${volume.size},
                                    "lun":  ${volume_index},
                                    <#if instance.managedDisk == false>

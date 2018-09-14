@@ -46,19 +46,21 @@ public class AzureMetadataCollector implements MetadataCollector {
         List<InstanceTemplate> templates = Lists.transform(vms, CloudInstance::getTemplate);
 
         String resourceName = resource.getName();
+//        String resourceGroupName = resourceName;
+        String resourceGroupName = "tomi-test458";
         Map<String, InstanceTemplate> templateMap = Maps.uniqueIndex(templates, from -> azureUtils.getPrivateInstanceId(resourceName,
                 from.getGroupName(), Long.toString(from.getPrivateId())));
 
         try {
             for (Entry<String, InstanceTemplate> instance : templateMap.entrySet()) {
                 AzureClient azureClient = authenticatedContext.getParameter(AzureClient.class);
-                VirtualMachine vm = azureClient.getVirtualMachine(resourceName, instance.getKey());
+                VirtualMachine vm = azureClient.getVirtualMachine(resourceGroupName, instance.getKey());
                 String subnetId = vm.getPrimaryNetworkInterface().primaryIPConfiguration().subnetName();
                 String instanceName = vm.computerName();
 
                 String privateIp = null;
                 String publicIp = null;
-                Integer faultDomainCount = azureClient.getFaultDomainNumber(resourceName, vm.name());
+                Integer faultDomainCount = azureClient.getFaultDomainNumber(resourceGroupName, vm.name());
                 String platform = authenticatedContext.getCloudContext().getPlatform().value();
                 String location = authenticatedContext.getCloudContext().getLocation().getRegion().value();
                 String hostgroupNm = instance.getValue().getGroupName();
@@ -85,7 +87,7 @@ public class AzureMetadataCollector implements MetadataCollector {
                     List<LoadBalancerInboundNatRule> inboundNatRules = networkInterface.primaryIPConfiguration().listAssociatedLoadBalancerInboundNatRules();
 
                     if (!backends.isEmpty() || !inboundNatRules.isEmpty()) {
-                        publicIp = azureClient.getLoadBalancerIps(resource.getName(), azureUtils.getLoadBalancerId(resource.getName())).get(0);
+                        publicIp = azureClient.getLoadBalancerIps(resourceGroupName, azureUtils.getLoadBalancerId(resourceName)).get(0);
                     }
 
                     if (publicIpAddress != null && publicIpAddress.ipAddress() != null) {
