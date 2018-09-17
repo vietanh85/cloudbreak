@@ -136,6 +136,11 @@ public class StackPostV3Strategy implements Strategy {
             stackEntity.getRequest().getNetwork().getParameters().put("internetGatewayId", null);
         }
 
+        Integer gatewayPort = integrationTestContext.getContextParam("MOCK_PORT", Integer.class);
+        if (gatewayPort != null) {
+            stackEntity.getRequest().setGatewayPort(gatewayPort);
+        }
+
         log(" Name:\n" + stackEntity.getRequest().getGeneral().getName());
         logJSON(" Stack post request:\n", stackEntity.getRequest());
         stackEntity.setResponse(

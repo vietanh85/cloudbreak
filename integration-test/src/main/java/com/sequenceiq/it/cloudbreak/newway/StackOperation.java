@@ -9,7 +9,7 @@ import com.sequenceiq.cloudbreak.api.model.stack.StackScaleRequestV2;
 import com.sequenceiq.it.IntegrationTestContext;
 import com.sequenceiq.it.cloudbreak.newway.log.Log;
 
-public class StackOperation extends AbstractCloudbreakEntity<StackScaleRequestV2, Response> {
+public class StackOperation extends AbstractCloudbreakEntity<StackScaleRequestV2, Response, StackOperation> {
     public static final String SCALE = "SCALE";
 
     protected StackOperation(String newId) {

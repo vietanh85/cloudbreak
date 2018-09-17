@@ -31,7 +31,6 @@ public class StackPostStrategy implements Strategy {
         StackEntity stackEntity = (StackEntity) entity;
         CloudbreakClient client = getTestContextCloudbreakClient().apply(integrationTestContext);
 
-
         Credential credential = Credential.getTestContextCredential().apply(integrationTestContext);
 
         if (credential != null && stackEntity.getRequest().getGeneral().getCredentialName() == null) {
@@ -59,6 +58,11 @@ public class StackPostStrategy implements Strategy {
                 cluster.getRequest().getCloudStorage().getGcs()
                         .setServiceAccountEmail(credential.getResponse().getParameters().get("serviceAccountId").toString());
             }
+        }
+
+        Integer gatewayPort = integrationTestContext.getContextParam("MOCK_PORT", Integer.class);
+        if (gatewayPort != null) {
+            stackEntity.getRequest().setGatewayPort(gatewayPort);
         }
 
         Kerberos kerberos = Kerberos.getTestContextCluster().apply(integrationTestContext);

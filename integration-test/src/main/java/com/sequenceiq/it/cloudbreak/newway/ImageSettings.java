@@ -2,42 +2,40 @@ package com.sequenceiq.it.cloudbreak.newway;
 
 import java.util.function.Function;
 
+import javax.ws.rs.core.Response;
+
 import com.sequenceiq.it.IntegrationTestContext;
+import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 
-public class ImageSettings extends Entity {
+public class ImageSettings extends AbstractCloudbreakEntity<com.sequenceiq.cloudbreak.api.model.v2.ImageSettings, Response, ImageSettings> {
+
     public static final String IMAGESETTINGS_REQUEST = "IMAGESETTINGS_REQUEST";
-
-    private com.sequenceiq.cloudbreak.api.model.v2.ImageSettings request;
 
     ImageSettings(String newId) {
         super(newId);
-        this.request = new com.sequenceiq.cloudbreak.api.model.v2.ImageSettings();
+        setRequest(new com.sequenceiq.cloudbreak.api.model.v2.ImageSettings());
     }
 
     ImageSettings() {
         this(IMAGESETTINGS_REQUEST);
     }
 
-    public com.sequenceiq.cloudbreak.api.model.v2.ImageSettings getRequest() {
-        return request;
-    }
-
-    public void setRequest(com.sequenceiq.cloudbreak.api.model.v2.ImageSettings request) {
-        this.request = request;
+    public ImageSettings(TestContext testContext) {
+        super(new com.sequenceiq.cloudbreak.api.model.v2.ImageSettings(), testContext);
     }
 
     public ImageSettings withImageCatalog(String imageCatalog) {
-        request.setImageCatalog(imageCatalog);
+        getRequest().setImageCatalog(imageCatalog);
         return this;
     }
 
     public ImageSettings withImageId(String imageId) {
-        request.setImageId(imageId);
+        getRequest().setImageId(imageId);
         return this;
     }
 
     public ImageSettings withOs(String os) {
-        request.setOs(os);
+        getRequest().setOs(os);
         return this;
     }
 

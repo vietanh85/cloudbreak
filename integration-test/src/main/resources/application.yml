@@ -12,7 +12,7 @@ integrationtest:
 
     publicKeyFile:
 
-    # uaa properties
+  # uaa properties
     uaa:
         server:
         user:
@@ -23,7 +23,7 @@ integrationtest:
 
     # cloudbreak properites
     cloudbreak:
-        server:
+      server:
     # periscope properites
     periscope:
         server:
