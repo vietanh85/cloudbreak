@@ -1,0 +1,12 @@
+name: "mock cluster tests"
+parallel: classes
+threadCount: 2
+listeners:
+  - com.sequenceiq.it.cloudbreak.newway.listener.StructuredEventsReporterOnFailingCluster
+tests:
+  - name: "mockclusters"
+    classes:
+      - com.sequenceiq.it.cloudbreak.test.MockScaleClusterTest
+      - com.sequenceiq.it.cloudbreak.test.MockClusterTests
+
+

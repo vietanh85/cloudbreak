@@ -90,6 +90,9 @@ public abstract class CloudProviderHelper extends CloudProvider {
             case OpenstackCloudProvider.OPENSTACK:
                 cloudProvider = new OpenstackCloudProvider(testParameter);
                 break;
+            case MockCloudProvider.MOCK:
+                cloudProvider = new MockCloudProvider(testParameter);
+                break;
             default:
                 LOGGER.warn("could not determine cloud provider!");
                 cloudProvider = null;

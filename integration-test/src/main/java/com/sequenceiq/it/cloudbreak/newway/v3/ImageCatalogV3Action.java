@@ -1,6 +1,7 @@
 package com.sequenceiq.it.cloudbreak.newway.v3;
 
 import static com.sequenceiq.it.cloudbreak.CloudbreakITContextConstants.CLOUDPROVIDER;
+import static com.sequenceiq.it.cloudbreak.newway.ImageCatalogEntity.IMAGE_CATALOG_URL;
 import static com.sequenceiq.it.cloudbreak.newway.log.Log.logJSON;
 
 import java.util.HashSet;
@@ -21,7 +22,13 @@ public class ImageCatalogV3Action {
         CloudbreakClient client;
         client = integrationTestContext.getContextParam(CloudbreakClient.CLOUDBREAK_CLIENT,
                 CloudbreakClient.class);
+        String imageCatalogUrl = integrationTestContext.getContextParam(IMAGE_CATALOG_URL, String.class);
         Long workspaceId = integrationTestContext.getContextParam(CloudbreakTest.WORKSPACE_ID, Long.class);
+
+        if (imageCatalogUrl != null && imageCatalogEntity.getRequest().getUrl() == null) {
+            imageCatalogEntity.getRequest().setUrl(imageCatalogUrl);
+        }
+
         imageCatalogEntity.setResponse(
                 client.getCloudbreakClient()
                         .imageCatalogV3Endpoint().createInWorkspace(workspaceId, imageCatalogEntity.getRequest()));

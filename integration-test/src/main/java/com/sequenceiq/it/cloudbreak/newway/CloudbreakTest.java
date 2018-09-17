@@ -14,6 +14,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
 import org.springframework.util.StringUtils;
 import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.BeforeTest;
 
 import com.sequenceiq.it.IntegrationTestContext;
@@ -84,6 +86,8 @@ public class CloudbreakTest extends GherkinTest {
         testParameter = tp;
     }
 
+    @BeforeSuite
+    @BeforeClass
     @BeforeTest(alwaysRun = true)
     public void digestParameters(ITestContext testngContext) {
         LOGGER.info("CloudbreakTest load test parameters ::: ");
