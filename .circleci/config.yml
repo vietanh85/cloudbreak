@@ -123,8 +123,7 @@ jobs:
   integration-test:
     environment:
       CC_TEST_REPORTER_ID: CC_TEST_REPORTER_ID
-    docker:
-      - image: circleci/openjdk:10-jdk
+    machine: true
     steps:
       - checkout
       - attach_workspace:
@@ -171,7 +170,8 @@ jobs:
   collecting-cc-result:
     environment:
       CC_TEST_REPORTER_ID: CC_TEST_REPORTER_ID
-    machine: true
+    docker:
+      - image: circleci/openjdk:10-jdk
     steps:
       - run:
         name: Setup Code Climate test-reporter
