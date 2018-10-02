@@ -170,17 +170,18 @@ jobs:
   collecting-cc-result:
     environment:
       CC_TEST_REPORTER_ID: CC_TEST_REPORTER_ID
-    - run:
-      name: Setup Code Climate test-reporter
-      command: |
-        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-        chmod +x ./cc-test-reporter
-    - run:
-      name: Upload code climate report
-      command: |
-        ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
-        ./cc-test-reporter upload-coverage -r $CC_TEST_REPORTER_ID
-      when: on_success
+    steps:
+      - run:
+        name: Setup Code Climate test-reporter
+        command: |
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
+      - run:
+        name: Upload code climate report
+        command: |
+          ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
+          ./cc-test-reporter upload-coverage -r $CC_TEST_REPORTER_ID
+        when: on_success
 
 workflows:
   version: 2
