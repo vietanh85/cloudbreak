@@ -146,8 +146,8 @@ jobs:
             ./cc-test-reporter before-build
             cd integration-test && make without-build && make revert-db
       - run:
-        name: Set jacoco.xml path for code climate
-        command: JACOCO_SOURCE_PATH=core/src/main/java ./cc-test-reporter format-coverage ./core/build/reports/jacoco/test/jacocoTestReport.xml --input-type jacoco --output coverage/codeclimate.integration-test.json
+          name: Set jacoco.xml path for code climate
+          command: JACOCO_SOURCE_PATH=core/src/main/java ./cc-test-reporter format-coverage ./core/build/reports/jacoco/test/jacocoTestReport.xml --input-type jacoco --output coverage/codeclimate.integration-test.json
       - run:
           name: Save test results
           command: |
