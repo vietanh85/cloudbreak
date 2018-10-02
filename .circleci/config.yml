@@ -170,6 +170,7 @@ jobs:
   collecting-cc-result:
     environment:
       CC_TEST_REPORTER_ID: CC_TEST_REPORTER_ID
+    machine: true
     steps:
       - run:
         name: Setup Code Climate test-reporter
