@@ -123,7 +123,8 @@ jobs:
   integration-test:
     environment:
       CC_TEST_REPORTER_ID: CC_TEST_REPORTER_ID
-    machine: true
+    docker:
+      - image: circleci/openjdk:10-jdk
     steps:
       - checkout
       - attach_workspace:
