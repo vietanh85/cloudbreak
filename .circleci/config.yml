@@ -108,11 +108,7 @@ jobs:
             ./gradlew -Penv=jenkins -b build.gradle test jacocoTestReport --info --stacktrace --parallel -x checkstyleMain -x checkstyleTest -x spotbugsMain -x spotbugsTest --no-daemon --max-workers 1
       - run:
           name: Set jacoco.xml path for code climate
-          command: JACOCO_SOURCE_PATH=core/src/main/java ./cc-test-reporter format-coverage ./core/build/reports/jacoco/test/jacocoTestReport.xml --input-type jacoco
-      - run:
-          name: Upload code climate report
-          command: ./cc-test-reporter upload-coverage -r $CC_TEST_REPORTER_ID
-          when: on_success
+          command: JACOCO_SOURCE_PATH=core/src/main/java ./cc-test-reporter format-coverage ./core/build/reports/jacoco/test/jacocoTestReport.xml --input-type jacoco --output coverage/codeclimate.unit-test.json
       - run:
           name: Save test results
           command: |
@@ -125,6 +121,8 @@ jobs:
           path: ~/junit
 
   integration-test:
+    environment:
+      CC_TEST_REPORTER_ID: CC_TEST_REPORTER_ID
     machine: true
     steps:
       - checkout
@@ -137,8 +135,18 @@ jobs:
           name: Install uuidgen
           command: sudo apt-get install -y uuid-runtime
       - run:
+          name: Setup Code Climate test-reporter
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+      - run:
           name: integration-test
-          command: cd integration-test && make without-build && make revert-db
+          command: |
+            ./cc-test-reporter before-build
+            cd integration-test && make without-build && make revert-db
+      - run:
+        name: Set jacoco.xml path for code climate
+        command: JACOCO_SOURCE_PATH=core/src/main/java ./cc-test-reporter format-coverage ./core/build/reports/jacoco/test/jacocoTestReport.xml --input-type jacoco --output coverage/codeclimate.integration-test.json
       - run:
           name: Save test results
           command: |
@@ -158,6 +166,21 @@ jobs:
           path: ~/junit
       - store_artifacts:
           path: integration-test
+
+  collecting-cc-result:
+    environment:
+      CC_TEST_REPORTER_ID: CC_TEST_REPORTER_ID
+    - run:
+      name: Setup Code Climate test-reporter
+      command: |
+        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        chmod +x ./cc-test-reporter
+    - run:
+      name: Upload code climate report
+      command: |
+        ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
+        ./cc-test-reporter upload-coverage -r $CC_TEST_REPORTER_ID
+      when: on_success
 
 workflows:
   version: 2
@@ -182,3 +205,7 @@ workflows:
       - integration-test:
           requires:
             - build
+      - collecting-cc-result:
+          requires:
+            - unit-test
+            - integration-test
