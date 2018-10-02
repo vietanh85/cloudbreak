@@ -140,6 +140,9 @@ jobs:
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
       - run:
+          name: Download jacoco agent
+          command: curl http://central.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.2/org.jacoco.agent-0.8.2.jar -o integration-test/jacoco.jar
+      - run:
           name: integration-test
           command: |
             ./cc-test-reporter before-build
