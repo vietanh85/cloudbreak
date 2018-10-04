@@ -1,7 +1,6 @@
 package com.sequenceiq.it.cloudbreak.newway.testcase;
 
 
-import static com.sequenceiq.it.cloudbreak.newway.context.RunningParameter.force;
 import static com.sequenceiq.it.cloudbreak.newway.context.RunningParameter.key;
 
 import org.slf4j.Logger;
@@ -13,11 +12,11 @@ import org.testng.annotations.Test;
 
 import com.sequenceiq.it.cloudbreak.newway.Stack;
 import com.sequenceiq.it.cloudbreak.newway.StackEntity;
-import com.sequenceiq.it.cloudbreak.newway.action.StackRefreshAction;
+import com.sequenceiq.it.cloudbreak.newway.action.StackDeleteInstanceAction;
+import com.sequenceiq.it.cloudbreak.newway.assertion.AssertStatusReasonMessage;
+import com.sequenceiq.it.cloudbreak.newway.cloud.HostGroupType;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
-import com.sequenceiq.it.cloudbreak.newway.entity.AmbariEntity;
-import com.sequenceiq.it.cloudbreak.newway.entity.ClusterEntity;
-import com.sequenceiq.it.cloudbreak.newway.v3.StackV3Action;
+import com.sequenceiq.it.cloudbreak.newway.entity.InstanceGroupEntity;
 
 public class TerminationTest extends AbstractIntegrationTest {
 
@@ -29,12 +28,6 @@ public class TerminationTest extends AbstractIntegrationTest {
         createDefaultUser(testContext);
         createDefaultCredential(testContext);
         createDefaultImageCatalog(testContext);
-        testContext
-                // create stack
-                .given(StackEntity.class)
-                .when(Stack.postV2())
-                .await(STACK_AVAILABLE);
-
     }
 
     @AfterMethod(alwaysRun = true)
@@ -53,41 +46,49 @@ public class TerminationTest extends AbstractIntegrationTest {
         String blueprintName = "Data Science: Apache Spark 2, Apache Zeppelin";
         String clusterName = getNameGenerator().getRandomNameForMock();
         testContext
-                .given(StackEntity.class)
-                //select an instance id
-                .select(s -> s.getInstanceId("worker"), key("instanceId"))
-                .capture(s -> s.getInstanceMetaData("worker").size() - 1, key("metadatasize"))
-                .when(Stack::deleteInstance)
+                // create stack
+                .given("ig", InstanceGroupEntity.class).withHostGroup(HostGroupType.WORKER).withNodeCount(3)
+                .given(StackEntity.class).replaceInstanceGroups("ig")
+                .when(Stack.postV2())
                 .await(STACK_AVAILABLE)
-                .verify(s -> s.getInstanceMetaData("worker").size(), key("metadatasize"))
+                //select an instance id
+                .select(s -> s.getInstanceId(HostGroupType.WORKER.getName()), key("instanceId"))
+                .capture(s -> s.getInstanceMetaData(HostGroupType.WORKER.getName()).size() - 1, key("metadatasize"))
+                .when(new StackDeleteInstanceAction())
+                .await(STACK_AVAILABLE)
+                .verify(s -> s.getInstanceMetaData(HostGroupType.WORKER.getName()).size(), key("metadatasize"))
                 .validate();
     }
 
-    @Test(dataProvider = "testContext", enabled = false)
-    public void testInstanceTermination2(TestContext testContext) {
-        String blueprintName = "Data Science: Apache Spark 2, Apache Zeppelin";
-        String clusterName = "mockcluster";
-        testContext.given(ClusterEntity.class).withName(clusterName)
-                .given(AmbariEntity.class).withBlueprintName(blueprintName)
-                .given(StackEntity.class).withName(clusterName).withGatewayPort(testContext.getSparkServer().getPort())
+    @Test(dataProvider = "testContext")
+    public void testInstanceTerminationReplicationError(TestContext testContext) {
+        testContext
+                // create stack
+                .given("ig", InstanceGroupEntity.class).withHostGroup(HostGroupType.WORKER).withNodeCount(2)
+                .given(StackEntity.class).replaceInstanceGroups("ig")
                 .when(Stack.postV2())
-                .then(Stack::waitAndCheckClusterAndStackAvailabilityStatusV2);
+                .await(STACK_AVAILABLE)
+                .select(s -> s.getInstanceId("worker"), key("instanceId"))
+                .when(new StackDeleteInstanceAction(), key("deleteInstance"))
+                .await(STACK_AVAILABLE)
+                .then(new AssertStatusReasonMessage<>("Node(s) could not be removed from the cluster: There is not enough node to downscale. "
+                        + "Check the replication factor and the ApplicationMaster occupation."))
+                .validate();
+    }
 
-
-        String hostGroupName = "worker";
-        StackEntity stack = testContext.get(StackEntity.class);
-        testContext.when(stack, new StackRefreshAction());
-        int before = stack.getInstanceMetaData(hostGroupName).size();
-
-        stack.when(Stack.deleteInstance(stack.getInstanceId(hostGroupName)))
-                .then(Stack::waitAndCheckClusterAndStackAvailabilityStatusV2);
-
-        stack.when(new StackRefreshAction());
-        int after = stack.getInstanceMetaData(hostGroupName).size();
-
-        stack.when(StackEntity.class, StackV3Action::deleteV2, force())
-                .then(Stack::waitAndCheckClusterDeletedV2, force());
-
-        Assert.assertEquals(after, before - 1);
+    @Test(dataProvider = "testContext")
+    public void testInstanceTerminationForced(TestContext testContext) {
+        testContext
+                // create stack
+                .given(StackEntity.class)
+                .when(Stack.postV2())
+                .await(STACK_AVAILABLE)
+                .select(s -> s.getInstanceId("worker"), key("instanceId"))
+                .select(s -> true, key("forced"))
+                .capture(s -> s.getInstanceMetaData("worker").size() - 1, key("metadatasize"))
+                .when(new StackDeleteInstanceAction(), key("deleteInstance"))
+                .await(STACK_AVAILABLE)
+                .verify(s -> s.getInstanceMetaData("worker").size(), key("metadatasize"))
+                .validate();
     }
 }

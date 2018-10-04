@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.sequenceiq.cloudbreak.api.endpoint.v3.StackV3Endpoint;
 import com.sequenceiq.cloudbreak.api.model.stack.StackAuthenticationRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.StackResponse;
+import com.sequenceiq.cloudbreak.api.model.stack.StackViewResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceMetaDataJson;
 import com.sequenceiq.cloudbreak.api.model.v2.ClusterV2Request;
@@ -54,7 +55,7 @@ public class StackEntity extends AbstractCloudbreakEntity<StackV2Request, StackR
         setRequest(r);
     }
 
-    StackEntity() {
+    public StackEntity() {
         this(STACK);
     }
 
@@ -76,7 +77,7 @@ public class StackEntity extends AbstractCloudbreakEntity<StackV2Request, StackR
                 .withAvailabilityZone(getCloudProvider().availabilityZone())
                 .withInstanceGroupsEntity(InstanceGroupEntity.defaultHostGroup(getTestContext()))
                 .withNetwork(getCloudProvider().newNetwork(getTestContext()))
-                .withCredentialName(getTestContext().init(CredentialEntity.class).getName())
+                .withCredentialName(getTestContext().get(CredentialEntity.class).getName())
                 .withStackAuthentication(getTestContext().init(StackAuthentication.class))
                 .withGatewayPort(getTestContext().getSparkServer().getPort())
                 .withCluster(getTestContext().init(ClusterEntity.class));
@@ -158,9 +159,40 @@ public class StackEntity extends AbstractCloudbreakEntity<StackV2Request, StackR
         return this;
     }
 
-    public StackEntity withInstanceGroups(InstanceGroupEntity... instanceGroups) {
-        getRequest().setInstanceGroups(Stream.of(instanceGroups)
-                .map(InstanceGroupEntity::getRequest)
+    public StackEntity withDefaultInstanceGroups() {
+        return withInstanceGroups(InstanceGroupEntity.class.getSimpleName());
+    }
+
+    public StackEntity replaceInstanceGroups(String... keys) {
+        Stream.of(keys)
+                .map(key -> {
+                    InstanceGroupEntity instanceGroupEntity = getTestContext().get(key);
+                    if (instanceGroupEntity == null) {
+                        throw new IllegalStateException("Given key is not exists in the test context: " + key);
+                    }
+                    return instanceGroupEntity.getRequest();
+                })
+                .forEach(ig -> {
+                    for (int i = 0; i < getRequest().getInstanceGroups().size(); i++) {
+                        InstanceGroupV2Request old = getRequest().getInstanceGroups().get(i);
+                        if (old.getGroup().equals(ig.getGroup())) {
+                            getRequest().getInstanceGroups().remove(i);
+                            getRequest().getInstanceGroups().add(i, ig);
+                        }
+                    }
+                });
+        return this;
+    }
+
+    public StackEntity withInstanceGroups(String... keys) {
+        getRequest().setInstanceGroups(Stream.of(keys)
+                .map(key -> {
+                    InstanceGroupEntity instanceGroupEntity = getTestContext().get(key);
+                    if (instanceGroupEntity == null) {
+                        throw new IllegalStateException("Given key is not exists in the test context: " + key);
+                    }
+                    return instanceGroupEntity.getRequest();
+                })
                 .collect(Collectors.toList()));
         return this;
     }
@@ -241,13 +273,16 @@ public class StackEntity extends AbstractCloudbreakEntity<StackV2Request, StackR
     @Override
     public void cleanUp(TestContext context, CloudbreakClient cloudbreakClient) {
         LOGGER.info("Cleaning up resource with name: {}", getName());
-        StackV3Action.deleteV2(context, this, cloudbreakClient);
+        when(StackV3Action::deleteV2);
+        await(AbstractIntegrationTest.STACK_DELETED);
     }
 
     @Override
     public List<StackResponse> getAll(CloudbreakClient client) {
         StackV3Endpoint stackV3Endpoint = client.getCloudbreakClient().stackV3Endpoint();
-        return new ArrayList<>(stackV3Endpoint.listByWorkspace(client.getWorkspaceId()));
+        Set<StackViewResponse> stackViewResponses = stackV3Endpoint.listByWorkspace(client.getWorkspaceId());
+        //TODO need to convert to StackResponse
+        return new ArrayList<>();
     }
 
     @Override
@@ -257,8 +292,12 @@ public class StackEntity extends AbstractCloudbreakEntity<StackV2Request, StackR
 
     @Override
     public void delete(StackResponse entity, CloudbreakClient client) {
-        client.getCloudbreakClient().stackV3Endpoint().deleteInWorkspace(client.getWorkspaceId(), entity.getName(), true, false);
-        wait(AbstractIntegrationTest.STACK_DELETED, key("wait-purge-stack-" + entity.getName()));
+        try {
+            client.getCloudbreakClient().stackV3Endpoint().deleteInWorkspace(client.getWorkspaceId(), entity.getName(), true, false);
+            wait(AbstractIntegrationTest.STACK_DELETED, key("wait-purge-stack-" + entity.getName()));
+        } catch (Exception e) {
+            LOGGER.warn("Something went wrong on {} purge. {}", entity.getName(), e.getMessage(), e);
+        }
     }
 
     @Override

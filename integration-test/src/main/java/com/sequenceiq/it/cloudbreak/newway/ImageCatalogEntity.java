@@ -25,7 +25,7 @@ public class ImageCatalogEntity extends AbstractCloudbreakEntity<ImageCatalogReq
         super(new ImageCatalogRequest(), testContext);
     }
 
-    ImageCatalogEntity() {
+    public ImageCatalogEntity() {
         super(IMAGE_CATALOG);
         setRequest(new ImageCatalogRequest());
     }
@@ -85,6 +85,10 @@ public class ImageCatalogEntity extends AbstractCloudbreakEntity<ImageCatalogReq
 
     @Override
     public void delete(ImageCatalogResponse entity, CloudbreakClient client) {
-        client.getCloudbreakClient().imageCatalogV3Endpoint().deleteInWorkspace(client.getWorkspaceId(), entity.getName());
+        try {
+            client.getCloudbreakClient().imageCatalogV3Endpoint().deleteInWorkspace(client.getWorkspaceId(), entity.getName());
+        } catch (Exception e) {
+            LOGGER.warn("Something went wrong on {} purge. {}", entity.getName(), e.getMessage(), e);
+        }
     }
 }

@@ -16,6 +16,7 @@ import org.testng.annotations.Test;
 import com.sequenceiq.it.cloudbreak.newway.CredentialEntity;
 import com.sequenceiq.it.cloudbreak.newway.ImageCatalog;
 import com.sequenceiq.it.cloudbreak.newway.Stack;
+import com.sequenceiq.it.cloudbreak.newway.StackEntity;
 import com.sequenceiq.it.cloudbreak.newway.action.CredentialCreateAction;
 import com.sequenceiq.it.cloudbreak.newway.action.ImageCatalogCreateIfNotExistsAction;
 import com.sequenceiq.it.cloudbreak.newway.action.StackScalePostAction;
@@ -59,10 +60,7 @@ public class UpscaleTest extends AbstractIntegrationTest {
         // GIVEN
         String blueprintName = "Data Science: Apache Spark 2, Apache Zeppelin";
         String clusterName = "mockcluster-scaling";
-        testContext.given(ClusterEntity.class).withName(clusterName)
-                .given(AmbariEntity.class).withBlueprintName(blueprintName)
-                .given(AmbariEntity.class).withBlueprintName(blueprintName)
-                .given(StackEntity.class).withName(clusterName).withGatewayPort(sparkServer.getPort())
+        testContext.given(Stack.class)
                 .when(Stack.postV2())
                 .await(STACK_AVAILABLE)
                 .when(StackScalePostAction.valid().withDesiredCount(15))
@@ -92,9 +90,7 @@ public class UpscaleTest extends AbstractIntegrationTest {
         mockAmbariBlueprintFail(testContext);
         String blueprintName = "Data Science: Apache Spark 2, Apache Zeppelin";
         String clusterName = "mockcluster";
-        testContext.given(ClusterEntity.class).withName(clusterName)
-                .given(AmbariEntity.class).withBlueprintName(blueprintName)
-                .given(Stack.class).withName(clusterName).withGatewayPort(sparkServer.getPort())
+        testContext.given(Stack.class)
                 .when(Stack.postV2())
                 .await(STACK_FAILED)
                 .then(MockVerification.verify(HttpMethod.POST, "/api/v1/blueprints/").atLeast(1))

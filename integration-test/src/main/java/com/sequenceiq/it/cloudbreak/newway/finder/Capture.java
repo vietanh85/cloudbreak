@@ -14,10 +14,10 @@ public class Capture {
     }
 
     public void verify(Object newValue) {
-        LOGGER.info("verify the old value {} with the new one {}", value, newValue);
+        LOGGER.info("verify the expected value {} with the actual one {}", value, newValue);
 
         if (!newValue.equals(value)) {
-            throw new RuntimeException("Assertion failed, new value:" + newValue + ", oldValue:" + value);
+            throw new RuntimeException("Assertion failed, actual value:" + newValue + ", expected value:" + value);
         }
     }
 }

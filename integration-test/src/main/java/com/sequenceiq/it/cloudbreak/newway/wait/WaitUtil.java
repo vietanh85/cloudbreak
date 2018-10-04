@@ -28,7 +28,6 @@ public class WaitUtil {
 
     public Map<String, String> waitAndCheckStatuses(CloudbreakClient cloudbreakClient, String stackName, Map<String, String> desiredStatuses) {
         Map<String, String> ret = new HashMap<>();
-//        for (int i = 0; i < 3; i++) {
         WaitResult waitResult = waitForStatuses(cloudbreakClient, stackName, desiredStatuses);
         if (waitResult == WaitResult.FAILED) {
             StringBuilder builder = new StringBuilder("The stack has failed: ").append(System.lineSeparator());
@@ -48,11 +47,17 @@ public class WaitUtil {
                 builder.append("statusReason: ").append(statusByNameInWorkspace.get("statusReason"));
             }
             throw new RuntimeException(builder.toString());
-        }
-        if (waitResult == WaitResult.TIMEOUT) {
+        } else if (waitResult == WaitResult.TIMEOUT) {
             throw new RuntimeException("Timeout happened");
+        } else {
+            Map<String, Object> statusByNameInWorkspace = cloudbreakClient.getCloudbreakClient().stackV3Endpoint().getStatusByNameInWorkspace(cloudbreakClient.getWorkspaceId(), stackName);
+            if (statusByNameInWorkspace != null) {
+                Object statusReason = statusByNameInWorkspace.get("statusReason");
+                if (statusReason != null) {
+                    ret.put("statusReason", statusReason.toString());
+                }
+            }
         }
-//        }
         return ret;
     }
 

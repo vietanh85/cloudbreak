@@ -14,11 +14,11 @@ import com.sequenceiq.it.cloudbreak.newway.v3.CredentialV3Action;
 public class CredentialEntity extends AbstractCloudbreakEntity<CredentialRequest, CredentialResponse, CredentialEntity> {
     public static final String CREDENTIAL = "CREDENTIAL";
 
-    CredentialEntity(TestContext testContext) {
+    public CredentialEntity(TestContext testContext) {
         super(new CredentialRequest(), testContext);
     }
 
-    CredentialEntity() {
+    public CredentialEntity() {
         super(CREDENTIAL);
         setRequest(new CredentialRequest());
     }
@@ -69,6 +69,10 @@ public class CredentialEntity extends AbstractCloudbreakEntity<CredentialRequest
 
     @Override
     public void delete(CredentialResponse entity, CloudbreakClient client) {
-        client.getCloudbreakClient().credentialV3Endpoint().deleteInWorkspace(client.getWorkspaceId(), entity.getName());
+        try {
+            client.getCloudbreakClient().credentialV3Endpoint().deleteInWorkspace(client.getWorkspaceId(), entity.getName());
+        } catch (Exception e) {
+            LOGGER.warn("Something went wrong on {} purge. {}", entity.getName(), e.getMessage(), e);
+        }
     }
 }

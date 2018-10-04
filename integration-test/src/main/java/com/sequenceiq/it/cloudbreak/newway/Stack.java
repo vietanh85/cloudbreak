@@ -91,14 +91,6 @@ public class Stack extends StackEntity {
         return new StackPostAction();
     }
 
-    public static StackEntity deleteInstance(TestContext testContext, StackEntity entity, CloudbreakClient cloudbreakClient) {
-        String instanceId = testContext.getSelected("instanceId");
-        cloudbreakClient.getCloudbreakClient()
-                .stackV3Endpoint()
-                .deleteInstance(cloudbreakClient.getWorkspaceId(), entity.getName(), instanceId, true);
-        return entity;
-    }
-
     public static <O> ActionV2<StackEntity> deleteInstance(String instanceId) {
         return (testContext, entity, cloudbreakClient) -> {
             cloudbreakClient.getCloudbreakClient()

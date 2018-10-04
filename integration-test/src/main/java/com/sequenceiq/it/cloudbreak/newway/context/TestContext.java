@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -398,6 +399,7 @@ public class TestContext {
         checkShutdown();
         Map<String, Exception> exceptionsDuringTest = getErrors();
         if (!exceptionsDuringTest.isEmpty()) {
+            LOGGER.error("Status reason: {}", statuses.get("statusReason"));
             exceptionsDuringTest.forEach(LOGGER::error);
             exceptionsDuringTest.clear();
             Assert.fail("All Exceptions during test are logged before this message");

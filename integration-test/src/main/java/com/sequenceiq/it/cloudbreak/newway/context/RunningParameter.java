@@ -64,4 +64,8 @@ public class RunningParameter {
         return new RunningParameter()
                 .withKey(key);
     }
+
+    public RunningParameter withAggregate(String aggregation) {
+        return this;
+    }
 }

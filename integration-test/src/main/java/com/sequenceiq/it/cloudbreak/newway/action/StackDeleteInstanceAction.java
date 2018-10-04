@@ -13,8 +13,11 @@ public class StackDeleteInstanceAction implements ActionV2<StackEntity> {
 
     @Override
     public StackEntity action(TestContext testContext, StackEntity entity, CloudbreakClient client) throws Exception {
-        LOGGER.info("try to delete stack {}", entity.getName());
-        client.getCloudbreakClient().stackV3Endpoint().deleteInstance(client.getWorkspaceId(), entity.getName(), "", true);
+        String instanceId = testContext.getSelected("instanceId");
+        Boolean forced = testContext.getSelected("forced");
+        client.getCloudbreakClient()
+                .stackV3Endpoint()
+                .deleteInstance(client.getWorkspaceId(), entity.getName(), instanceId, forced == null ? false : forced);
         return entity;
     }
 }

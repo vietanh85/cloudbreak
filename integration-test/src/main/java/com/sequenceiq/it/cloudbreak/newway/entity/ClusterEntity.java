@@ -38,16 +38,6 @@ public class ClusterEntity extends AbstractCloudbreakEntity<ClusterV2Request, Cl
         return this;
     }
 
-    public ClusterEntity withEmailNeeded(Boolean aBoolean) {
-        getRequest().setEmailNeeded(aBoolean);
-        return this;
-    }
-
-    public ClusterEntity withEmailTo(String parameters) {
-        getRequest().setEmailTo(parameters);
-        return this;
-    }
-
     public ClusterEntity withExecutorType(ExecutorType executorType) {
         getRequest().setExecutorType(executorType);
         return this;

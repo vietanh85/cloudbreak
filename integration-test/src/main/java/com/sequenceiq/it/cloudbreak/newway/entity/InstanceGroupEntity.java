@@ -35,12 +35,20 @@ public class InstanceGroupEntity extends AbstractCloudbreakEntity<InstanceGroupV
 
     public InstanceGroupEntity valid() {
         HostGroupType hostGroupType = MASTER;
+        return withHostGroup(hostGroupType);
+    }
+
+    public InstanceGroupEntity withHostGroup(HostGroupType hostGroupType) {
         return withRecoveryMode(getRecoveryModeParam(hostGroupType))
                 .withNodeCount(hostGroupType.determineInstanceCount(getTestParameter()))
                 .withGroup(hostGroupType.getName())
                 .withSecurityGroup(getTestContext().init(SecurityGroupEntity.class))
                 .withType(hostGroupType.getInstanceGroupType())
                 .withTemplate(getCloudProvider().template(getTestContext()));
+    }
+
+    public static InstanceGroupEntity hostGroup(TestContext testContext, HostGroupType hostGroupType) {
+        return create(testContext, hostGroupType);
     }
 
     public static List<InstanceGroupEntity> defaultHostGroup(TestContext testContext) {

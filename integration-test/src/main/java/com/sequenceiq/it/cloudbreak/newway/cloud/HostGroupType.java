@@ -43,18 +43,15 @@ public enum HostGroupType {
     }
 
     public InstanceGroupV2Request hostgroupRequest(CloudProvider cloudProvider, TestParameter testParameter) {
-        return hostgroup(cloudProvider, name, instanceGroupType,
-                determineInstanceCount(testParameter), getSecurityGroupV2Request());
+        return hostgroup(cloudProvider, name, instanceGroupType, determineInstanceCount(testParameter), getSecurityGroupV2Request());
     }
 
     public InstanceGroupV2Request hostgroupRequest(CloudProvider cloudProvider, TestParameter testParameter, Set<String> recipes) {
-        return hostgroup(cloudProvider, name, instanceGroupType,
-                determineInstanceCount(testParameter), recipes);
+        return hostgroup(cloudProvider, name, instanceGroupType, determineInstanceCount(testParameter), recipes);
     }
 
     public InstanceGroupV2Request hostgroupRequest(CloudProvider cloudProvider, TestParameter testParameter, String securityGroupId) {
-        return hostgroup(cloudProvider, name, instanceGroupType,
-                determineInstanceCount(testParameter), securityGroupId);
+        return hostgroup(cloudProvider, name, instanceGroupType, determineInstanceCount(testParameter), securityGroupId);
     }
 
     public int determineInstanceCount(TestParameter testParameter) {
