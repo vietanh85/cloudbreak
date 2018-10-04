@@ -3,9 +3,12 @@ package com.sequenceiq.it.cloudbreak.newway;
 import java.util.function.Function;
 
 import com.sequenceiq.cloudbreak.api.model.KerberosRequest;
+import com.sequenceiq.cloudbreak.api.model.KerberosResponse;
 import com.sequenceiq.it.IntegrationTestContext;
+import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 
-public class Kerberos extends Entity  {
+@Prototype
+public class Kerberos extends AbstractCloudbreakEntity<KerberosRequest, KerberosResponse, Kerberos>  {
     public static final String KERBEROS_REQUEST = "KERBEROS_REQUEST";
 
     public static final String DEFAULT_MASTERKEY = "masterkey";
@@ -23,6 +26,10 @@ public class Kerberos extends Entity  {
 
     Kerberos() {
         this(KERBEROS_REQUEST);
+    }
+
+    public Kerberos(TestContext testContext) {
+        super(new KerberosRequest(), testContext);
     }
 
     public KerberosRequest getRequest() {

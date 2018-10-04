@@ -2,7 +2,9 @@ package com.sequenceiq.it.cloudbreak.newway;
 
 import static com.sequenceiq.it.cloudbreak.newway.v3.CloudbreakV3Util.waitAndCheckClusterStatus;
 import static com.sequenceiq.it.cloudbreak.newway.v3.CloudbreakV3Util.waitAndCheckStackStatus;
+import static com.sequenceiq.it.cloudbreak.newway.v3.CloudbreakV3Util.waitAndCheckStatuses;
 import static com.sequenceiq.it.cloudbreak.newway.v3.CloudbreakV3Util.waitAndExpectClusterFailure;
+import static java.util.Collections.emptySet;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -27,14 +30,28 @@ import com.sequenceiq.cloudbreak.api.model.stack.hardware.HardwareInfoGroupRespo
 import com.sequenceiq.cloudbreak.api.model.stack.hardware.HardwareInfoResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceMetaDataJson;
+import com.sequenceiq.cloudbreak.api.model.v2.StackV2Request;
 import com.sequenceiq.it.IntegrationTestContext;
 import com.sequenceiq.it.cloudbreak.SshService;
+import com.sequenceiq.it.cloudbreak.newway.action.ActionV2;
+import com.sequenceiq.it.cloudbreak.newway.action.StackPostAction;
+import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.v3.CloudbreakV3Util;
 import com.sequenceiq.it.cloudbreak.newway.v3.StackPostV3Strategy;
 import com.sequenceiq.it.cloudbreak.newway.v3.StackV3Action;
 
+@Prototype
 public class Stack extends StackEntity {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Stack.class);
+
+    Stack() {
+
+    }
+
+    public Stack(TestContext testContext) {
+        super(testContext);
+    }
 
     public static Function<IntegrationTestContext, Stack> getTestContextStack(String key) {
         return testContext -> testContext.getContextParam(key, Stack.class);
@@ -52,10 +69,42 @@ public class Stack extends StackEntity {
         return new Stack();
     }
 
+    public static StackEntity create(StackV2Request request) {
+        return ApplicationContextProvider.getBean(Stack.class, request);
+    }
+
     public static Stack isCreated() {
         Stack stack = new Stack();
         stack.setCreationStrategy(StackV3Action::createInGiven);
         return stack;
+    }
+
+    public static StackEntity getByName(TestContext testContext, StackEntity entity, CloudbreakClient cloudbreakClient) {
+        entity.setResponse(
+                cloudbreakClient.getCloudbreakClient().stackV3Endpoint().getByNameInWorkspace(cloudbreakClient.getWorkspaceId(), entity.getName(), emptySet())
+        );
+        return entity;
+    }
+
+    public static ActionV2<StackEntity> postV2() {
+        return new StackPostAction();
+    }
+
+    public static StackEntity deleteInstance(TestContext testContext, StackEntity entity, CloudbreakClient cloudbreakClient) {
+        String instanceId = testContext.getSelected("instanceId");
+        cloudbreakClient.getCloudbreakClient()
+                .stackV3Endpoint()
+                .deleteInstance(cloudbreakClient.getWorkspaceId(), entity.getName(), instanceId, true);
+        return entity;
+    }
+
+    public static <O> ActionV2<StackEntity> deleteInstance(String instanceId) {
+        return (testContext, entity, cloudbreakClient) -> {
+            cloudbreakClient.getCloudbreakClient()
+                    .stackV3Endpoint()
+                    .deleteInstance(cloudbreakClient.getWorkspaceId(), entity.getName(), instanceId, true);
+            return entity;
+        };
     }
 
     public static Action<Stack> post(String key) {
@@ -102,7 +151,7 @@ public class Stack extends StackEntity {
         return delete(STACK, strategy);
     }
 
-    public static Action<Stack> makeNodeUnhealthy(String  hostgroup, int nodeCount) {
+    public static Action<Stack> makeNodeUnhealthy(String hostgroup, int nodeCount) {
         return new Action<>(getTestContextStack(STACK), new UnhealthyNodeStrategy(hostgroup, nodeCount));
     }
 
@@ -181,6 +230,26 @@ public class Stack extends StackEntity {
         });
     }
 
+    public static StackEntity waitAndCheckClusterAndStackAvailabilityStatusV2(TestContext testContext, StackEntity stack, CloudbreakClient cloudbreakClient) {
+        StackResponse stackResponse = stack.getResponse();
+        String stackName = stackResponse.getName();
+        Long workspaceId = stackResponse.getWorkspace().getId();
+        Assert.assertNotNull(stackResponse.getName());
+        Map<String, String> statuses = waitAndCheckStatuses(cloudbreakClient.getCloudbreakClient(), workspaceId, stackName,
+                Map.of("status", "AVAILABLE", "clusterStatus", "AVAILABLE"));
+        testContext.addStatuses(statuses);
+        return stack;
+    }
+
+    public static StackEntity waitAndCheckClusterDeletedV2(TestContext testContext, StackEntity stack, CloudbreakClient cloudbreakClient) {
+        StackResponse stackResponse = stack.getResponse();
+        String stackName = stackResponse.getName();
+        Long workspaceId = stackResponse.getWorkspace().getId();
+        Assert.assertNotNull(stackResponse.getName());
+        waitAndCheckStackStatus(cloudbreakClient.getCloudbreakClient(), workspaceId, stackName, "DELETE_COMPLETED");
+        return stack;
+    }
+
     public static Assertion<?> checkClusterHasAmbariRunning(String ambariPort, String ambariUser, String ambariPassword) {
         return assertThis((stack, t) -> {
             CloudbreakClient client = CloudbreakClient.getTestContextCloudbreakClient().apply(t);
@@ -205,7 +274,7 @@ public class Stack extends StackEntity {
         });
     }
 
-    public static Assertion<Stack> checkRecipes(String[] searchOnHost, String[] files, String privateKey, String sshCommand,  int require) {
+    public static Assertion<Stack> checkRecipes(String[] searchOnHost, String[] files, String privateKey, String sshCommand, int require) {
         return checkRecipes(searchOnHost, files, privateKey, Optional.ofNullable(sshCommand), require);
     }
 

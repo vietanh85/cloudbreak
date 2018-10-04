@@ -8,9 +8,10 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 
 import com.sequenceiq.it.IntegrationTestContext;
 import com.sequenceiq.it.cloudbreak.newway.log.Log;
+import com.sequenceiq.it.cloudbreak.newway.mock.MockPoolConfiguration;
 import com.sequenceiq.it.config.IntegrationTestConfiguration;
 
-@ContextConfiguration(classes = IntegrationTestConfiguration.class, initializers = ConfigFileApplicationContextInitializer.class)
+@ContextConfiguration(classes = {IntegrationTestConfiguration.class, MockPoolConfiguration.class}, initializers = ConfigFileApplicationContextInitializer.class)
 public class GherkinTest extends AbstractTestNGSpringContextTests {
     public static final String RESULT = "RESULT";
 

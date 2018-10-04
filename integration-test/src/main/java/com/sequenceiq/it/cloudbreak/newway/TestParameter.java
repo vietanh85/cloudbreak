@@ -15,7 +15,7 @@ public class TestParameter {
 
     private final Map<String, String> parameters;
 
-    TestParameter() {
+    public TestParameter() {
         parameters = new HashMap<>();
     }
 

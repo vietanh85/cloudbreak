@@ -19,18 +19,8 @@ public class ImageCatalogCache extends AbstractCacheDefinition {
     }
 
     @Override
-    protected String getMemoryStoreEvictionPolicy() {
-        return "LRU";
-    }
-
-    @Override
-    protected long getMaxEntriesLocalHeap() {
+    protected long getMaxEntries() {
         return MAX_ENTRIES;
-    }
-
-    @Override
-    protected long getMaxBytesLocalHeap() {
-        return 0L;
     }
 
     @Override

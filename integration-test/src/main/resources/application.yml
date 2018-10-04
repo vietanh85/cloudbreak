@@ -12,15 +12,13 @@ integrationtest:
 
     publicKeyFile:
 
-    # uaa properties
+  # uaa properties
     uaa:
-        server:
-        user:
-        password:
-
-    # cloudbreak properites
+      server: http://192.168.64.2:8089
+      user: noob@hortonworks.com
+      password: cloudbreak
     cloudbreak:
-        server:
+      server: http://192.168.64.2:8080
     # periscope properites
     periscope:
         server:
