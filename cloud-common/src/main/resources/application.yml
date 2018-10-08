@@ -127,7 +127,11 @@ cb:
                 HDP 3.0 - Data Science: Apache Spark 2, Apache Zeppelin=hdp30-data-science-spark2;
                 HDP 3.0 - EDW-Analytics: Apache Hive 2 LLAP, Apache Zeppelin=hdp30-edw-analytics;
                 HDP 3.0 - Data Lake: Apache Ranger, Apache Hive Metastore=hdp30-shared-services
+<<<<<<< HEAD
 >>>>>>> RMP-11186 - add new HDF Messaging blueprint that includes Kafka, and Schema Registry
+=======
+  clustertemplate.defaults:
+>>>>>>> BUG-112147 Cluster template implementation
   template.defaults: minviable-gcp,minviable-azure-managed-disks,minviable-aws
   custom.user.data: |
     touch /tmp/custom-user-data

@@ -44,7 +44,7 @@ public interface ClusterTemplateV3EndPoint {
     @ApiOperation(value = OperationDescriptions.StackOpDescription.CREATE_IN_WORKSPACE_FROM_TEMPLATE, produces = ContentType.JSON, notes = Notes.STACK_NOTES,
             nickname = "createInWorkspaceFromTemplate")
     StackResponse createStackInWorkspaceFromTemplate(@PathParam("workspaceId") Long workspaceId, @PathParam("name") String name,
-            @Valid StackFromTemplateRequest request);
+                                                     @Valid StackFromTemplateRequest request);
 
     @GET
     @Path("")
