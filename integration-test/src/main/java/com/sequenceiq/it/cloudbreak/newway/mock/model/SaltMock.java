@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.sequenceiq.it.spark.DynamicRouteStack;
+import com.sequenceiq.it.spark.IDynamicRoute;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -47,48 +49,50 @@ public class SaltMock extends AbstractModelMock {
 
     public static final String SALT_HEALTH = SALT_BOOT_ROOT + "/health";
 
+    private final IDynamicRoute dynamicRouteStack;
+
     public SaltMock(Service sparkService, DefaultModel defaultModel) {
         super(sparkService, defaultModel);
+        dynamicRouteStack = new DynamicRouteStack(sparkService, defaultModel);
     }
 
     public void addSaltMappings() {
         Map<String, CloudVmMetaDataStatus> instanceMap = getDefaultModel().getInstanceMap();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(objectMapper.getVisibilityChecker().withGetterVisibility(JsonAutoDetect.Visibility.NONE));
-        Service sparkService = getSparkService();
-        getSaltBootHealth(sparkService);
-        postSaltBootRun(instanceMap, sparkService);
-        postSaltBootFile(sparkService);
-        postSaltBootPillar(sparkService);
-        postSaltBootActionDistribute(sparkService);
-        postSaltBootHostnameDistribute2(sparkService);
-        postSaltBootFileDistribute(sparkService);
-        postSaltBootPillarDistribute(sparkService);
-        getWsV1ClusterApps(sparkService);
+        getSaltBootHealth();
+        postSaltBootRun(instanceMap);
+        postSaltBootFile();
+        postSaltBootPillar();
+        postSaltBootActionDistribute();
+        postSaltBootHostnameDistribute2();
+        postSaltBootFileDistribute();
+        postSaltBootPillarDistribute();
+        getWsV1ClusterApps();
     }
 
-    private void postSaltBootPillarDistribute(Service sparkService) {
-        sparkService.post(SALT_SERVER_PILLAR_DISTRIBUTE, (request, response) -> {
+    private void postSaltBootPillarDistribute() {
+        dynamicRouteStack.post(SALT_SERVER_PILLAR_DISTRIBUTE, (request, response, model) -> {
             GenericResponses genericResponses = new GenericResponses();
             GenericResponse genericResponse = new GenericResponse();
             genericResponse.setStatusCode(HttpStatus.OK.value());
             genericResponses.setResponses(Collections.singletonList(genericResponse));
-            return genericResponses;
-        }, gson()::toJson);
+            return gson().toJson(genericResponses);
+        });
     }
 
-    private void postSaltBootFileDistribute(Service sparkService) {
-        sparkService.post(SALT_FILE_DISTRIBUTE, (request, response) -> {
+    private void postSaltBootFileDistribute() {
+        dynamicRouteStack.post(SALT_FILE_DISTRIBUTE, (request, response, model) -> {
             GenericResponses genericResponses = new GenericResponses();
             GenericResponse genericResponse = new GenericResponse();
             genericResponse.setStatusCode(HttpStatus.CREATED.value());
             genericResponses.setResponses(Collections.singletonList(genericResponse));
-            return genericResponses;
-        }, gson()::toJson);
+            return gson().toJson(genericResponses);
+        });
     }
 
-    private void postSaltBootHostnameDistribute(Map<String, CloudVmMetaDataStatus> instanceMap, Service sparkService) {
-        sparkService.post(SALT_HOSTNAME_DISTRIBUTE, (request, response) -> {
+    private void postSaltBootHostnameDistribute(Map<String, CloudVmMetaDataStatus> instanceMap) {
+        dynamicRouteStack.post(SALT_HOSTNAME_DISTRIBUTE, (request, response, model) -> {
             GenericResponses genericResponses = new GenericResponses();
             List<GenericResponse> responses = new ArrayList<>();
 
@@ -100,12 +104,12 @@ public class SaltMock extends AbstractModelMock {
                 responses.add(genericResponse);
             }
             genericResponses.setResponses(responses);
-            return genericResponses;
-        }, gson()::toJson);
+            return gson().toJson(genericResponses);
+        });
     }
 
-    private void postSaltBootHostnameDistribute2(Service sparkService) {
-        sparkService.post(SALT_HOSTNAME_DISTRIBUTE, (request, response) -> {
+    private void postSaltBootHostnameDistribute2() {
+        dynamicRouteStack.post(SALT_HOSTNAME_DISTRIBUTE, (request, response, model) -> {
             GenericResponses genericResponses = new GenericResponses();
             List<GenericResponse> responses = new ArrayList<>();
 
@@ -121,47 +125,47 @@ public class SaltMock extends AbstractModelMock {
                 responses.add(genericResponse);
             }
             genericResponses.setResponses(responses);
-            return genericResponses;
-        }, gson()::toJson);
+            return gson().toJson(genericResponses);
+        });
     }
 
-    private void postSaltBootActionDistribute(Service sparkService) {
-        sparkService.post(SALT_ACTION_DISTRIBUTE, (request, response) -> {
+    private void postSaltBootActionDistribute() {
+        dynamicRouteStack.post(SALT_ACTION_DISTRIBUTE, (request, response, model) -> {
             GenericResponses genericResponses = new GenericResponses();
             genericResponses.setResponses(new ArrayList<>());
-            return genericResponses;
-        }, gson()::toJson);
+            return gson().toJson(genericResponses);
+        });
     }
 
-    private void postSaltBootPillar(Service sparkService) {
-        sparkService.post(SALT_SERVER_PILLAR, (request, response) -> {
+    private void postSaltBootPillar() {
+        dynamicRouteStack.post(SALT_SERVER_PILLAR, (request, response, model) -> {
             GenericResponse genericResponse = new GenericResponse();
             genericResponse.setStatusCode(HttpStatus.OK.value());
-            return genericResponse;
-        }, gson()::toJson);
+            return gson().toJson(genericResponse);
+        });
     }
 
-    private void postSaltBootFile(Service sparkService) {
-        sparkService.post(SALT_FILE, (request, response) -> {
+    private void postSaltBootFile() {
+        dynamicRouteStack.post(SALT_FILE, (request, response) -> {
             response.status(HttpStatus.CREATED.value());
             return response;
         });
     }
 
-    private void postSaltBootRun(Map<String, CloudVmMetaDataStatus> instanceMap, Service sparkService) {
-        sparkService.post(SALT_RUN, new SaltApiRunPostResponse(instanceMap));
+    private void postSaltBootRun(Map<String, CloudVmMetaDataStatus> instanceMap) {
+        dynamicRouteStack.post(SALT_RUN, new SaltApiRunPostResponse(instanceMap));
     }
 
-    private void getSaltBootHealth(Service sparkService) {
-        sparkService.get(SALT_HEALTH, (request, response) -> {
+    private void getSaltBootHealth() {
+        dynamicRouteStack.get(SALT_HEALTH, (request, response, model) -> {
             GenericResponse genericResponse = new GenericResponse();
             genericResponse.setStatusCode(HttpStatus.OK.value());
-            return genericResponse;
-        }, gson()::toJson);
+            return gson().toJson(genericResponse);
+        });
     }
 
-    private void getWsV1ClusterApps(Service sparkService) {
-        sparkService.get("/ws/v1/cluster/apps", (request, response) -> {
+    private void getWsV1ClusterApps() {
+        dynamicRouteStack.get("/ws/v1/cluster/apps", (request, response) -> {
             ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
             ArrayNode appNode = rootNode.putObject("apps").putArray("app");
             appNode.addObject().put("amHostHttpAddress", "192.168.1.1");

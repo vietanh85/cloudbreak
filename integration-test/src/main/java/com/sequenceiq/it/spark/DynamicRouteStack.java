@@ -11,17 +11,15 @@ import com.sequenceiq.it.cloudbreak.newway.mock.DefaultModel;
 import spark.Route;
 import spark.Service;
 
-public class DynamicRouteStack {
+/**
+ *  Implementation of {@code IDynamicRoute} interface through {@code GenericDynamicRoute} with a <b><u>stack data structure</u></b> approach.
+ */
+public class DynamicRouteStack extends GenericDynamicRoute {
 
     private Map<RouteKey, CustomizeableDynamicRoute> mockResponders = new HashMap<>();
 
-    private Service service;
-
-    private DefaultModel model;
-
     public DynamicRouteStack(Service service, DefaultModel model) {
-        this.service = service;
-        this.model = model;
+        super(service, model);
     }
 
     public Route get(String url, Route responseHandler) {
@@ -110,25 +108,25 @@ public class DynamicRouteStack {
 
     private void addPostIfNotPresent(String url, boolean hasSparkRoute, Route route) {
         if (!hasSparkRoute) {
-            service.post(url, route);
+            getService().post(url, route);
         }
     }
 
     private void addPutIfNotPresent(String url, boolean hasSparkRoute, Route route) {
         if (!hasSparkRoute) {
-            service.put(url, route);
+            getService().put(url, route);
         }
     }
 
     private void addGetIfNotPresent(String url, boolean hasSparkRoute, Route route) {
         if (!hasSparkRoute) {
-            service.get(url, route);
+            getService().get(url, route);
         }
     }
 
     private void addDeleteIfNotPresent(String url, boolean hasSparkRoute, Route route) {
         if (!hasSparkRoute) {
-            service.delete(url, route);
+            getService().delete(url, route);
         }
     }
 
@@ -144,11 +142,11 @@ public class DynamicRouteStack {
 
     private Route overrideResponseByUrlWithStateful(RouteKey key, StatefulRoute responseHandler) {
         if (mockResponders.get(key) == null) {
-            CustomizeableDynamicRoute route = new CustomizeableDynamicRoute(responseHandler, model);
+            CustomizeableDynamicRoute route = new CustomizeableDynamicRoute(responseHandler, getModel());
             mockResponders.put(key, route);
         }
         CustomizeableDynamicRoute modifiableRoute = mockResponders.get(key);
-        modifiableRoute.setRouteImplementation(responseHandler, model);
+        modifiableRoute.setRouteImplementation(responseHandler, getModel());
         return modifiableRoute;
     }
 

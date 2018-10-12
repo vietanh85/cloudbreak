@@ -77,6 +77,13 @@ public class InstanceGroupEntity extends AbstractCloudbreakEntity<InstanceGroupV
         return this;
     }
 
+    public InstanceGroupEntity withRecipes(String... recipeNames) {
+        for (String recipeName : recipeNames) {
+            getRequest().getRecipeNames().add(recipeName);
+        }
+        return this;
+    }
+
     public InstanceGroupEntity withGroup(String group) {
         getRequest().setGroup(group);
         return this;

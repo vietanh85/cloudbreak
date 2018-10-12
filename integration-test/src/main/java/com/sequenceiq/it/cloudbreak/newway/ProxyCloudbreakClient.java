@@ -15,8 +15,8 @@ public class ProxyCloudbreakClient extends com.sequenceiq.cloudbreak.client.Clou
         super(cloudbreakAddress, identityServerAddress, user, password, clientId, configKey);
     }
 
-    protected ProxyCloudbreakClient(String cloudbreakAddress, String identityServerAddress, String secret, String clientId,
-                                    ConfigKey configKey) {
+    public ProxyCloudbreakClient(String cloudbreakAddress, String identityServerAddress, String secret, String clientId,
+                                 ConfigKey configKey) {
         super(cloudbreakAddress, identityServerAddress, secret, clientId, configKey);
     }
 

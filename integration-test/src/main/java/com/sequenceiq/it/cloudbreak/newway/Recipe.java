@@ -4,9 +4,20 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import com.sequenceiq.it.IntegrationTestContext;
+import com.sequenceiq.it.cloudbreak.newway.action.ActionV2;
+import com.sequenceiq.it.cloudbreak.newway.action.RecipePostAction;
+import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.v3.RecipeV3Action;
 
+@Prototype
 public class Recipe extends RecipeEntity {
+
+    public Recipe() {
+    }
+
+    public Recipe(TestContext testContext) {
+        super(testContext);
+    }
 
     static Function<IntegrationTestContext, Recipe> getTestContext(String key) {
         return testContext -> testContext.getContextParam(key, Recipe.class);
@@ -62,5 +73,9 @@ public class Recipe extends RecipeEntity {
 
     public static Assertion<Recipe> assertThis(BiConsumer<Recipe, IntegrationTestContext> check) {
         return new Assertion<>(getTestContext(GherkinTest.RESULT), check);
+    }
+
+    public static ActionV2<RecipeEntity> postV2() {
+        return new RecipePostAction();
     }
 }

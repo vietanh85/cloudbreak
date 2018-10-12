@@ -1,14 +1,16 @@
 package com.sequenceiq.it.cloudbreak.newway.action;
 
-import static com.sequenceiq.it.cloudbreak.newway.log.Log.logJSON;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.sequenceiq.cloudbreak.api.model.stack.StackScaleRequestV2;
 import com.sequenceiq.it.cloudbreak.newway.CloudbreakClient;
 import com.sequenceiq.it.cloudbreak.newway.StackEntity;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.Response;
+
+import static com.sequenceiq.it.cloudbreak.newway.log.Log.logJSON;
+import static java.lang.String.format;
 
 public class StackScalePostAction implements ActionV2<StackEntity> {
 
@@ -37,12 +39,13 @@ public class StackScalePostAction implements ActionV2<StackEntity> {
     @Override
     public StackEntity action(TestContext testContext, StackEntity entity, CloudbreakClient client) throws Exception {
 
-        logJSON(" StackScale post request:\n", request);
+        logJSON(format(" StackScale post request:%n"), request);
 
-        client.getCloudbreakClient()
+        try (Response toClose = client.getCloudbreakClient()
                 .stackV3Endpoint()
-                .putScalingInWorkspace(client.getWorkspaceId(), entity.getName(), request);
+                .putScalingInWorkspace(client.getWorkspaceId(), entity.getName(), request)) {
+            return entity;
+        }
 
-        return entity;
     }
 }

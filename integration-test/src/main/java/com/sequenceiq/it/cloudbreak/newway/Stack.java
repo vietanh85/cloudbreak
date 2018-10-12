@@ -19,6 +19,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.sequenceiq.it.cloudbreak.newway.action.StackDeleteAction;
+import com.sequenceiq.it.cloudbreak.newway.action.StackNodeUnhealthyAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +129,10 @@ public class Stack extends StackEntity {
         return new Action<>(getTestContextStack(key), strategy);
     }
 
+    public static ActionV2<StackEntity> deleteV2() {
+        return new StackDeleteAction();
+    }
+
     public static Action<Stack> delete(String key) {
         return delete(key, StackV3Action::delete);
     }
@@ -141,6 +147,10 @@ public class Stack extends StackEntity {
 
     public static Action<Stack> makeNodeUnhealthy(String hostgroup, int nodeCount) {
         return new Action<>(getTestContextStack(STACK), new UnhealthyNodeStrategy(hostgroup, nodeCount));
+    }
+
+    public static ActionV2<StackEntity> makeNodeUnhealthy(int nodeCount, String hostgroup) {
+        return new StackNodeUnhealthyAction(hostgroup, nodeCount);
     }
 
     public static Assertion<Stack> assertThis(BiConsumer<Stack, IntegrationTestContext> check) {
