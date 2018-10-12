@@ -1,5 +1,6 @@
 package com.sequenceiq.it.cloudbreak.newway.testcase;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -14,6 +15,7 @@ import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 
@@ -65,13 +67,17 @@ public abstract class AbstractIntegrationTest extends AbstractTestNGSpringContex
 
     }
 
+    @BeforeMethod
+    public void setThreadName(ITestContext tc, Method method) {
+        Thread.currentThread().setName(getClass().getSimpleName() + "." + method.getName());
+    }
+
     @AfterSuite
     public void afterSuite() {
 
     }
 
     @DataProvider
-
     public Object[][] testContext() {
         return new Object[][]{{applicationContext.getBean(TestContext.class)}};
     }

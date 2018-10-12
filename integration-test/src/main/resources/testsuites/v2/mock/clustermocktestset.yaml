@@ -1,6 +1,0 @@
-name: "mock-cluster-tests"
-tests:
-  - name: "mockclusters"
-    classes:
-      - com.sequenceiq.it.cloudbreak.newway.testcase.TerminationTest
-      - com.sequenceiq.it.cloudbreak.newway.testcase.UpscaleTest
