@@ -6,7 +6,6 @@ import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 
 import javax.ws.rs.WebApplicationException;
 import java.util.List;
-import java.util.Set;
 
 public class BlueprintEntity extends AbstractCloudbreakEntity<BlueprintRequest, BlueprintResponse, BlueprintEntity> {
     public static final String BLUEPRINT = "BLUEPRINT";

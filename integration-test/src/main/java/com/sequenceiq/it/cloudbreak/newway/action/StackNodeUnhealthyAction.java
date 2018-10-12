@@ -41,21 +41,21 @@ public class StackNodeUnhealthyAction implements ActionV2<StackEntity> {
         ProxyCloudbreakClient client2 = getAutoscaleProxyCloudbreakClient(testContext);
         FailureReport failureReport = new FailureReport();
         failureReport.setFailedNodes(getNodes(getInstanceGroupResponse(entity)));
-        try (Response toClose = client2.autoscaleEndpoint().failureReport(Objects.requireNonNull(entity.getResponse().getId()), failureReport)){
+        try (Response toClose = client2.autoscaleEndpoint().failureReport(Objects.requireNonNull(entity.getResponse().getId()), failureReport)) {
             logJSON(LOGGER, format(" Stack deletion was successful:%n"), entity.getResponse());
             log(LOGGER, format(" ID: %s", entity.getResponse().getId()));
             return entity;
         }
     }
 
-
     private ProxyCloudbreakClient getAutoscaleProxyCloudbreakClient(TestContext integrationTestContext) {
-        return new ProxyCloudbreakClient(
+        /*return new ProxyCloudbreakClient(
                 integrationTestContext.get(CloudbreakTest.CLOUDBREAK_SERVER_ROOT),
                 integrationTestContext.get(CloudbreakTest.IDENTITY_URL),
                 integrationTestContext.get(CloudbreakTest.AUTOSCALE_SECRET),
                 integrationTestContext.get(CloudbreakTest.AUTOSCALE_CLIENTID),
-                new ConfigKey(false, true, true));
+                new ConfigKey(false, true, true));*/
+        return null;
 
     }
 

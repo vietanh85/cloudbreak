@@ -2,7 +2,7 @@ package com.sequenceiq.it.spark;
 
 import spark.Route;
 
-public interface IDynamicRoute {
+public interface DynamicRoute {
 
     Route get(String url, Route responseHandler);
 

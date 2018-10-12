@@ -3,7 +3,7 @@ package com.sequenceiq.it.spark;
 import com.sequenceiq.it.cloudbreak.newway.mock.DefaultModel;
 import spark.Service;
 
-public abstract class GenericDynamicRoute implements IDynamicRoute {
+public abstract class GenericDynamicRoute implements DynamicRoute {
 
     private final Service service;
 

@@ -12,7 +12,7 @@ import spark.Route;
 import spark.Service;
 
 /**
- *  Implementation of {@code IDynamicRoute} interface through {@code GenericDynamicRoute} with a <b><u>stack data structure</u></b> approach.
+ *  Implementation of {@code DynamicRoute} interface through {@code GenericDynamicRoute} with a <b><u>stack data structure</u></b> approach.
  */
 public class DynamicRouteStack extends GenericDynamicRoute {
 

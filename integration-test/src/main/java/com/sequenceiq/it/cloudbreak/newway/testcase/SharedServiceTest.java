@@ -7,7 +7,6 @@ import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsCloudStorageParamet
 import com.sequenceiq.it.cloudbreak.exception.TestFailException;
 import com.sequenceiq.it.cloudbreak.newway.Blueprint;
 import com.sequenceiq.it.cloudbreak.newway.BlueprintEntity;
-import com.sequenceiq.it.cloudbreak.newway.CloudbreakClient;
 import com.sequenceiq.it.cloudbreak.newway.LdapConfig;
 import com.sequenceiq.it.cloudbreak.newway.LdapConfigEntity;
 import com.sequenceiq.it.cloudbreak.newway.RandomNameCreator;
@@ -15,8 +14,6 @@ import com.sequenceiq.it.cloudbreak.newway.RdsConfig;
 import com.sequenceiq.it.cloudbreak.newway.RdsConfigEntity;
 import com.sequenceiq.it.cloudbreak.newway.Stack;
 import com.sequenceiq.it.cloudbreak.newway.StackEntity;
-import com.sequenceiq.it.cloudbreak.newway.assertion.AssertionV2;
-import com.sequenceiq.it.cloudbreak.newway.assertion.MockVerification;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.entity.AmbariEntity;
 import com.sequenceiq.it.cloudbreak.newway.entity.ClusterEntity;
@@ -34,8 +31,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.sequenceiq.it.cloudbreak.newway.cloud.HostGroupType.MASTER;
-import static com.sequenceiq.it.cloudbreak.newway.cloud.HostGroupType.WORKER;
-import static com.sequenceiq.it.cloudbreak.newway.context.RunningParameter.emptyRunningParameter;
 import static com.sequenceiq.it.cloudbreak.newway.context.RunningParameter.key;
 
 public class SharedServiceTest extends AbstractIntegrationTest {
@@ -89,7 +84,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                 .capture(entity -> entity.getRequest().getCluster().getLdapConfigName(), key("ldapConfigName"))
                 .when(Stack.postV2())
                 .await(STACK_AVAILABLE)
-                .verify(entity -> entity.getResponse().getCluster().getRdsConfigs().stream().map(RDSConfigJson::getName).collect(Collectors.toSet()), key("rdsConfigNames"))
+                .verify(entity -> entity.getResponse().getCluster().getRdsConfigs().stream().map(RDSConfigJson::getName).collect(Collectors.toSet()),
+                        key("rdsConfigNames"))
                 .verify(entity -> entity.getResponse().getCluster().getLdapConfig().getName(), key("ldapConfigName"))
                 .then((testContext1, entity, cloudbreakClient) -> checkBlueprintTaggedWithSharedService(entity))
                 .validate();

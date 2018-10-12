@@ -2,7 +2,6 @@ package com.sequenceiq.it.cloudbreak.newway.action;
 
 import com.sequenceiq.it.cloudbreak.newway.BlueprintEntity;
 import com.sequenceiq.it.cloudbreak.newway.CloudbreakClient;
-import com.sequenceiq.it.cloudbreak.newway.RecipeEntity;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

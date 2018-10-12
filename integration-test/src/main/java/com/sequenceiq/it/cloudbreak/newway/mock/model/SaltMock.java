@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.sequenceiq.it.spark.DynamicRouteStack;
-import com.sequenceiq.it.spark.IDynamicRoute;
+import com.sequenceiq.it.spark.DynamicRoute;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -49,7 +49,7 @@ public class SaltMock extends AbstractModelMock {
 
     public static final String SALT_HEALTH = SALT_BOOT_ROOT + "/health";
 
-    private final IDynamicRoute dynamicRouteStack;
+    private final DynamicRoute dynamicRouteStack;
 
     public SaltMock(Service sparkService, DefaultModel defaultModel) {
         super(sparkService, defaultModel);

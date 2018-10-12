@@ -38,9 +38,9 @@ public class RecipeTest extends AbstractIntegrationTest {
 
     private static final String COMPUTE_ID = "ig";
 
-    public static final String TEST_CONTEXT = "testContext";
+    private static final String TEST_CONTEXT = "testContext";
 
-    public static final String HIGHSTATE = "state.highstate";
+    private static final String HIGHSTATE = "state.highstate";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RecipeTest.class);
 
@@ -63,7 +63,8 @@ public class RecipeTest extends AbstractIntegrationTest {
     }
 
     @Test(dataProvider = "dataProviderForNonPreTerminationRecipeTypes")
-    public void testRecipeNotPreTerminationHasGotHighStateOnCluster(TestContext testContext, HostGroupType hostGroup, int nodeCount, RecipeType type, int executionTime) {
+    public void testRecipeNotPreTerminationHasGotHighStateOnCluster(TestContext testContext, HostGroupType hostGroup, int nodeCount,
+                    RecipeType type, int executionTime) {
         LOGGER.debug("testing recipe execution for type: {}", type.name());
         String recipeName = creator.getRandomNameForMock();
         testContext
@@ -126,8 +127,8 @@ public class RecipeTest extends AbstractIntegrationTest {
     }
 
     @Test(dataProvider = TEST_CONTEXT)
-    public void testWhenRecipeProvidedToHostGroupAndAnotherHostgroupGetUpscaledThenThereIsNoFurtherRecipeExecutionOnTheNewNodeBesideTheDefaultOnes
-            (TestContext testContext) {
+    public void testWhenRecipeProvidedToHostGroupAndAnotherHostgroupGetUpscaledThenThereIsNoFurtherRecipeExecutionOnTheNewNodeBesideTheDefaultOnes(
+                    TestContext testContext) {
         String recipeName = creator.getRandomNameForMock();
         testContext
                 .given(RecipeEntity.class).withName(recipeName).withContent(RECIPE_CONTENT).withRecipeType(POST_AMBARI_START)

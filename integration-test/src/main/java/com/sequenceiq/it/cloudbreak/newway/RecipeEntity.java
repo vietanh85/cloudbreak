@@ -4,7 +4,6 @@ import com.sequenceiq.cloudbreak.api.model.RecipeRequest;
 import com.sequenceiq.cloudbreak.api.model.RecipeResponse;
 import com.sequenceiq.cloudbreak.api.model.RecipeType;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
-import com.sequenceiq.it.cloudbreak.newway.v3.RecipeV3Action;
 
 import javax.ws.rs.WebApplicationException;
 
