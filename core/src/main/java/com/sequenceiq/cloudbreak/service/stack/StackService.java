@@ -69,6 +69,7 @@ import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
 import com.sequenceiq.cloudbreak.domain.view.StackView;
+import com.sequenceiq.cloudbreak.domain.workspace.Tenant;
 import com.sequenceiq.cloudbreak.domain.workspace.User;
 import com.sequenceiq.cloudbreak.domain.workspace.Workspace;
 import com.sequenceiq.cloudbreak.logger.MDCBuilder;
@@ -200,14 +201,6 @@ public class StackService {
     @Inject
     private PermissionCheckingUtils permissionCheckingUtils;
 
-    public Long countByAccount(String account) {
-        return stackRepository.countActiveByAccount(account);
-    }
-
-    public Long countByOwner(String owner) {
-        return stackRepository.countActiveByOwner(owner);
-    }
-
     public Long countAliveByEnvironment(Environment environment) {
         return stackRepository.countAliveOnesByWorkspaceAndEnvironment(environment.getWorkspace().getId(), environment.getId());
     }
@@ -263,6 +256,12 @@ public class StackService {
     @PreAuthorize("#oauth2.hasScope('cloudbreak.autoscale')")
     public Long getWorkspaceId(Long stackId) {
         return stackRepository.findWorkspaceIdById(stackId);
+    }
+
+    @PreAuthorize("#oauth2.hasScope('cloudbreak.autoscale')")
+    public Tenant getTenant(Long stackId) {
+        Workspace workspace = stackRepository.findWorkspaceById(stackId);
+        return workspace.getTenant();
     }
 
     @PreAuthorize("#oauth2.hasScope('cloudbreak.autoscale')")
