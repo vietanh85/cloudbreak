@@ -18,6 +18,7 @@ import com.sequenceiq.cloudbreak.api.model.ldap.LdapConfigRequest;
 import com.sequenceiq.cloudbreak.api.model.ldap.LdapConfigResponse;
 import com.sequenceiq.cloudbreak.api.model.ldap.LdapTestResult;
 import com.sequenceiq.cloudbreak.api.model.ldap.LdapValidationRequest;
+import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigResponse;
 import com.sequenceiq.cloudbreak.common.type.ResourceEvent;
 import com.sequenceiq.cloudbreak.controller.exception.BadRequestException;
 import com.sequenceiq.cloudbreak.controller.validation.ldapconfig.LdapConfigValidator;
@@ -99,7 +100,7 @@ public class LdapV3Controller extends NotificationController implements LdapConf
 
     @Override
     public LdapConfigResponse attachToEnvironments(Long workspaceId, String name, @NotEmpty Set<String> environmentNames) {
-        return null;
+        return ldapConfigService.attachToEnvironmentsAndConvert(name, environmentNames, workspaceId, LdapConfigResponse.class);
     }
 
     @Override

@@ -106,9 +106,6 @@ public class CredentialServiceTest {
     private CredentialValidator credentialValidator;
 
     @Mock
-    private TransactionService transactionService;
-
-    @Mock
     private EnvironmentViewRepository environmentViewRepository;
 
     @InjectMocks
@@ -215,7 +212,7 @@ public class CredentialServiceTest {
     }
 
     @Test
-    public void testUpdateByWorkspaceIdWhenEveryConditionMeetsThenCredentialSaveHappens() throws TransactionExecutionException {
+    public void testUpdateByWorkspaceIdWhenEveryConditionMeetsThenCredentialSaveHappens() {
         Credential saved = mock(Credential.class);
         Credential original = mock(Credential.class);
         when(original.cloudPlatform()).thenReturn(TEST_CLOUD_PLATFORM);
@@ -223,7 +220,9 @@ public class CredentialServiceTest {
         doNothing().when(credentialValidator).validateCredentialCloudPlatform(anyString());
         when(credentialRepository.findActiveByNameAndWorkspaceIdFilterByPlatforms(TEST_CREDENTIAL_NAME, ORG_ID, CLOUD_PLATFORMS)).thenReturn(original);
         when(credentialAdapter.init(testCredential, ORG_ID, USER_ID)).thenReturn(testCredential);
-        when(transactionService.required(any())).thenReturn(saved);
+        when(workspaceService.get(anyLong(), any())).thenReturn(workspace);
+        when(workspaceService.retrieveForUser(any())).thenReturn(Set.of(workspace));
+        when(credentialRepository.save(any())).thenReturn(saved);
 
         Credential result = credentialService.updateByWorkspaceId(ORG_ID, testCredential, user);
 
@@ -260,12 +259,13 @@ public class CredentialServiceTest {
     }
 
     @Test
-    public void testCreateWhenCredentialCloudPlatformIsValidAndCredentialValuesAreFineThenCredentialWillBeSaved() throws TransactionExecutionException {
+    public void testCreateWhenCredentialCloudPlatformIsValidAndCredentialValuesAreFineThenCredentialWillBeSaved() {
         Credential expected = new Credential();
         when(testCredential.cloudPlatform()).thenReturn(TEST_CLOUD_PLATFORM);
-        when(workspaceService.get(ORG_ID, user)).thenReturn(workspace);
         when(credentialAdapter.init(testCredential, ORG_ID, USER_ID)).thenReturn(testCredential);
-        when(transactionService.required(any())).thenReturn(expected);
+        when(workspaceService.get(anyLong(), any())).thenReturn(workspace);
+        when(workspaceService.retrieveForUser(any())).thenReturn(Set.of(workspace));
+        when(credentialRepository.save(any())).thenReturn(expected);
 
         Credential result = credentialService.create(testCredential, ORG_ID, user);
 
@@ -300,13 +300,13 @@ public class CredentialServiceTest {
     }
 
     @Test
-    public void testCreateWithRetryWhenCredentialCloudPlatformIsValidAndCredentialValuesAreFineThenCredentialWillBeSaved()
-            throws TransactionExecutionException {
+    public void testCreateWithRetryWhenCredentialCloudPlatformIsValidAndCredentialValuesAreFineThenCredentialWillBeSaved() {
         Credential expected = new Credential();
         when(testCredential.cloudPlatform()).thenReturn(TEST_CLOUD_PLATFORM);
-        when(workspaceService.get(ORG_ID, user)).thenReturn(workspace);
         when(credentialAdapter.init(testCredential, ORG_ID, USER_ID)).thenReturn(testCredential);
-        when(transactionService.required(any())).thenReturn(expected);
+        when(workspaceService.get(anyLong(), any())).thenReturn(workspace);
+        when(workspaceService.retrieveForUser(any())).thenReturn(Set.of(workspace));
+        when(credentialRepository.save(any())).thenReturn(expected);
 
         credentialService.createWithRetry(testCredential, ORG_ID, user);
 

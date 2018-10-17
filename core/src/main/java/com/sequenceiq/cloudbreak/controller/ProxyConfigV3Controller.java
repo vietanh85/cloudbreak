@@ -62,7 +62,7 @@ public class ProxyConfigV3Controller extends NotificationController implements P
 
     @Override
     public ProxyConfigResponse attachToEnvironments(Long workspaceId, String name, @NotEmpty Set<String> environmentNames) {
-        return null;
+        return proxyConfigService.attachToEnvironmentsAndConvert(name, environmentNames, workspaceId, ProxyConfigResponse.class);
     }
 
     @Override

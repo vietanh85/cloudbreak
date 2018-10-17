@@ -8,7 +8,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -26,9 +28,8 @@ import com.sequenceiq.cloudbreak.domain.Credential;
 import com.sequenceiq.cloudbreak.domain.environment.Environment;
 import com.sequenceiq.cloudbreak.domain.workspace.User;
 import com.sequenceiq.cloudbreak.domain.workspace.Workspace;
+import com.sequenceiq.cloudbreak.repository.environment.EnvironmentRepository;
 import com.sequenceiq.cloudbreak.service.RestRequestThreadLocalService;
-import com.sequenceiq.cloudbreak.service.TransactionService;
-import com.sequenceiq.cloudbreak.service.TransactionService.TransactionExecutionException;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
 import com.sequenceiq.cloudbreak.service.ldapconfig.LdapConfigService;
 import com.sequenceiq.cloudbreak.service.proxy.ProxyConfigService;
@@ -38,6 +39,8 @@ import com.sequenceiq.cloudbreak.service.workspace.WorkspaceService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EnvironmentServiceTest {
+
+    private static final Long WORKSPACE_ID = 1L;
 
     private static final String CREDENTIAL_NAME = "cred1";
 
@@ -51,9 +54,6 @@ public class EnvironmentServiceTest {
 
     @Mock
     private RestRequestThreadLocalService restRequestThreadLocalService;
-
-    @Mock
-    private TransactionService transactionService;
 
     @Mock
     private RdsConfigService rdsConfigService;
@@ -73,11 +73,33 @@ public class EnvironmentServiceTest {
     @Mock
     private ConversionService conversionService;
 
+    @Mock
+    private EnvironmentRepository environmentRepository;
+
     @InjectMocks
     private EnvironmentService environmentService;
 
+    private final Workspace workspace = new Workspace();
+
+    @Before
+    public void setup() {
+        workspace.setId(WORKSPACE_ID);
+        when(conversionService.convert(any(EnvironmentRequest.class), eq(Environment.class))).thenReturn(new Environment());
+        when(ldapConfigService.findByNamesInWorkspace(anySet(), anyLong())).thenReturn(Collections.emptySet());
+        when(rdsConfigService.findByNamesInWorkspace(anySet(), anyLong())).thenReturn(Collections.emptySet());
+        when(proxyConfigService.findByNamesInWorkspace(anySet(), anyLong())).thenReturn(Collections.emptySet());
+        when(environmentCreationValidator.validate(any())).thenReturn(ValidationResult.builder().build());
+        when(workspaceService.get(anyLong(), any())).thenReturn(workspace);
+        when(restRequestThreadLocalService.getCloudbreakUser()).thenReturn(new CloudbreakUser("", "", ""));
+        when(userService.getOrCreate(any())).thenReturn(new User());
+        when(conversionService.convert(any(Environment.class), eq(DetailedEnvironmentResponse.class))).thenReturn(new DetailedEnvironmentResponse());
+        when(workspaceService.get(anyLong(), any())).thenReturn(workspace);
+        when(workspaceService.retrieveForUser(any())).thenReturn(Set.of(workspace));
+        when(environmentRepository.save(any(Environment.class))).thenReturn(new Environment());
+    }
+
     @Test
-    public void testCreateWithCredentialName() throws TransactionExecutionException {
+    public void testCreateWithCredentialName() {
         EnvironmentRequest environmentRequest = new EnvironmentRequest();
         environmentRequest.setName(ENVIRONMENT_NAME);
 
@@ -85,47 +107,28 @@ public class EnvironmentServiceTest {
         CredentialRequest credentialRequest = new CredentialRequest();
         credentialRequest.setName("IgnoredCredRequestName");
         environmentRequest.setCredential(credentialRequest);
-        Long workspaceId = 1L;
 
-        when(credentialService.getByNameForWorkspaceId(CREDENTIAL_NAME, workspaceId)).thenReturn(new Credential());
+        when(credentialService.getByNameForWorkspaceId(CREDENTIAL_NAME, WORKSPACE_ID)).thenReturn(new Credential());
 
-        initMocks();
+        DetailedEnvironmentResponse response = environmentService.createForLoggedInUser(environmentRequest, WORKSPACE_ID);
 
-        DetailedEnvironmentResponse response = environmentService.createForLoggedInUser(environmentRequest, workspaceId);
         assertNotNull(response);
     }
 
     @Test
-    public void testCreateWithCredential() throws TransactionExecutionException {
+    public void testCreateWithCredential() {
         EnvironmentRequest environmentRequest = new EnvironmentRequest();
         environmentRequest.setName(ENVIRONMENT_NAME);
 
         CredentialRequest credentialRequest = new CredentialRequest();
         credentialRequest.setName("CredRequestName");
         environmentRequest.setCredential(credentialRequest);
-        Long workspaceId = 1L;
 
         when(credentialService.createForLoggedInUser(any(), anyLong())).thenReturn(new Credential());
         when(conversionService.convert(any(CredentialRequest.class), eq(Credential.class))).thenReturn(new Credential());
 
-        initMocks();
+        DetailedEnvironmentResponse response = environmentService.createForLoggedInUser(environmentRequest, WORKSPACE_ID);
 
-        DetailedEnvironmentResponse response = environmentService.createForLoggedInUser(environmentRequest, workspaceId);
         assertNotNull(response);
     }
-
-    private void initMocks() throws TransactionExecutionException {
-        when(conversionService.convert(any(EnvironmentRequest.class), eq(Environment.class))).thenReturn(new Environment());
-        when(ldapConfigService.findByNamesInWorkspace(anySet(), anyLong())).thenReturn(Collections.emptySet());
-        when(rdsConfigService.findByNamesInWorkspace(anySet(), anyLong())).thenReturn(Collections.emptySet());
-        when(proxyConfigService.findByNamesInWorkspace(anySet(), anyLong())).thenReturn(Collections.emptySet());
-        when(environmentCreationValidator.validate(any())).thenReturn(ValidationResult.builder().build());
-        Workspace workspace = new Workspace();
-        when(workspaceService.get(anyLong(), any())).thenReturn(workspace);
-        when(restRequestThreadLocalService.getCloudbreakUser()).thenReturn(new CloudbreakUser("", "", ""));
-        when(userService.getOrCreate(any())).thenReturn(new User());
-        when(transactionService.required(any())).thenReturn(new Environment());
-        when(conversionService.convert(any(Environment.class), eq(DetailedEnvironmentResponse.class))).thenReturn(new DetailedEnvironmentResponse());
-    }
-
 }
