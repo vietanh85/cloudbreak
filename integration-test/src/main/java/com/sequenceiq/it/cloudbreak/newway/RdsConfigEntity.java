@@ -44,6 +44,11 @@ public class RdsConfigEntity extends AbstractCloudbreakEntity<RDSConfigRequest, 
                 .withType("HIVE");
     }
 
+    public RdsConfigEntity withRequest(RDSConfigRequest request) {
+        setRequest(request);
+        return this;
+    }
+
     public RdsConfigEntity withName(String name) {
         getRequest().setName(name);
         setName(name);

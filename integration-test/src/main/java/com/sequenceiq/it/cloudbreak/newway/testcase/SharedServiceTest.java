@@ -1,8 +1,12 @@
 package com.sequenceiq.it.cloudbreak.newway.testcase;
 
+import com.sequenceiq.cloudbreak.api.model.DirectoryType;
+import com.sequenceiq.cloudbreak.api.model.ldap.LdapConfigRequest;
 import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigJson;
+import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigRequest;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
+import com.sequenceiq.cloudbreak.api.model.v2.StorageLocationRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsCloudStorageParameters;
 import com.sequenceiq.it.cloudbreak.exception.TestFailException;
 import com.sequenceiq.it.cloudbreak.newway.Blueprint;
@@ -14,17 +18,23 @@ import com.sequenceiq.it.cloudbreak.newway.RdsConfig;
 import com.sequenceiq.it.cloudbreak.newway.RdsConfigEntity;
 import com.sequenceiq.it.cloudbreak.newway.Stack;
 import com.sequenceiq.it.cloudbreak.newway.StackEntity;
+import com.sequenceiq.it.cloudbreak.newway.assertion.AssertionV2;
+import com.sequenceiq.it.cloudbreak.newway.assertion.MockVerification;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.entity.AmbariEntity;
 import com.sequenceiq.it.cloudbreak.newway.entity.ClusterEntity;
 import com.sequenceiq.it.cloudbreak.newway.entity.InstanceGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +42,8 @@ import java.util.stream.Collectors;
 
 import static com.sequenceiq.it.cloudbreak.newway.cloud.HostGroupType.MASTER;
 import static com.sequenceiq.it.cloudbreak.newway.context.RunningParameter.key;
+import static java.lang.String.format;
+import static java.util.List.of;
 
 public class SharedServiceTest extends AbstractIntegrationTest {
 
@@ -43,7 +55,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
 
     private static final String VALID_DL_BP = "{\"Blueprints\":{\"blueprint_name\":\"ownbp\",\"stack_name\":\"HDP\",\"stack_version\":\"2.6\"},\"settings\""
             + ":[{\"recovery_settings\":[]},{\"service_settings\":[]},{\"component_settings\":[]}],\"configurations\":[],\"host_groups\":[{\"name\":\"master\""
-            + ",\"configurations\":[],\"components\":[{\"name\":\"METRICS_COLLECTOR\"}],\"cardinality\":\"1\"}]}";
+            + ",\"configurations\":[],\"components\":[{\"name\":\"HIVE_METASTORE\"},{\"name\":\"HIVE_CLIENT\"},{\"name\":\"RANGER_ADMIN\"}],\"cardinality\":\"1"
+            + "\"}]}";
 
     @Inject
     private RandomNameCreator creator;
@@ -67,19 +80,21 @@ public class SharedServiceTest extends AbstractIntegrationTest {
         String rangerRdsName = creator.getRandomNameForMock();
         String ldapName = creator.getRandomNameForMock();
         String blueprintName = creator.getRandomNameForMock();
+        RDSConfigRequest hiveRds = rdsRequest(RdsType.HIVE, hiveRdsName);
+        RDSConfigRequest rangerRds = rdsRequest(RdsType.RANGER, rangerRdsName);
         testContext
-                .given("hive", RdsConfigEntity.class).valid().withType(RdsType.HIVE.name()).withName(hiveRdsName)
+                .given("hive", RdsConfigEntity.class).withRequest(hiveRds)
                 .when(RdsConfig.postV2())
-                .given("ranger", RdsConfigEntity.class).valid().withType(RdsType.RANGER.name()).withName(rangerRdsName)
+                .given("ranger", RdsConfigEntity.class).withRequest(rangerRds)
                 .when(RdsConfig.postV2())
-                .given(LdapConfigEntity.class).withName(ldapName)
+                .given(LdapConfigEntity.class).withRequest(ldapRequest(ldapName))
                 .when(LdapConfig.postV2())
-                .given(BlueprintEntity.class).withName(blueprintName).withTag(List.of(SHARED_SERVICE_TAG), List.of(true)).withAmbariBlueprint(VALID_DL_BP)
+                .given(BlueprintEntity.class).withName(blueprintName).withTag(of(SHARED_SERVICE_TAG), of(true)).withAmbariBlueprint(VALID_DL_BP)
                 .when(Blueprint.postV2())
                 .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
                 .given(StackEntity.class)
                 .withInstanceGroups("master")
-                .withCluster(datalakeReadyCluster(testContext, hiveRdsName, rangerRdsName, ldapName, blueprintName))
+                .withCluster(datalakeReadyCluster(testContext, hiveRdsName, rangerRdsName, ldapName, blueprintName, cloudStorage()))
                 .capture(entity -> entity.getRequest().getCluster().getRdsConfigNames(), key("rdsConfigNames"))
                 .capture(entity -> entity.getRequest().getCluster().getLdapConfigName(), key("ldapConfigName"))
                 .when(Stack.postV2())
@@ -88,27 +103,179 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                         key("rdsConfigNames"))
                 .verify(entity -> entity.getResponse().getCluster().getLdapConfig().getName(), key("ldapConfigName"))
                 .then((testContext1, entity, cloudbreakClient) -> checkBlueprintTaggedWithSharedService(entity))
+                .then(cloudStorageParametersHasPassedToAmbariBlueprint())
+                .then(ldapParametersHasPassedToAmbariBlueprint(ldapName))
+                .then(rdsParametersHasPassedToAmbariBlueprint(hiveRds, rangerRds))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testCreateDatalakeClusterWithMoreHostgroupThanSpecifiedInBlueprint(TestContext testContext) {
+        String hiveRdsName = creator.getRandomNameForMock();
+        String rangerRdsName = creator.getRandomNameForMock();
+        String ldapName = creator.getRandomNameForMock();
+        String blueprintName = creator.getRandomNameForMock();
+        CloudStorageRequest cloudStorage = cloudStorage();
+        testContext
+                .given("hive", RdsConfigEntity.class).valid().withType(RdsType.HIVE.name()).withName(hiveRdsName)
+                .when(RdsConfig.postV2())
+                .given("ranger", RdsConfigEntity.class).valid().withType(RdsType.RANGER.name()).withName(rangerRdsName)
+                .when(RdsConfig.postV2())
+                .given(LdapConfigEntity.class).withName(ldapName)
+                .when(LdapConfig.postV2())
+                .given(BlueprintEntity.class).withName(blueprintName).withTag(of(SHARED_SERVICE_TAG), of(true)).withAmbariBlueprint(VALID_DL_BP)
+                .when(Blueprint.postV2())
+                .given(StackEntity.class)
+                .withCluster(datalakeReadyCluster(testContext, hiveRdsName, rangerRdsName, ldapName, blueprintName, cloudStorage))
+                .when(Stack.postV2())
+                .except(ForbiddenException.class, key("forbidden"))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testCreateDatalakeClusterWithoutLdap(TestContext testContext) {
+        String hiveRdsName = creator.getRandomNameForMock();
+        String rangerRdsName = creator.getRandomNameForMock();
+        String blueprintName = creator.getRandomNameForMock();
+        CloudStorageRequest cloudStorage = cloudStorage();
+        testContext
+                .given("hive", RdsConfigEntity.class).valid().withType(RdsType.HIVE.name()).withName(hiveRdsName)
+                .when(RdsConfig.postV2())
+                .given("ranger", RdsConfigEntity.class).valid().withType(RdsType.RANGER.name()).withName(rangerRdsName)
+                .when(RdsConfig.postV2())
+                .given(BlueprintEntity.class).withName(blueprintName).withTag(of(SHARED_SERVICE_TAG), of(true)).withAmbariBlueprint(VALID_DL_BP)
+                .when(Blueprint.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(datalakeReadyCluster(testContext, hiveRdsName, rangerRdsName, null, blueprintName, cloudStorage))
+                .when(Stack.postV2(), key("forbidden"))
+                .except(ForbiddenException.class, key("forbidden"))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testCreateDatalakeClusterWithOnlyOneRdsWhichIsHive(TestContext testContext) {
+        String hiveRdsName = creator.getRandomNameForMock();
+        String ldapName = creator.getRandomNameForMock();
+        String blueprintName = creator.getRandomNameForMock();
+        CloudStorageRequest cloudStorage = cloudStorage();
+        testContext
+                .given("hive", RdsConfigEntity.class).valid().withType(RdsType.HIVE.name()).withName(hiveRdsName)
+                .when(RdsConfig.postV2())
+                .given(BlueprintEntity.class).withName(blueprintName).withTag(of(SHARED_SERVICE_TAG), of(true)).withAmbariBlueprint(VALID_DL_BP)
+                .when(Blueprint.postV2())
+                .given(LdapConfigEntity.class).withName(ldapName)
+                .when(LdapConfig.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(datalakeReadyCluster(testContext, hiveRdsName, null, ldapName, blueprintName, cloudStorage))
+                .when(Stack.postV2(), key("forbidden"))
+                .except(ForbiddenException.class, key("forbidden"))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testCreateDatalakeClusterWithOnlyOneRdsWhichIsRanger(TestContext testContext) {
+        String rangerRdsName = creator.getRandomNameForMock();
+        String ldapName = creator.getRandomNameForMock();
+        String blueprintName = creator.getRandomNameForMock();
+        CloudStorageRequest cloudStorage = cloudStorage();
+        testContext
+                .given("ranger", RdsConfigEntity.class).valid().withType(RdsType.RANGER.name()).withName(rangerRdsName)
+                .when(RdsConfig.postV2())
+                .given(BlueprintEntity.class).withName(blueprintName).withTag(of(SHARED_SERVICE_TAG), of(true)).withAmbariBlueprint(VALID_DL_BP)
+                .when(Blueprint.postV2())
+                .given(LdapConfigEntity.class).withName(ldapName)
+                .when(LdapConfig.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(datalakeReadyCluster(testContext, null, rangerRdsName, ldapName, blueprintName, cloudStorage))
+                .when(Stack.postV2(), key("forbidden"))
+                .except(ForbiddenException.class, key("forbidden"))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testCreateDatalakeClusterWithoutRds(TestContext testContext) {
+        String ldapName = creator.getRandomNameForMock();
+        String blueprintName = creator.getRandomNameForMock();
+        CloudStorageRequest cloudStorage = cloudStorage();
+        testContext
+                .given(BlueprintEntity.class).withName(blueprintName).withTag(of(SHARED_SERVICE_TAG), of(true)).withAmbariBlueprint(VALID_DL_BP)
+                .when(Blueprint.postV2())
+                .given(LdapConfigEntity.class).withName(ldapName)
+                .when(LdapConfig.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(datalakeReadyCluster(testContext, null, null, ldapName, blueprintName, cloudStorage))
+                .when(Stack.postV2(), key("forbidden"))
+                .except(ForbiddenException.class, key("forbidden"))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testCreateDatalakeClusterWithoutRdsAndLdap(TestContext testContext) {
+        String blueprintName = creator.getRandomNameForMock();
+        CloudStorageRequest cloudStorage = cloudStorage();
+        testContext
+                .given(BlueprintEntity.class).withName(blueprintName).withTag(of(SHARED_SERVICE_TAG), of(true)).withAmbariBlueprint(VALID_DL_BP)
+                .when(Blueprint.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(datalakeReadyCluster(testContext, null, null, null, blueprintName, cloudStorage))
+                .when(Stack.postV2(), key("forbidden"))
+                .except(ForbiddenException.class, key("forbidden"))
                 .validate();
     }
 
     private CloudStorageRequest cloudStorage() {
-        CloudStorageRequest csr = new CloudStorageRequest();
         AdlsCloudStorageParameters adls = new AdlsCloudStorageParameters();
+        CloudStorageRequest csr = new CloudStorageRequest();
+        csr.setLocations(Set.of(storageLocation()));
+        adls.setCredential("value");
         adls.setAccountName("some");
         adls.setClientId("other");
-        adls.setCredential("value");
         adls.setTenantId("here");
         csr.setAdls(adls);
         return csr;
     }
 
-    private ClusterEntity datalakeReadyCluster(TestContext testContext, String hiveRdsName, String rangerRdsName, String ldapName, String blueprintName) {
-        return new ClusterEntity(testContext)
+    private StorageLocationRequest storageLocation() {
+        StorageLocationRequest storageLocation = new StorageLocationRequest();
+        storageLocation.setValue("TheValueOfGivePropertyForStorageLocation");
+        storageLocation.setPropertyName("NameOfThisProperty");
+        storageLocation.setPropertyFile("SomePropertyHere");
+        return storageLocation;
+    }
+
+    private ClusterEntity datalakeReadyCluster(TestContext testContext, String hiveRdsName, String rangerRdsName, String ldapName, String blueprintName,
+                    CloudStorageRequest cloudStorage) {
+        ClusterEntity cluster = new ClusterEntity(testContext)
                 .valid()
-                .withRdsConfigNames(Set.of(hiveRdsName, rangerRdsName))
-                .withLdapConfigName(ldapName)
-                .withCloudStorage(cloudStorage())
+                .withRdsConfigNames(createSetOfNotNulls(hiveRdsName, rangerRdsName))
                 .withAmbariRequest(new AmbariEntity(testContext).valid().withBlueprintName(blueprintName));
+        if (ldapName != null) {
+            cluster.withLdapConfigName(ldapName);
+        }
+        if (cloudStorage != null) {
+            cluster.withCloudStorage(cloudStorage);
+        }
+        return cluster;
+    }
+
+    private Set<String> createSetOfNotNulls(String... elements) {
+        Set<String> toReturn = new LinkedHashSet<>();
+        for (String element : elements) {
+            if (element != null) {
+                toReturn.add(element);
+            }
+        }
+        return toReturn;
     }
 
     private StackEntity checkBlueprintTaggedWithSharedService(StackEntity stack) {
@@ -119,6 +286,74 @@ public class SharedServiceTest extends AbstractIntegrationTest {
             throw new TestFailException("shared service tag has not passed properly (or at all) to the blueprint");
         }
         return stack;
+    }
+
+    private List<AssertionV2<StackEntity>> cloudStorageParametersHasPassedToAmbariBlueprint() {
+        List<AssertionV2<StackEntity>> verifications = new LinkedList<>();
+        verifications.add(blueprintPostToAmbariContains(cloudStorage().getAdls().getAccountName()));
+        verifications.add(blueprintPostToAmbariContains(cloudStorage().getAdls().getClientId()));
+        verifications.add(blueprintPostToAmbariContains(cloudStorage().getAdls().getCredential()));
+        return verifications;
+    }
+
+    private List<AssertionV2<StackEntity>> ldapParametersHasPassedToAmbariBlueprint(String ldapName) {
+        List<AssertionV2<StackEntity>> verifications = new LinkedList<>();
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getUserDnPattern()));
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getBindPassword()));
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getBindDn()));
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getServerHost()));
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getUserSearchBase()));
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getGroupSearchBase()));
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getGroupNameAttribute()));
+        verifications.add(blueprintPostToAmbariContains(ldapRequest(ldapName).getServerHost()));
+        return verifications;
+    }
+
+    private List<AssertionV2<StackEntity>> rdsParametersHasPassedToAmbariBlueprint(RDSConfigRequest hive, RDSConfigRequest ranger) {
+        List<AssertionV2<StackEntity>> verifications = new LinkedList<>();
+        verifications.add(blueprintPostToAmbariContains("ranger_privelege_user_jdbc_url"));
+        verifications.add(blueprintPostToAmbariContains(ranger.getConnectionURL()));
+        verifications.add(blueprintPostToAmbariContains("javax.jdo.option.ConnectionURL"));
+        verifications.add(blueprintPostToAmbariContains(hive.getConnectionURL()));
+        verifications.add(blueprintPostToAmbariContains("org.apache.hadoop.fs.adl.AdlFileSystem"));
+        return verifications;
+    }
+
+    private LdapConfigRequest ldapRequest(String name) {
+        LdapConfigRequest request = new LdapConfigRequest();
+        request.setGroupMemberAttribute("memberAttribute");
+        request.setUserNameAttribute("userNameAttribute");
+        request.setGroupNameAttribute("nameAttribute");
+        request.setGroupObjectClass("groupObjectClass");
+        request.setGroupSearchBase("groupSearchBase");
+        request.setUserObjectClass("userObjectClass");
+        request.setDirectoryType(DirectoryType.LDAP);
+        request.setUserSearchBase("userSearchBase");
+        request.setUserDnPattern("userDnPattern");
+        request.setBindPassword("bindPassword");
+        request.setDescription("descrition");
+        request.setAdminGroup("group");
+        request.setServerHost("host");
+        request.setBindDn("bindDn");
+        request.setDomain("domain");
+        request.setProtocol("http");
+        request.setServerPort(1234);
+        request.setName(name);
+        return request;
+    }
+
+    private RDSConfigRequest rdsRequest(RdsType type, String name) {
+        RDSConfigRequest request = new RDSConfigRequest();
+        request.setConnectionURL(format("jdbc:postgresql://somedb.com:5432/%s-mydb", type.name().toLowerCase()));
+        request.setConnectionPassword("password");
+        request.setConnectionUserName("someuser");
+        request.setType(type.name());
+        request.setName(name);
+        return request;
+    }
+
+    private MockVerification blueprintPostToAmbariContains(String content) {
+        return MockVerification.verify(HttpMethod.POST, "/api/v1/blueprints/").bodyContains(content);
     }
 
 }

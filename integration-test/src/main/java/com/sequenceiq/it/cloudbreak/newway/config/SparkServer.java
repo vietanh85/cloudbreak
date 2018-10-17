@@ -22,6 +22,8 @@ import com.sequenceiq.it.verification.Call;
 import spark.Response;
 import spark.Service;
 
+import static java.lang.String.format;
+
 @Prototype
 public class SparkServer {
 
@@ -37,6 +39,9 @@ public class SparkServer {
 
     @Value("${mock.server.port:#{T(java.util.concurrent.ThreadLocalRandom).current().nextInt(9750, 9900 + 1)}}")
     private int port;
+
+    @Value("${mock.server.request.print:false}")
+    private boolean printRequestBody;
 
     private Service sparkService;
 
@@ -66,7 +71,12 @@ public class SparkServer {
         sparkService.secure(keystoreFile.getPath(), "secret", null, null);
         sparkService.before((req, res) -> res.type("application/json"));
         sparkService.after(
-                (request, response) -> requestResponseMap.put(Call.fromRequest(request), response));
+                (request, response) -> {
+                    if (printRequestBody) {
+                        LOGGER.info(format("%s ::: %s", request.url(), request.body()));
+                    }
+                    requestResponseMap.put(Call.fromRequest(request), response);
+                });
         sparkService.after(
                 (request, response) -> callStack.push(Call.fromRequest(request))
         );

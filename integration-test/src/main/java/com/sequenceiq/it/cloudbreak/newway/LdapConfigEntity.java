@@ -54,6 +54,11 @@ public class LdapConfigEntity extends AbstractCloudbreakEntity<LdapConfigRequest
                 .withUserDnPattern("userDnPattern");
     }
 
+    public LdapConfigEntity withRequest(LdapConfigRequest request) {
+        setRequest(request);
+        return this;
+    }
+
     public LdapConfigEntity withName(String name) {
         getRequest().setName(name);
         setName(name);

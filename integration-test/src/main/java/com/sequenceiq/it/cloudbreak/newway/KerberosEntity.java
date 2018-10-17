@@ -6,6 +6,7 @@ import com.sequenceiq.cloudbreak.api.model.KerberosRequest;
 import com.sequenceiq.cloudbreak.api.model.KerberosResponse;
 import com.sequenceiq.it.IntegrationTestContext;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
+import com.sequenceiq.it.cloudbreak.newway.entity.CloudbreakEntity;
 
 @Prototype
 public class KerberosEntity extends AbstractCloudbreakEntity<KerberosRequest, KerberosResponse, KerberosEntity>  {
@@ -38,6 +39,16 @@ public class KerberosEntity extends AbstractCloudbreakEntity<KerberosRequest, Ke
 
     public void setRequest(KerberosRequest request) {
         this.request = request;
+    }
+
+    @Override
+    public CloudbreakEntity valid() {
+        return withAdmin("admin").withMasterKey("masterkey").withPassword("password");
+    }
+
+    public KerberosEntity withRequest(KerberosRequest request) {
+        this.request = request;
+        return this;
     }
 
     public KerberosEntity withMasterKey(String masterKey) {

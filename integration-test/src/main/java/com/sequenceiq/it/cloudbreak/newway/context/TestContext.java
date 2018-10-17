@@ -50,7 +50,7 @@ public class TestContext implements ApplicationContextAware {
 
     private Map<String, String> statuses = new HashMap<>();
 
-    private Map<String, Exception> exceptionMap = new HashMap<>();
+    private Map<String, Exception> exceptionMap = new LinkedHashMap<>();
 
     private Map<String, Object> selections = new HashMap<>();
 
@@ -424,7 +424,7 @@ public class TestContext implements ApplicationContextAware {
 
     public void handleExecptionsDuringTest() {
         checkShutdown();
-        Map<String, Exception> exceptionsDuringTest = getErrors();
+        Map<String, Exception> exceptionsDuringTest = exceptionMap;
         if (!exceptionsDuringTest.isEmpty()) {
             LOGGER.error("Status reason: {}", statuses.get("statusReason"));
             StringBuilder br = new StringBuilder("All Exceptions during test are logged before this message").append(System.lineSeparator());
