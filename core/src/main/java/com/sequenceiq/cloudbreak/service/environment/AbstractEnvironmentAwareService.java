@@ -8,11 +8,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.convert.ConversionService;
 
 import com.sequenceiq.cloudbreak.controller.exception.BadRequestException;
-import org.apache.commons.lang3.StringUtils;
-
 import com.sequenceiq.cloudbreak.domain.environment.EnvironmentAwareResource;
 import com.sequenceiq.cloudbreak.domain.view.EnvironmentView;
 import com.sequenceiq.cloudbreak.repository.environment.EnvironmentResourceRepository;
