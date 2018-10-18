@@ -26,6 +26,10 @@ public class AmbariEntity extends AbstractCloudbreakEntity<AmbariV2Request, Resp
         super(new AmbariV2Request(), testContex);
     }
 
+    public AmbariEntity() {
+        super(AmbariEntity.class.getSimpleName().toUpperCase());
+    }
+
     public AmbariEntity valid() {
         return withUserName("admin")
                 .withPassword("admin1234")
