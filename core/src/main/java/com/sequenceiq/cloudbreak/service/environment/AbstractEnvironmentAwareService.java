@@ -1,9 +1,12 @@
 package com.sequenceiq.cloudbreak.service.environment;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.sequenceiq.cloudbreak.domain.environment.EnvironmentAwareResource;
 import com.sequenceiq.cloudbreak.domain.view.EnvironmentView;
@@ -23,6 +26,21 @@ public abstract class AbstractEnvironmentAwareService<T extends EnvironmentAware
 
     public Set<T> findByNamesInWorkspace(Set<String> names, @NotNull Long workspaceId) {
         return repository().findAllByNameInAndWorkspaceId(names, workspaceId);
+    }
+
+    public Set<T> findAllInWorkspaceAndEnvironment(@NotNull Long workspaceId, String environmentName, Boolean attachGlobalResources) {
+        attachGlobalResources = attachGlobalResources == null ? Boolean.TRUE : attachGlobalResources;
+        Set<T> resources = new HashSet<>();
+        if (!StringUtils.isEmpty(environmentName)) {
+            EnvironmentView env = environmentViewService.getByNameForWorkspaceId(environmentName, workspaceId);
+            resources.addAll(repository().findAllByWorkspaceIdAndEnvironments(workspaceId, env));
+        } else {
+            resources.addAll(repository().findAllByWorkspaceIdAndEnvironmentsIsNotNull(workspaceId));
+        }
+        if (attachGlobalResources) {
+            resources.addAll(repository().findAllByWorkspaceIdAndEnvironmentsIsNull(workspaceId));
+        }
+        return resources;
     }
 
     protected abstract EnvironmentResourceRepository<T, Long> repository();
