@@ -37,11 +37,12 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class StackRequestValidatorTest {
 
-    private static final Long WORKSPACE_ID = 1L;
-    public static final String TEST_BP_NAME = "testBpName";
-
     @Spy
     private final TemplateRequestValidator templateRequestValidator = new TemplateRequestValidator();
+
+    private static final Long WORKSPACE_ID = 1L;
+
+    public static final String TEST_BP_NAME = "testBpName";
 
     @Mock
     private BlueprintService blueprintService;

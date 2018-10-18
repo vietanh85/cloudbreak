@@ -69,6 +69,13 @@ public class Blueprint extends BlueprintEntity {
         return new Assertion<>(getTestContext(GherkinTest.RESULT), check);
     }
 
+    public static BlueprintEntity getByName(TestContext testContext, BlueprintEntity entity, CloudbreakClient cloudbreakClient) {
+        entity.setResponse(
+                cloudbreakClient.getCloudbreakClient().blueprintV3Endpoint().getByNameInWorkspace(cloudbreakClient.getWorkspaceId(), entity.getName())
+        );
+        return entity;
+    }
+
     public static ActionV2<BlueprintEntity> postV2() {
         return new BlueprintPostAction();
     }

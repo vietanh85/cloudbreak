@@ -107,4 +107,19 @@ public class ImageCatalog extends ImageCatalogEntity {
     public static Action<ImageCatalog> setDefault() {
         return setDefault(IMAGE_CATALOG);
     }
+
+    public static ImageCatalogEntity getByNameAndImages(TestContext testContext, ImageCatalogEntity entity, CloudbreakClient cloudbreakClient) {
+        entity.setResponse(
+                cloudbreakClient.getCloudbreakClient().imageCatalogV3Endpoint().getByNameInWorkspace(cloudbreakClient.getWorkspaceId(), entity.getName(), true)
+        );
+        return entity;
+    }
+
+    public static ImageCatalogEntity getByNameWithoutImages(TestContext testContext, ImageCatalogEntity entity, CloudbreakClient cloudbreakClient) {
+        entity.setResponse(
+                cloudbreakClient.getCloudbreakClient().imageCatalogV3Endpoint().getByNameInWorkspace(cloudbreakClient.getWorkspaceId(), entity.getName(), false)
+        );
+        return entity;
+    }
+
 }

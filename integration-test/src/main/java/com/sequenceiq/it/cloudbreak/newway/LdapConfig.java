@@ -94,4 +94,12 @@ public class LdapConfig extends LdapConfigEntity {
     public static ActionV2<LdapConfigEntity> postV2() {
         return new LdapConfigPostAction();
     }
+
+    public static LdapConfigEntity getByName(TestContext testContext, LdapConfigEntity entity, CloudbreakClient cloudbreakClient) {
+        entity.setResponse(
+                cloudbreakClient.getCloudbreakClient().ldapConfigV3Endpoint().getByNameInWorkspace(cloudbreakClient.getWorkspaceId(), entity.getName())
+        );
+        return entity;
+    }
+
 }

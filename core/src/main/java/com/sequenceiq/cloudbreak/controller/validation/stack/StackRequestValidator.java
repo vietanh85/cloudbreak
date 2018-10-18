@@ -125,24 +125,7 @@ public class StackRequestValidator implements Validator<StackRequest> {
     }
 
     private void validateSharedService(StackRequest stackRequest, ValidationResultBuilder validationBuilder) {
-        Blueprint blueprint = blueprintService.getByNameForWorkspaceId(stackRequest.getClusterRequest()
-                .getBlueprintName(), restRequestThreadLocalService.getRequestedWorkspaceId());
-        boolean isSharedServiceReadyBlueprint = Optional.ofNullable((Boolean) blueprint.getTags().getMap().get("shared_services_ready")).orElse(false);
-        if (isSharedServiceReadyBlueprint) {
-            Set<RdsType> rdsTypes = getGivenRdsTypes(stackRequest.getClusterRequest());
-            String rdsErrorMessageFormat = "For a Datalake cluster (since you have selected a datalake ready blueprint) you should provide at least one %s "
-                    + "rds/database configuration to the Cluster request";
-            if (!rdsTypes.contains(RdsType.HIVE)) {
-                validationBuilder.error(String.format(rdsErrorMessageFormat, "Hive"));
-            }
-            if (!rdsTypes.contains(RdsType.RANGER)) {
-                validationBuilder.error(String.format(rdsErrorMessageFormat, "Ranger"));
-            }
-            if (isLdapProvided(stackRequest.getClusterRequest())) {
-                validationBuilder.error("For a Datalake cluster (since you have selected a datalake ready blueprint) you should provide an "
-                        + "LDAP configuration or its name/id to the Cluster request");
-            }
-        }
+        checkResourceRequirementsIfBlueprintIsDatalakeReady(stackRequest, validationBuilder);
         if (stackRequest.getClusterToAttach() != null) {
             Optional<Stack> stack = stackRepository.findById(stackRequest.getClusterToAttach());
             if (stack.isPresent() && AVAILABLE.equals(stack.get().getStatus())) {
@@ -204,6 +187,27 @@ public class StackRequestValidator implements Validator<StackRequest> {
         request.setOwner(owner);
         request.setAccount(account);
         return request;
+    }
+
+    private void checkResourceRequirementsIfBlueprintIsDatalakeReady(StackRequest stackRequest, ValidationResultBuilder validationBuilder) {
+        Blueprint blueprint = blueprintService.getByNameForWorkspaceId(stackRequest.getClusterRequest()
+                .getBlueprintName(), restRequestThreadLocalService.getRequestedWorkspaceId());
+        boolean sharedServiceReadyBlueprint = Optional.ofNullable((Boolean) blueprint.getTags().getMap().get("shared_services_ready")).orElse(false);
+        if (sharedServiceReadyBlueprint) {
+            Set<RdsType> rdsTypes = getGivenRdsTypes(stackRequest.getClusterRequest());
+            String rdsErrorMessageFormat = "For a Datalake cluster (since you have selected a datalake ready blueprint) you should provide at least one %s "
+                    + "rds/database configuration to the Cluster request";
+            if (!rdsTypes.contains(RdsType.HIVE)) {
+                validationBuilder.error(String.format(rdsErrorMessageFormat, "Hive"));
+            }
+            if (!rdsTypes.contains(RdsType.RANGER)) {
+                validationBuilder.error(String.format(rdsErrorMessageFormat, "Ranger"));
+            }
+            if (isLdapProvided(stackRequest.getClusterRequest())) {
+                validationBuilder.error("For a Datalake cluster (since you have selected a datalake ready blueprint) you should provide an "
+                        + "LDAP configuration or its name/id to the Cluster request");
+            }
+        }
     }
 
     private boolean isLdapProvided(ClusterRequest clusterRequest) {
