@@ -32,7 +32,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import javax.inject.Inject;
-import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.BadRequestException;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -127,8 +127,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                 .when(Blueprint.postV2())
                 .given(StackEntity.class)
                 .withCluster(datalakeReadyCluster(testContext, hiveRdsName, rangerRdsName, ldapName, blueprintName, cloudStorage))
-                .when(Stack.postV2())
-                .except(ForbiddenException.class, key("forbidden"))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
                 .validate();
     }
 
@@ -149,8 +149,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                 .given(StackEntity.class)
                 .withInstanceGroups("master")
                 .withCluster(datalakeReadyCluster(testContext, hiveRdsName, rangerRdsName, null, blueprintName, cloudStorage))
-                .when(Stack.postV2(), key("forbidden"))
-                .except(ForbiddenException.class, key("forbidden"))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
                 .validate();
     }
 
@@ -171,8 +171,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                 .given(StackEntity.class)
                 .withInstanceGroups("master")
                 .withCluster(datalakeReadyCluster(testContext, hiveRdsName, null, ldapName, blueprintName, cloudStorage))
-                .when(Stack.postV2(), key("forbidden"))
-                .except(ForbiddenException.class, key("forbidden"))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
                 .validate();
     }
 
@@ -193,8 +193,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                 .given(StackEntity.class)
                 .withInstanceGroups("master")
                 .withCluster(datalakeReadyCluster(testContext, null, rangerRdsName, ldapName, blueprintName, cloudStorage))
-                .when(Stack.postV2(), key("forbidden"))
-                .except(ForbiddenException.class, key("forbidden"))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
                 .validate();
     }
 
@@ -212,8 +212,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                 .given(StackEntity.class)
                 .withInstanceGroups("master")
                 .withCluster(datalakeReadyCluster(testContext, null, null, ldapName, blueprintName, cloudStorage))
-                .when(Stack.postV2(), key("forbidden"))
-                .except(ForbiddenException.class, key("forbidden"))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
                 .validate();
     }
 
@@ -228,8 +228,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
                 .given(StackEntity.class)
                 .withInstanceGroups("master")
                 .withCluster(datalakeReadyCluster(testContext, null, null, null, blueprintName, cloudStorage))
-                .when(Stack.postV2(), key("forbidden"))
-                .except(ForbiddenException.class, key("forbidden"))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
                 .validate();
     }
 

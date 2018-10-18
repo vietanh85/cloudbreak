@@ -1,21 +1,7 @@
 package com.sequenceiq.cloudbreak.controller.validation.stack;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
-
 import com.google.common.collect.Sets;
+import com.sequenceiq.cloudbreak.api.model.BlueprintRequest;
 import com.sequenceiq.cloudbreak.api.model.TemplateRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.StackRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
@@ -24,15 +10,61 @@ import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupRequest;
 import com.sequenceiq.cloudbreak.controller.validation.ValidationResult;
 import com.sequenceiq.cloudbreak.controller.validation.ValidationResult.State;
 import com.sequenceiq.cloudbreak.controller.validation.template.TemplateRequestValidator;
+import com.sequenceiq.cloudbreak.domain.Blueprint;
+import com.sequenceiq.cloudbreak.domain.json.Json;
+import com.sequenceiq.cloudbreak.service.RestRequestThreadLocalService;
+import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StackRequestValidatorTest {
 
+    private static final Long WORKSPACE_ID = 1L;
+    public static final String TEST_BP_NAME = "testBpName";
+
     @Spy
-    private TemplateRequestValidator templateRequestValidator = new TemplateRequestValidator();
+    private final TemplateRequestValidator templateRequestValidator = new TemplateRequestValidator();
+
+    @Mock
+    private BlueprintService blueprintService;
+
+    @Mock
+    private RestRequestThreadLocalService restRequestThreadLocalService;
 
     @InjectMocks
     private StackRequestValidator underTest;
+
+    @Mock
+    private Blueprint blueprint;
+
+    @Mock
+    private Json blueprintJson;
+
+    @Before
+    public void setUp() {
+        when(blueprintService.getByNameForWorkspaceId(anyString(), eq(WORKSPACE_ID))).thenReturn(blueprint);
+        when(blueprint.getTags()).thenReturn(blueprintJson);
+        when(blueprintJson.getMap()).thenReturn(Collections.emptyMap());
+        when(restRequestThreadLocalService.getRequestedWorkspaceId()).thenReturn(WORKSPACE_ID);
+    }
 
     @Test
     public void testWithZeroRootVolumeSize() {
@@ -116,7 +148,10 @@ public class StackRequestValidatorTest {
 
         ClusterRequest clusterRequest = new ClusterRequest();
         clusterRequest.setHostGroups(hostGroupSet);
-
+        BlueprintRequest bpRequest = new BlueprintRequest();
+        bpRequest.setName(TEST_BP_NAME);
+        clusterRequest.setBlueprint(bpRequest);
+        clusterRequest.setBlueprintName(TEST_BP_NAME);
         return getStackRequest(instanceGroupList, clusterRequest);
     }
 
@@ -140,6 +175,10 @@ public class StackRequestValidatorTest {
         ClusterRequest clusterRequest = new ClusterRequest();
         hostGroupRequest.setName("master");
         clusterRequest.setHostGroups(Sets.newHashSet(hostGroupRequest));
+        BlueprintRequest bpRequest = new BlueprintRequest();
+        bpRequest.setName(TEST_BP_NAME);
+        clusterRequest.setBlueprint(bpRequest);
+        clusterRequest.setBlueprintName(TEST_BP_NAME);
         return clusterRequest;
     }
 

@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 import com.sequenceiq.it.cloudbreak.newway.action.StackDeleteAction;
 import com.sequenceiq.it.cloudbreak.newway.action.StackNodeUnhealthyAction;
+import com.sequenceiq.it.cloudbreak.newway.action.StackStartAction;
+import com.sequenceiq.it.cloudbreak.newway.action.StackStopAction;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -348,5 +350,13 @@ public class Stack extends StackEntity {
 
     public static Action<Stack> repair(String hostgroupName) {
         return new Action<>(getTestContextStack(), new RepairNodeStrategy(hostgroupName));
+    }
+
+    public static ActionV2<StackEntity> stopV2() {
+        return new StackStopAction();
+    }
+
+    public static ActionV2<StackEntity> startV2() {
+        return new StackStartAction();
     }
 }

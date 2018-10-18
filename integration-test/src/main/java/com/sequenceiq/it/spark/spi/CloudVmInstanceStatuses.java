@@ -9,6 +9,8 @@ import com.sequenceiq.cloudbreak.cloud.model.CloudVmInstanceStatus;
 import com.sequenceiq.cloudbreak.cloud.model.CloudVmMetaDataStatus;
 import com.sequenceiq.it.spark.ITResponse;
 
+import static com.sequenceiq.it.cloudbreak.newway.Mock.gson;
+
 public class CloudVmInstanceStatuses extends ITResponse {
 
     private final Map<String, CloudVmMetaDataStatus> instanceMap;
@@ -17,7 +19,7 @@ public class CloudVmInstanceStatuses extends ITResponse {
         this.instanceMap = instanceMap;
     }
 
-    private List<CloudVmInstanceStatus> createCloudVmInstanceStatuses() {
+    public List<CloudVmInstanceStatus> createCloudVmInstanceStatuses() {
         List<CloudVmInstanceStatus> cloudVmInstanceStatuses = new ArrayList<>();
         for (Entry<String, CloudVmMetaDataStatus> stringCloudVmMetaDataStatusEntry : instanceMap.entrySet()) {
             cloudVmInstanceStatuses.add(stringCloudVmMetaDataStatusEntry.getValue().getCloudVmInstanceStatus());
@@ -27,6 +29,6 @@ public class CloudVmInstanceStatuses extends ITResponse {
 
     @Override
     public Object handle(spark.Request request, spark.Response response) {
-        return createCloudVmInstanceStatuses();
+        return gson().toJson(createCloudVmInstanceStatuses());
     }
 }

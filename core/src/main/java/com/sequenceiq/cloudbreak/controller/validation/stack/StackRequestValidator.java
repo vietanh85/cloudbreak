@@ -1,22 +1,12 @@
 package com.sequenceiq.cloudbreak.controller.validation.stack;
 
-import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
-
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
 import com.google.common.collect.Sets;
 import com.sequenceiq.cloudbreak.api.model.EncryptionKeyConfigJson;
 import com.sequenceiq.cloudbreak.api.model.PlatformEncryptionKeysResponse;
 import com.sequenceiq.cloudbreak.api.model.PlatformResourceRequestJson;
+import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.api.model.stack.StackRequest;
+import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.host.HostGroupBase;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupBase;
 import com.sequenceiq.cloudbreak.api.model.stack.instance.InstanceGroupRequest;
@@ -26,15 +16,28 @@ import com.sequenceiq.cloudbreak.controller.validation.ValidationResult;
 import com.sequenceiq.cloudbreak.controller.validation.ValidationResult.ValidationResultBuilder;
 import com.sequenceiq.cloudbreak.controller.validation.Validator;
 import com.sequenceiq.cloudbreak.controller.validation.template.TemplateRequestValidator;
+import com.sequenceiq.cloudbreak.domain.Blueprint;
 import com.sequenceiq.cloudbreak.domain.Credential;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.repository.StackRepository;
 import com.sequenceiq.cloudbreak.service.RestRequestThreadLocalService;
+import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
-import com.sequenceiq.cloudbreak.service.workspace.WorkspaceService;
+import com.sequenceiq.cloudbreak.service.rdsconfig.RdsConfigService;
 import com.sequenceiq.cloudbreak.service.user.UserService;
+import com.sequenceiq.cloudbreak.service.workspace.WorkspaceService;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+
+import javax.inject.Inject;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.sequenceiq.cloudbreak.api.model.Status.AVAILABLE;
 
 @Component
 public class StackRequestValidator implements Validator<StackRequest> {
@@ -66,6 +69,12 @@ public class StackRequestValidator implements Validator<StackRequest> {
 
     @Inject
     private TemplateRequestValidator templateRequestValidator;
+
+    @Inject
+    private BlueprintService blueprintService;
+
+    @Inject
+    private RdsConfigService rdsConfigService;
 
     @Override
     public ValidationResult validate(StackRequest subject) {
@@ -116,6 +125,24 @@ public class StackRequestValidator implements Validator<StackRequest> {
     }
 
     private void validateSharedService(StackRequest stackRequest, ValidationResultBuilder validationBuilder) {
+        Blueprint blueprint = blueprintService.getByNameForWorkspaceId(stackRequest.getClusterRequest()
+                .getBlueprintName(), restRequestThreadLocalService.getRequestedWorkspaceId());
+        boolean isSharedServiceReadyBlueprint = Optional.ofNullable((Boolean) blueprint.getTags().getMap().get("shared_services_ready")).orElse(false);
+        if (isSharedServiceReadyBlueprint) {
+            Set<RdsType> rdsTypes = getGivenRdsTypes(stackRequest.getClusterRequest());
+            String rdsErrorMessageFormat = "For a Datalake cluster (since you have selected a datalake ready blueprint) you should provide at least one %s "
+                    + "rds/database configuration to the Cluster request";
+            if (!rdsTypes.contains(RdsType.HIVE)) {
+                validationBuilder.error(String.format(rdsErrorMessageFormat, "Hive"));
+            }
+            if (!rdsTypes.contains(RdsType.RANGER)) {
+                validationBuilder.error(String.format(rdsErrorMessageFormat, "Ranger"));
+            }
+            if (isLdapProvided(stackRequest.getClusterRequest())) {
+                validationBuilder.error("For a Datalake cluster (since you have selected a datalake ready blueprint) you should provide an "
+                        + "LDAP configuration or its name/id to the Cluster request");
+            }
+        }
         if (stackRequest.getClusterToAttach() != null) {
             Optional<Stack> stack = stackRepository.findById(stackRequest.getClusterToAttach());
             if (stack.isPresent() && AVAILABLE.equals(stack.get().getStatus())) {
@@ -177,6 +204,20 @@ public class StackRequestValidator implements Validator<StackRequest> {
         request.setOwner(owner);
         request.setAccount(account);
         return request;
+    }
+
+    private boolean isLdapProvided(ClusterRequest clusterRequest) {
+        return clusterRequest.getLdapConfig() == null && clusterRequest.getLdapConfigName() == null && clusterRequest.getLdapConfigId() == null;
+    }
+
+    private Set<RdsType> getGivenRdsTypes(ClusterRequest clusterRequest) {
+        Set<RdsType> types = clusterRequest.getRdsConfigIds().stream().map(id -> RdsType.valueOf(rdsConfigService.get(id).getType()))
+                .collect(Collectors.toSet());
+        types.addAll(clusterRequest.getRdsConfigJsons().stream().map(rdsConfigRequest -> RdsType.valueOf(rdsConfigRequest.getType()))
+                .collect(Collectors.toSet()));
+        types.addAll(clusterRequest.getRdsConfigNames().stream().map(s -> RdsType.valueOf(
+                rdsConfigService.getByNameForWorkspaceId(s, restRequestThreadLocalService.getRequestedWorkspaceId()).getType())).collect(Collectors.toSet()));
+        return types;
     }
 
 }

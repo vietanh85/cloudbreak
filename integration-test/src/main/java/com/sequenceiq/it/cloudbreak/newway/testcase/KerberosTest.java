@@ -20,10 +20,12 @@ import org.testng.annotations.Test;
 import spark.Route;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import java.util.LinkedList;
 import java.util.List;
 
 import static com.sequenceiq.it.cloudbreak.newway.cloud.HostGroupType.MASTER;
+import static com.sequenceiq.it.cloudbreak.newway.context.RunningParameter.key;
 
 public class KerberosTest extends AbstractIntegrationTest {
 
@@ -74,6 +76,79 @@ public class KerberosTest extends AbstractIntegrationTest {
                 .validate();
     }
 
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testClusterCreationAttemptWithKerberosWhenDescriptorIsAnInvalidJson(TestContext testContext) {
+        mockAmbariBlueprintPassLdapSync(testContext);
+        String blueprintName = creator.getRandomNameForMock();
+        KerberosRequest request = KerberosTestData.CUSTOM.getRequest();
+        request.setDescriptor("{\"kerberos-env\":{\"properties\":{\"kdc_type\":\"mit-kdc\",\"kdc_hosts\":\"kdc-host-value\",\"admin_server_host\""
+                + ":\"admin-server-host-value\",\"realm\":\"realm-value\"}}");
+        testContext
+                .given(BlueprintEntity.class).valid().withName(blueprintName).withAmbariBlueprint(BLUEPRINT_TEXT)
+                .when(Blueprint.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(new ClusterEntity(testContext)
+                        .valid()
+                        .withAmbariRequest(new AmbariEntity(testContext)
+                                .valid()
+                                .withKerberos(request)
+                                .withBlueprintName(blueprintName)
+                                .withEnableSecurity(true)))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testClusterCreationAttemptWithKerberosWhenDescriptorDoesNotContainsAllTheRequiredFields(TestContext testContext) {
+        mockAmbariBlueprintPassLdapSync(testContext);
+        String blueprintName = creator.getRandomNameForMock();
+        KerberosRequest request = KerberosTestData.CUSTOM.getRequest();
+        request.setDescriptor("{\"kerberos-env\":{\"properties\":{\"kdc_type\":\"mit-kdc\",\"kdc_hosts\":\"kdc-host-value\"}}}");
+        testContext
+                .given(BlueprintEntity.class).valid().withName(blueprintName).withAmbariBlueprint(BLUEPRINT_TEXT)
+                .when(Blueprint.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(new ClusterEntity(testContext)
+                        .valid()
+                        .withAmbariRequest(new AmbariEntity(testContext)
+                                .valid()
+                                .withKerberos(request)
+                                .withBlueprintName(blueprintName)
+                                .withEnableSecurity(true)))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
+                .validate();
+    }
+
+    @Test(dataProvider = TEST_CONTEXT)
+    public void testClusterCreationAttemptWithKerberosWhenKrb5ConfIsNotAValidJson(TestContext testContext) {
+        mockAmbariBlueprintPassLdapSync(testContext);
+        String blueprintName = creator.getRandomNameForMock();
+        KerberosRequest request = KerberosTestData.CUSTOM.getRequest();
+        request.setKrb5Conf("{");
+        testContext
+                .given(BlueprintEntity.class).valid().withName(blueprintName).withAmbariBlueprint(BLUEPRINT_TEXT)
+                .when(Blueprint.postV2())
+                .given("master", InstanceGroupEntity.class).valid().withHostGroup(MASTER).withNodeCount(1)
+                .given(StackEntity.class)
+                .withInstanceGroups("master")
+                .withCluster(new ClusterEntity(testContext)
+                        .valid()
+                        .withAmbariRequest(new AmbariEntity(testContext)
+                                .valid()
+                                .withKerberos(request)
+                                .withBlueprintName(blueprintName)
+                                .withEnableSecurity(true)))
+                .when(Stack.postV2(), key("badRequest"))
+                .except(BadRequestException.class, key("badRequest"))
+                .validate();
+    }
+
     @DataProvider(name = "dataProviderForTest")
     public Object[][] provide() {
         return new Object[][]{
@@ -84,7 +159,6 @@ public class KerberosTest extends AbstractIntegrationTest {
         };
     }
 
-    // "workaround" to avoid ldap sync which makes creation looped "forever"
     private void mockAmbariBlueprintPassLdapSync(TestContext testContext) {
         Route customResponse2 = (request, response) -> {
             if (LDAP_SYNC_PATH.equals(request.url())) {

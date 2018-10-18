@@ -1,6 +1,16 @@
 package com.sequenceiq.it.cloudbreak.newway.config;
 
 
+import com.sequenceiq.it.cloudbreak.newway.Prototype;
+import com.sequenceiq.it.verification.Call;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import spark.Response;
+import spark.Service;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,18 +19,6 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-
-import com.sequenceiq.it.cloudbreak.newway.Prototype;
-import com.sequenceiq.it.verification.Call;
-
-import spark.Response;
-import spark.Service;
 
 import static java.lang.String.format;
 
@@ -73,13 +71,13 @@ public class SparkServer {
         sparkService.after(
                 (request, response) -> {
                     if (printRequestBody) {
-                        LOGGER.info(format("%s ::: %s", request.url(), request.body()));
+                        LOGGER.info(format("%s request from %s --> %s", request.requestMethod(), request.url(), request.body()));
+                        LOGGER.info(format("response from [%s] ::: [%d] --> %s", request.url(), response.status(), response.body()));
                     }
                     requestResponseMap.put(Call.fromRequest(request), response);
                 });
-        sparkService.after(
-                (request, response) -> callStack.push(Call.fromRequest(request))
-        );
+        sparkService.after((request, response) -> callStack.push(Call.fromRequest(request)));
+
 
         callStack.clear();
         requestResponseMap.clear();
