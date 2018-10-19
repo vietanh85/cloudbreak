@@ -23,6 +23,8 @@ import com.sequenceiq.it.cloudbreak.newway.action.StackDeleteAction;
 import com.sequenceiq.it.cloudbreak.newway.action.StackNodeUnhealthyAction;
 import com.sequenceiq.it.cloudbreak.newway.action.StackStartAction;
 import com.sequenceiq.it.cloudbreak.newway.action.StackStopAction;
+import com.sequenceiq.it.cloudbreak.newway.action.StackSyncPutAction;
+import com.sequenceiq.it.cloudbreak.newway.context.RunningParameter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +153,7 @@ public class Stack extends StackEntity {
         return new Action<>(getTestContextStack(STACK), new UnhealthyNodeStrategy(hostgroup, nodeCount));
     }
 
-    public static ActionV2<StackEntity> makeNodeUnhealthy(int nodeCount, String hostgroup) {
+    public static ActionV2<StackEntity> makeNodeUnhealthy(int nodeCount, String hostgroup, RunningParameter key) {
         return new StackNodeUnhealthyAction(hostgroup, nodeCount);
     }
 
@@ -358,5 +360,9 @@ public class Stack extends StackEntity {
 
     public static ActionV2<StackEntity> startV2() {
         return new StackStartAction();
+    }
+
+    public static ActionV2<StackEntity> sync() {
+        return new StackSyncPutAction();
     }
 }

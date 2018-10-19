@@ -5,6 +5,8 @@ import java.util.function.Function;
 
 import com.sequenceiq.cloudbreak.api.model.proxy.ProxyConfigRequest;
 import com.sequenceiq.it.IntegrationTestContext;
+import com.sequenceiq.it.cloudbreak.newway.action.ActionV2;
+import com.sequenceiq.it.cloudbreak.newway.action.ProxyConfigPostAction;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.v3.ProxyConfigV3Action;
 
@@ -27,6 +29,10 @@ public class ProxyConfig extends ProxyConfigEntity {
 
     public static ProxyConfig request() {
         return new ProxyConfig();
+    }
+
+    public static ActionV2<ProxyConfigEntity> postV2() {
+        return new ProxyConfigPostAction();
     }
 
     public ProxyConfigRequest getRequest() {

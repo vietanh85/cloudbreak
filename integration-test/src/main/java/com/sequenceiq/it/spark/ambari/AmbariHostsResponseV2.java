@@ -22,6 +22,10 @@ public class AmbariHostsResponseV2 implements StatefulRoute {
 
     @Override
     public Object handle(Request request, Response response, DefaultModel model) {
+        return gson().toJson(Collections.singletonMap("items", getHandlingContent(request, response, model)));
+    }
+
+    public List<Map<String, ?>>  getHandlingContent(Request request, Response response, DefaultModel model) {
         response.type("text/plain");
         List<Map<String, ?>> itemList = new ArrayList<>();
         for (Entry<String, CloudVmMetaDataStatus> stringCloudVmMetaDataStatusEntry : model.getInstanceMap().entrySet()) {
@@ -31,6 +35,6 @@ public class AmbariHostsResponseV2 implements StatefulRoute {
                 itemList.add(Collections.singletonMap("Hosts", hosts));
             }
         }
-        return gson().toJson(Collections.singletonMap("items", itemList));
+        return itemList;
     }
 }

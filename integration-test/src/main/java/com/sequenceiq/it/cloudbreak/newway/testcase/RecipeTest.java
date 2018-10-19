@@ -107,7 +107,6 @@ public class RecipeTest extends AbstractIntegrationTest {
                 .await(STACK_AVAILABLE)
                 .then(MockVerification.verify(HttpMethod.POST, SALT_RUN).bodyContains(HIGHSTATE).exactTimes(3))
                 .validate();
-
     }
 
     @Test(dataProvider = TEST_CONTEXT)
@@ -140,19 +139,6 @@ public class RecipeTest extends AbstractIntegrationTest {
                 .when(StackScalePostAction.valid().withDesiredCount(2))
                 .await(STACK_AVAILABLE)
                 .then(MockVerification.verify(HttpMethod.POST, SALT_RUN).bodyContains(HIGHSTATE).exactTimes(5))
-                .validate();
-    }
-
-
-//    @Test(dataProvider = TEST_CONTEXT)
-    public void testAlma(TestContext testContext) {
-        testContext
-                .given(WORKER_ID, InstanceGroupEntity.class).withHostGroup(WORKER).withNodeCount(1)
-                .given(StackEntity.class).replaceInstanceGroups(WORKER_ID)
-                .when(Stack.postV2())
-                .await(STACK_AVAILABLE)
-                .when(Stack.makeNodeUnhealthy(1, "WORKER"))
-                .await(STACK_FAILED)
                 .validate();
     }
 

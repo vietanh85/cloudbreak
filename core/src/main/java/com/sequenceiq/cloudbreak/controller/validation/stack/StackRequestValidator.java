@@ -203,14 +203,14 @@ public class StackRequestValidator implements Validator<StackRequest> {
             if (!rdsTypes.contains(RdsType.RANGER)) {
                 validationBuilder.error(String.format(rdsErrorMessageFormat, "Ranger"));
             }
-            if (isLdapProvided(stackRequest.getClusterRequest())) {
+            if (isLdapNotProvided(stackRequest.getClusterRequest())) {
                 validationBuilder.error("For a Datalake cluster (since you have selected a datalake ready blueprint) you should provide an "
                         + "LDAP configuration or its name/id to the Cluster request");
             }
         }
     }
 
-    private boolean isLdapProvided(ClusterRequest clusterRequest) {
+    private boolean isLdapNotProvided(ClusterRequest clusterRequest) {
         return clusterRequest.getLdapConfig() == null && clusterRequest.getLdapConfigName() == null && clusterRequest.getLdapConfigId() == null;
     }
 

@@ -38,7 +38,7 @@ public class SparkServer {
     @Value("${mock.server.port:#{T(java.util.concurrent.ThreadLocalRandom).current().nextInt(9750, 9900 + 1)}}")
     private int port;
 
-    @Value("${mock.server.request.print:false}")
+    @Value("${mock.server.request.response.print:false}")
     private boolean printRequestBody;
 
     private Service sparkService;

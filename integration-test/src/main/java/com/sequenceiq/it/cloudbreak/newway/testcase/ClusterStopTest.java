@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import static com.sequenceiq.it.cloudbreak.newway.Mock.gson;
 import static java.lang.String.format;
 
-public class ClusterOperationsTest extends AbstractIntegrationTest {
+public class ClusterStopTest extends AbstractIntegrationTest {
 
     private static final String TEST_CONTEXT = "testContext";
 

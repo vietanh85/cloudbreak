@@ -26,12 +26,18 @@ import java.util.List;
 
 import static com.sequenceiq.it.cloudbreak.newway.cloud.HostGroupType.MASTER;
 import static com.sequenceiq.it.cloudbreak.newway.context.RunningParameter.key;
+import static com.sequenceiq.it.cloudbreak.newway.mock.model.SaltMock.SALT_RUN;
+import static com.sequenceiq.it.spark.ITResponse.AMBARI_API_ROOT;
 
 public class KerberosTest extends AbstractIntegrationTest {
 
     private static final String TEST_CONTEXT = "testContext";
 
     private static final String LDAP_SYNC_PATH = "/api/v1/ldap_sync_events";
+
+    private static final String SALT_HIGHSTATE = "state.highstate";
+
+    private static final String SALT_PILLAR_DISTRIBUTE = "/saltboot/salt/server/pillar/distribute";
 
     private static final String BLUEPRINT_TEXT = "{\"Blueprints\":{\"blueprint_name\":\"ownbp\",\"stack_name\":\"HDF\",\"stack_version\":\"3.2\"},\"settings\""
             + ":[{\"recovery_settings\":[]},{\"service_settings\":[]},{\"component_settings\":[]}],\"configurations\":[],\"host_groups\":[{\"name\":\"master\","
@@ -180,6 +186,9 @@ public class KerberosTest extends AbstractIntegrationTest {
                 verifications.add(blueprintPostToAmbariContains(getRequest().getMasterKey()).exactTimes(0));
                 verifications.add(blueprintPostToAmbariContains(getRequest().getPassword()).exactTimes(0));
                 verifications.add(blueprintPostToAmbariContains(getRequest().getAdmin()).exactTimes(0));
+                verifications.add(blueprintPostToAmbariContains("KERBEROS_CLIENT").exactTimes(1));
+                verifications.add(MockVerification.verify(HttpMethod.POST, SALT_RUN).bodyContains(SALT_HIGHSTATE).exactTimes(2));
+                verifications.addAll(verifyCloudbreakUserHasSentToCreate());
                 return verifications;
             }
 
@@ -213,6 +222,9 @@ public class KerberosTest extends AbstractIntegrationTest {
                 verifications.add(blueprintPostToAmbariContains("encryption_types").exactTimes(1));
                 verifications.add(blueprintPostToAmbariContains("ldap_url").exactTimes(1));
                 verifications.add(blueprintPostToAmbariContains("container_dn").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("KERBEROS_CLIENT").exactTimes(1));
+                verifications.add(MockVerification.verify(HttpMethod.POST, SALT_RUN).bodyContains(SALT_HIGHSTATE).exactTimes(2));
+                verifications.addAll(verifyCloudbreakUserHasSentToCreate());
                 return verifications;
             }
 
@@ -241,6 +253,9 @@ public class KerberosTest extends AbstractIntegrationTest {
                 verifications.add(blueprintPostToAmbariContains(getRequest().getUrl()).exactTimes(1));
                 verifications.add(blueprintPostToAmbariContains("mit-kdc").exactTimes(1));
                 verifications.add(blueprintPostToAmbariContains("realm").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("KERBEROS_CLIENT").exactTimes(1));
+                verifications.add(MockVerification.verify(HttpMethod.POST, SALT_RUN).bodyContains(SALT_HIGHSTATE).exactTimes(2));
+                verifications.addAll(verifyCloudbreakUserHasSentToCreate());
                 return verifications;
             }
 
@@ -261,7 +276,17 @@ public class KerberosTest extends AbstractIntegrationTest {
             @Override
             public List<AssertionV2<StackEntity>> getAssertions() {
                 List<AssertionV2<StackEntity>> verifications = new LinkedList<>();
-                verifications.add(blueprintPostToAmbariContains("a"));
+                verifications.add(blueprintPostToAmbariContains("kdc_type").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("mit-kdc").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("kdc_hosts").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("kdc-host-value").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("admin_server_host").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("admin-server-host-value").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("realm").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("realm-value").exactTimes(1));
+                verifications.add(blueprintPostToAmbariContains("KERBEROS_CLIENT").exactTimes(1));
+                verifications.add(MockVerification.verify(HttpMethod.POST, SALT_RUN).bodyContains(SALT_HIGHSTATE).exactTimes(2));
+                verifications.addAll(verifyCloudbreakUserHasSentToCreate());
                 return verifications;
             }
 
@@ -284,6 +309,14 @@ public class KerberosTest extends AbstractIntegrationTest {
 
         private static MockVerification blueprintPostToAmbariContains(String content) {
             return MockVerification.verify(HttpMethod.POST, "/api/v1/blueprints/").bodyContains(content);
+        }
+
+        private static List<AssertionV2<StackEntity>> verifyCloudbreakUserHasSentToCreate() {
+            return List.of(
+                    MockVerification.verify(HttpMethod.POST, AMBARI_API_ROOT + "/users").bodyContains("\"Users/active\": true"),
+                    MockVerification.verify(HttpMethod.POST, AMBARI_API_ROOT + "/users").bodyContains("\"Users/admin\": true"),
+                    MockVerification.verify(HttpMethod.POST, AMBARI_API_ROOT + "/users").bodyContains("\"Users/user_name\": \"cloudbreak\""),
+                    MockVerification.verify(HttpMethod.POST, AMBARI_API_ROOT + "/users").bodyContains("Users/password"));
         }
 
     }

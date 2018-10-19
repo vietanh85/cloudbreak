@@ -9,7 +9,7 @@ import javax.annotation.Generated;
 import org.springframework.stereotype.Component;
 
 @Generated(
-        value = "org.mapstruct.ap.MappingProcessor"
+    value = "org.mapstruct.ap.MappingProcessor"
 )
 @Component
 public class ClusterTemplateMapperImpl implements ClusterTemplateMapper {

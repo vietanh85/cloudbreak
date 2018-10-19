@@ -2,17 +2,33 @@ package com.sequenceiq.it.cloudbreak.newway;
 
 import com.sequenceiq.cloudbreak.api.model.proxy.ProxyConfigRequest;
 import com.sequenceiq.cloudbreak.api.model.proxy.ProxyConfigResponse;
+import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 
+@Prototype
 public class ProxyConfigEntity extends AbstractCloudbreakEntity<ProxyConfigRequest, ProxyConfigResponse, ProxyConfigEntity> {
     public static final String PROXY_CONFIG = "PROXY_CONFIG";
+
+    ProxyConfigEntity() {
+        this(PROXY_CONFIG);
+    }
 
     ProxyConfigEntity(String newId) {
         super(newId);
         setRequest(new ProxyConfigRequest());
     }
 
-    ProxyConfigEntity() {
-        this(PROXY_CONFIG);
+    public ProxyConfigEntity(TestContext testContext) {
+        super(new ProxyConfigRequest(), testContext);
+    }
+
+    @Override
+    public ProxyConfigEntity valid() {
+        return withPassword("passord")
+                .withProtocol("http")
+                .withServerHost("somehost")
+                .withServerPort(1234)
+                .withServerUser("user")
+                .withName(getNameCreator().getRandomNameForMock());
     }
 
     public ProxyConfigEntity withName(String name) {
