@@ -13,7 +13,7 @@ ACTUAL_VERSION="$LATEST_RC_MAJOR.$INCREASED_MINOR"
 
 VERSION=2.10.0-dev.66
 
-./gradlew -Penv=jenkins -b build.gradle clean build uploadArchives -Pversion=$VERSION --info --stacktrace --parallel
+./gradlew -Penv=jenkins -b build.gradle clean build uploadArchives -Pversion=$VERSION --info --stacktrace --parallel -x test -x checkstyleMain -x checkstyleTest -x spotbugsMain -x spotbugsTest
 
 echo "Computed next dev version: $VERSION"
 echo VERSION=$VERSION > $WORKSPACE/version
