@@ -138,7 +138,7 @@ jobs:
           command: sudo apt-get install -y uuid-runtime
       - run:
           name: integration-test
-          command: cd integration-test && make without-build && make revert-db
+          command: chown -R $USER:$USER integration-test && cd integration-test && make without-build && make revert-db
           no_output_timeout: 45m
       - run:
           name: Save test results
