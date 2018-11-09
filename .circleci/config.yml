@@ -149,6 +149,7 @@ jobs:
       - run:
           name: cleanup
           command: |
+            sudo chown -R $USER:$USER integration-test/
             sudo rm -rf integration-test/integcb/.deps
             sudo rm -rf integration-test/integcb/.schema
             sudo rm -rf integration-test/src
