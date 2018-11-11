@@ -13,7 +13,7 @@ ls -la .schema
 rm -rf .schema
 ./cbd migrate cbdb pending
 
-ls -la .schema
+ls -la .schema/cbdb/
 rm -rf .schema
 ./cbd migrate cbdb down 10 > revert.result 2>&1
 
