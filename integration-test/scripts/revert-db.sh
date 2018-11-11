@@ -8,8 +8,11 @@ cd $INTEGCB_LOCATION
 
 ./cbd regenerate
 ./cbd start cbdb
+id
+ls -la .schema
 rm -rf .schema
 ./cbd migrate cbdb pending
+
 rm -rf .schema
 ./cbd migrate cbdb down 10 > revert.result 2>&1
 
