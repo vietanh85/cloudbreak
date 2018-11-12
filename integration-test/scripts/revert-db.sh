@@ -6,15 +6,11 @@ set +x
 
 cd $INTEGCB_LOCATION
 
-./cbd regenerate
-./cbd start cbdb
-id
-ls -la .schema
-rm -rf .schema
-./cbd migrate cbdb pending
+sudo ./cbd regenerate
+sudo ./cbd start cbdb
+sudo ./cbd migrate cbdb pending
 
-ls -la .schema/cbdb/
-rm -rf .schema
+sudo rm -rf .schema
 ./cbd migrate cbdb down 10 > revert.result 2>&1
 
 cat revert.result
