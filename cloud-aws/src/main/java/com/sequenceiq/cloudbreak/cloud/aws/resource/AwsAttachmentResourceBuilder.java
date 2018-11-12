@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.AttachVolumeRequest;
+import com.amazonaws.services.ec2.model.AttachVolumeResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumesResult;
 import com.sequenceiq.cloudbreak.cloud.aws.AwsClient;
@@ -74,7 +75,10 @@ public class AwsAttachmentResourceBuilder extends AbstractAwsComputeBuilder {
                         .withInstanceId(instance.getInstanceId())
                         .withVolumeId(volume.getId())
                         .withDevice(volume.getDevice()))
-                .map(request -> intermediateBuilderExecutor.submit(() -> client.attachVolume(request)))
+                .map(request -> intermediateBuilderExecutor.submit(() -> {
+                    AttachVolumeResult res = client.attachVolume(request);
+                    LOGGER.info("attachment info: {}m", res);
+                }))
                 .collect(Collectors.toList());
 
         for (Future<?> future : futures) {

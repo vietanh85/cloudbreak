@@ -1,5 +1,9 @@
 package com.sequenceiq.cloudbreak.cloud.aws.component;
 
+import static com.sequenceiq.cloudbreak.cloud.model.AvailabilityZone.availabilityZone;
+import static com.sequenceiq.cloudbreak.cloud.model.Location.location;
+import static com.sequenceiq.cloudbreak.cloud.model.Region.region;
+import static com.sequenceiq.cloudbreak.common.type.CloudConstants.AWS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -32,6 +36,10 @@ import com.sequenceiq.cloudbreak.cloud.aws.client.AmazonAutoScalingRetryClient;
 import com.sequenceiq.cloudbreak.cloud.aws.client.AmazonCloudFormationRetryClient;
 import com.sequenceiq.cloudbreak.cloud.aws.component.AwsComponentTest.AwsTestContext;
 import com.sequenceiq.cloudbreak.cloud.aws.scheduler.AwsBackoffSyncPollingScheduler;
+import com.sequenceiq.cloudbreak.cloud.context.AuthenticatedContext;
+import com.sequenceiq.cloudbreak.cloud.context.CloudContext;
+import com.sequenceiq.cloudbreak.cloud.model.CloudCredential;
+import com.sequenceiq.cloudbreak.cloud.model.Location;
 import com.sequenceiq.cloudbreak.cloud.notification.ResourceNotifier;
 import com.sequenceiq.cloudbreak.cloud.reactor.config.CloudReactorConfiguration;
 import com.sequenceiq.cloudbreak.cloud.scheduler.SyncPollingScheduler;
@@ -47,6 +55,14 @@ import freemarker.template.TemplateException;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = AwsTestContext.class)
 public abstract class AwsComponentTest {
+
+    protected AuthenticatedContext getAuthenticatedContext() {
+        Location location = location(region("region"), availabilityZone("availabilityZone"));
+        CloudContext cloudContext = new CloudContext(1L, "cloudContextName", AWS, "owner@company.com", "variant", location, "", 5L);
+        CloudCredential cloudCredential = new CloudCredential(3L, "credentialName");
+        return new AuthenticatedContext(cloudContext, cloudCredential);
+    }
+
 
     @Configuration
     @ComponentScans(value = {
