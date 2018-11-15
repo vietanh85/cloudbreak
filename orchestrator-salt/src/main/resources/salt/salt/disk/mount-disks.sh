@@ -43,10 +43,10 @@ main() {
 
     echo updated: $linux_flavor
     script_executed=$(grep $SCRIPT_NAME "$SEMAPHORE_FILE")
-#    if [ -z "$script_executed" ]; then
+    if [ -z "$script_executed" ]; then
         [[ $CLOUD_PLATFORM == "AWS" ]] && format_disks $linux_flavor
-#        echo "$(date +%Y-%m-%d:%H:%M:%S) - $script_name executed" >> $SEMAPHORE_FILE
-#    fi
+        echo "$(date +%Y-%m-%d:%H:%M:%S) - $script_name executed" >> $SEMAPHORE_FILE
+    fi
 }
 
 [[ "$0" == "$BASH_SOURCE" ]] && main "$@"
