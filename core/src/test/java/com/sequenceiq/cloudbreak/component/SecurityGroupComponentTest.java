@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -23,6 +24,7 @@ import com.sequenceiq.cloudbreak.repository.SecurityGroupRepository;
 
 @RunWith(SpringRunner.class)
 @DataJpaTest
+@Ignore
 public class SecurityGroupComponentTest {
 
     @Inject

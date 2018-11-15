@@ -18,7 +18,7 @@ buildscript {
 
 plugins {
   id 'org.ajoberstar.grgit' version '2.1.0'
-  id "com.github.spotbugs" version "1.6.2"
+  id "com.github.spotbugs" version "1.6.5"
 }
 
 if (project.hasProperty("reckon.scope")) {
@@ -61,8 +61,8 @@ subprojects {
   apply plugin: 'jacoco'
 
 
-  sourceCompatibility = 10
-  targetCompatibility = 10
+  sourceCompatibility = 11
+  targetCompatibility = 11
 
   configurations {
     deployerJars

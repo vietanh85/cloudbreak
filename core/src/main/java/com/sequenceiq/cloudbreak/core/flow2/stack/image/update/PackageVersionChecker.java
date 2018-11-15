@@ -15,7 +15,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.testng.collections.Lists;
 
 import com.sequenceiq.cloudbreak.cloud.model.Image;
 import com.sequenceiq.cloudbreak.core.flow2.CheckResult;
@@ -68,7 +67,7 @@ public class PackageVersionChecker {
 
         if (!missingPackageVersion.isEmpty() || !differentPackageVersion.isEmpty()) {
             String message = messagesService.getMessage(Msg.PACKAGES_ARE_DIFFERENT_IN_IMAGE.code(),
-                    Lists.newArrayList(StringUtils.join(missingPackageVersion, ","), StringUtils.join(differentPackageVersion, ",")));
+                    List.of(StringUtils.join(missingPackageVersion, ","), StringUtils.join(differentPackageVersion, ",")));
             return CheckResult.failed(message);
         }
         return CheckResult.ok();

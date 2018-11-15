@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.core.flow2.stack.image.update;
 import static com.sequenceiq.cloudbreak.cloud.model.Platform.platform;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -12,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.testng.collections.Lists;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sequenceiq.cloudbreak.cloud.VersionComparator;
@@ -107,14 +107,14 @@ public class StackImageUpdateService {
 
             if (!isCloudPlatformMatches(stack, newImage)) {
                 String message = messagesService.getMessage(Msg.CLOUDPLATFORM_DIFFERENT.code(),
-                        Lists.newArrayList(String.join(",", newImage.getImage().getImageSetsByProvider().keySet()), stack.cloudPlatform()));
+                        List.of(String.join(",", newImage.getImage().getImageSetsByProvider().keySet()), stack.cloudPlatform()));
                 LOGGER.warn(message);
                 throw new OperationException(message);
             }
 
             if (!isOsVersionsMatch(currentImage, newImage)) {
                 String message = messagesService.getMessage(Msg.OSVERSION_DIFFERENT.code(),
-                        Lists.newArrayList(newImage.getImage().getOs(), newImage.getImage().getOsType(), currentImage.getOs(), currentImage.getOsType()));
+                        List.of(newImage.getImage().getOs(), newImage.getImage().getOsType(), currentImage.getOs(), currentImage.getOsType()));
                 LOGGER.warn(message);
                 throw new OperationException(message);
             }

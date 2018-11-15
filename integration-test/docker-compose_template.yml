@@ -44,7 +44,7 @@ test:
     - INTEGRATIONTEST_PROXYCONFIG_PROXYPASSWORD
     - AWS_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY
-  image: openjdk:10-jdk
+  image: hortonworks/hwx_openjdk:11.0-jdk-slim
 swagger-diff:
   dns:
   volumes:
