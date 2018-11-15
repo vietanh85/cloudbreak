@@ -54,13 +54,17 @@ public class CloudResourcePersisterService implements Persister<ResourceNotifica
         LOGGER.debug("Resource update notification received: {}", notification);
         Long stackId = notification.getCloudContext().getId();
         CloudResource cloudResource = notification.getCloudResource();
+        update(cloudResource, stackId);
+        return notification;
+    }
+
+    public void update(CloudResource cloudResource, Long stackId){
         ResourceRepository repository = getResourceRepository();
         Resource persistedResource = repository.findByStackIdAndNameAndType(stackId, cloudResource.getName(), cloudResource.getType());
         Resource resource = conversionService.convert(cloudResource, Resource.class);
         updateWithPersistedFields(resource, persistedResource);
         resource.setStack(getStackRepository(stackId));
         repository.save(resource);
-        return notification;
     }
 
     @Override

@@ -36,6 +36,8 @@ public class VolumeSetResourceAttributes {
         this.volumes = volumes;
     }
 
+    public VolumeSetResourceAttributes(){}
+
     public List<Volume> getVolumes() {
         return volumes;
     }

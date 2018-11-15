@@ -6,6 +6,7 @@ public enum ResourceStatus {
     DELETED(StatusGroup.PERMANENT),
     UPDATED(StatusGroup.PERMANENT),
     FAILED(StatusGroup.PERMANENT),
+    ATTACHED(StatusGroup.PERMANENT),
     IN_PROGRESS(StatusGroup.TRANSIENT);
 
     private final StatusGroup statusGroup;

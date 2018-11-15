@@ -211,7 +211,7 @@ dependencies {
   compile project(':template-manager-blueprint')
   compile project(':template-manager-recipe')
 
-  runtime project(':orchestrator-salt')
+  compile project(':orchestrator-salt')
   runtime project(':orchestrator-salt')
   runtime project(':orchestrator-yarn')
   runtime project(':cloud-reactor')

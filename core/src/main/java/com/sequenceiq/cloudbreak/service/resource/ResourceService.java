@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResource;
 import com.sequenceiq.cloudbreak.cloud.model.CloudResourceStatus;
 import com.sequenceiq.cloudbreak.cloud.model.ResourceStatus;
+import com.sequenceiq.cloudbreak.common.type.ResourceType;
 import com.sequenceiq.cloudbreak.domain.Resource;
 import com.sequenceiq.cloudbreak.repository.ResourceRepository;
 
@@ -27,12 +28,21 @@ public class ResourceService {
 
     public List<CloudResourceStatus> getAllAsCloudResourceStatus(Long stackId) {
         List<Resource> resources = resourceRepository.findAllByStackId(stackId);
+        List<CloudResourceStatus> list = toCloudResourceStatuses(resources);
+
+        return list;
+    }
+
+    public List<CloudResourceStatus> getAllByTypeAsCloudResourceStatus(Long stackId, ResourceType resourceType) {
+        return toCloudResourceStatuses(resourceRepository.findAllByStackIdAndType(stackId, resourceType));
+    }
+
+    private List<CloudResourceStatus> toCloudResourceStatuses(List<Resource> resources) {
         List<CloudResourceStatus> list = new ArrayList<>();
         resources.forEach(r -> {
             CloudResource cloudResource = conversionService.convert(r, CloudResource.class);
             list.add(new CloudResourceStatus(cloudResource, ResourceStatus.CREATED));
         });
-
         return list;
     }
 }

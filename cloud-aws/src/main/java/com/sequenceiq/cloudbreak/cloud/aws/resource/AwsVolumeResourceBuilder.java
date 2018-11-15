@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.AmazonEC2Exception;
 import com.amazonaws.services.ec2.model.CreateVolumeRequest;
 import com.amazonaws.services.ec2.model.CreateVolumeResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
@@ -199,7 +201,9 @@ public class AwsVolumeResourceBuilder extends AbstractAwsComputeBuilder {
     public CloudResource delete(AwsContext context, AuthenticatedContext auth, CloudResource resource) throws InterruptedException {
         LOGGER.info("Set delete on termination to true, on instances");
         VolumeSetAttributes volumeSetAttributes = resource.getParameter(CloudResource.ATTRIBUTES, VolumeSetAttributes.class);
-        if (!volumeSetAttributes.getDeleteOnTermination()) {
+        List<CloudResourceStatus> cloudResourceStatuses = checkResources(ResourceType.AWS_VOLUMESET, context, auth, List.of(resource));
+        boolean anyDeleted = cloudResourceStatuses.stream().map(CloudResourceStatus::getStatus).anyMatch(ResourceStatus.DELETED::equals);
+        if (!volumeSetAttributes.getDeleteOnTermination() && !anyDeleted) {
             resource.setInstanceId(null);
             volumeSetAttributes.setDeleteOnTermination(Boolean.TRUE);
             resource.putParameter(CloudResource.ATTRIBUTES, volumeSetAttributes);
@@ -207,8 +211,12 @@ public class AwsVolumeResourceBuilder extends AbstractAwsComputeBuilder {
             throw new InterruptedException("Resource will be preserved for later reattachment.");
         }
 
-        List<InstanceBlockDeviceMappingSpecification> deviceMappingSpecifications = volumeSetAttributes
-                .getVolumes().stream()
+        List<InstanceBlockDeviceMappingSpecification> deviceMappingSpecifications = cloudResourceStatuses.stream()
+                .filter(cloudResourceStatus -> ResourceStatus.CREATED.equals(cloudResourceStatus.getStatus()))
+                .map(CloudResourceStatus::getCloudResource)
+                .map(cloudResource -> cloudResource.getParameter(CloudResource.ATTRIBUTES, VolumeSetAttributes.class))
+                .map(VolumeSetAttributes::getVolumes)
+                .flatMap(List::stream)
                 .map(volume -> {
                     EbsInstanceBlockDeviceSpecification device = new EbsInstanceBlockDeviceSpecification()
                             .withVolumeId(volume.getId())
@@ -250,12 +258,55 @@ public class AwsVolumeResourceBuilder extends AbstractAwsComputeBuilder {
 
         DescribeVolumesRequest describeVolumesRequest = new DescribeVolumesRequest(volumeIds);
         DescribeVolumesResult result = client.describeVolumes(describeVolumesRequest);
-        ResourceStatus volumeSetStatus = result.getVolumes().stream()
-                .map(com.amazonaws.services.ec2.model.Volume::getState)
-                .allMatch("available"::equals) ? ResourceStatus.CREATED : ResourceStatus.IN_PROGRESS;
+        ResourceStatus volumeSetStatus = getResourceStatus(result);
         return volumeResources.stream()
                 .map(resource -> new CloudResourceStatus(resource, volumeSetStatus))
                 .collect(Collectors.toList());
+    }
+
+    private ResourceStatus getResourceStatus(DescribeVolumesResult result) {
+        try {
+            return result.getVolumes().stream()
+                    .map(com.amazonaws.services.ec2.model.Volume::getState)
+                    .map(toResourceStatus())
+                    .reduce(ResourceStatus.ATTACHED, resourceStatusReducer());
+        } catch (AmazonEC2Exception e) {
+            if ("InvalidVolume.NotFound".equals(e.getErrorCode())) {
+                return ResourceStatus.DELETED;
+            }
+            return ResourceStatus.FAILED;
+        }
+    }
+
+    private BinaryOperator<ResourceStatus> resourceStatusReducer() {
+        return (statusA, statusB) -> {
+            List<ResourceStatus> statuses = List.of(statusA, statusB);
+            if (statuses.contains(ResourceStatus.DELETED)) {
+                return ResourceStatus.DELETED;
+            } else if (statuses.contains(ResourceStatus.IN_PROGRESS)) {
+                return ResourceStatus.IN_PROGRESS;
+            } else if (statuses.contains(ResourceStatus.CREATED)) {
+                return ResourceStatus.CREATED;
+            }
+
+            return ResourceStatus.ATTACHED;
+        };
+    }
+
+    private Function<String, ResourceStatus> toResourceStatus() {
+        return state -> {
+            switch (state) {
+                case "available":
+                    return ResourceStatus.CREATED;
+                case "in-use":
+                    return ResourceStatus.ATTACHED;
+                case "deleting":
+                    return ResourceStatus.DELETED;
+                case "creating":
+                default:
+                    return ResourceStatus.IN_PROGRESS;
+            }
+        };
     }
 
     private Function<CloudResource, VolumeSetAttributes> volumeSetAttributes() {
