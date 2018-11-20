@@ -1,52 +1,85 @@
 #!/usr/bin/env bash
-source mount-disks-common.sh
+source format-and-mount-common.sh
 
-format_disks() {
-  lazy_format_disks $@
-  cd /hadoopfs/fs1 && mkdir logs logs/ambari-server logs/ambari-agent logs/consul-watch logs/kerberos
+LOG_FILE=/var/log/mount-disks.log
+
+# expected lists
+# ATTACHED_VOLUME_UUID_LIST - contains a list of uuids of volumes attached to the instance
+# PREVIOUS_FSTAB - contains the fstab if any from a previous instance
+
+mount_all_from_fstab() {
+      local return_value=0
+      log $LOG_FILE mounting via fstab, value: "$PREVIOUS_FSTAB"
+      for uuid in $ATTACHED_VOLUME_UUID_LIST; do
+          local fstab_line=$(echo "$PREVIOUS_FSTAB" | grep $uuid)
+          mount_one "$fstab_line"
+          return_value=$(($? || return_value ))
+      done
+      return $((return_value))
 }
 
-lazy_format_disks() {
-  FS_TYPE=ext4
-  local linux_flavor=$1
-  mkdir /hadoopfs
-  for (( i=1; i<=24; i++ )); do
-    local label=$(get_next_disk_label $linux_flavor $i)
-    local device=$(get_disk_name $linux_flavor $label)
-    if [ -e $device ]; then
-      MOUNTPOINT=$(grep $device /etc/fstab | tr -s ' \t' ' ' | cut -d' ' -f 2)
-      if [ -n "$MOUNTPOINT" ]; then
-        umount "$MOUNTPOINT"
-        sed -i "\|^$device|d" /etc/fstab
+mount_all_sequential() {
+      local return_value=0
+      log $LOG_FILE mounting for first time, no previous fstab information present
+      local counter=1
+      for uuid in $ATTACHED_VOLUME_UUID_LIST; do
+          mount_one "UUID=$uuid /hadoopfs/fs${counter} $FS_TYPE defaults,noatime,nofail 0 2"
+          return_value=$(($? || return_value ))
+          ((counter++))
+      done
+
+      return $return_value
+}
+
+mount_one() {
+      local return_value=0
+      local success=0
+      local fstab_line=$1
+      local path=$(echo $fstab_line | cut -d' ' -f2)
+
+      log $LOG_FILE mounting to path $path, line in fstab: $fstab_line
+      mkdir $path >> $LOG_FILE 2>&1
+      echo $fstab_line >> /etc/fstab
+      log $LOG_FILE result of editing fstab: $?
+      mount $path >> $LOG_FILE 2>&1
+      if [ ! $? -eq 0 ]; then
+        log $LOG_FILE error mounting device on $path
+        return_value=1
       fi
-      if [ -z "$(blkid $device)" ]; then
-          echo "formatting: $device"
-          mkfs -E lazy_itable_init=1 -O uninit_bg -F -t $FS_TYPE $device
-      fi
-      # TODO make mount idempotent
-      mkdir /hadoopfs/fs${i}
-      echo UUID=$(blkid -o value $device | head -1) /hadoopfs/fs${i} $FS_TYPE  defaults,noatime,nofail 0 2 >> /etc/fstab
-      mount /hadoopfs/fs${i}
-      chmod 777 /hadoopfs/fs${i}
+      log $LOG_FILE result of mounting $path: $?
+      chmod 777 $path >> $LOG_FILE 2>&1
+      return $((return_value))
+}
+
+mount_common() {
+    local return_value
+    mkdir /hadoopfs
+    if [[ -z $PREVIOUS_FSTAB  ]]; then
+        mount_all_sequential
+        return_value=$?
+    else
+        mount_all_from_fstab
+        return_value=$?
     fi
-  done
+    cd /hadoopfs/fs1 && mkdir logs logs/ambari-server logs/ambari-agent logs/consul-watch logs/kerberos >> $LOG_FILE 2>&1
+    return_value=$(($? || return_value ))
+    return $((return_value))
+}
+
+save_env_vars_to_log_file() {
+    log $LOG_FILE environment variables:
+    log $LOG_FILE ATTACHED_VOLUME_UUID_LIST=$ATTACHED_VOLUME_UUID_LIST
+    log $LOG_FILE CLOUD_PLATFORM=$CLOUD_PLATFORM
+    log $LOG_FILE PREVIOUS_FSTAB=$PREVIOUS_FSTAB
 }
 
 main() {
     local script_name="mount-disk"
-    if [ ! -f "$SEMAPHORE_FILE" ]; then
-        echo "semaphore file $SEMAPHORE_FILE missing, cannot proceed. Exiting"
-        exit
-    fi
-
-    local linux_flavor=$(get_linux_flavor)
-
-    echo updated: $linux_flavor
-    script_executed=$(grep $SCRIPT_NAME "$SEMAPHORE_FILE")
-    if [ -z "$script_executed" ]; then
-        [[ $CLOUD_PLATFORM == "AWS" ]] && format_disks $linux_flavor
-        echo "$(date +%Y-%m-%d:%H:%M:%S) - $script_name executed" >> $SEMAPHORE_FILE
-    fi
+    save_env_vars_to_log_file
+    can_start $script_name $LOG_FILE
+    mount_common
+    return_code=$?
+    exit_with_code $LOG_FILE $return_code "Script $script_name ended"
 }
 
 [[ "$0" == "$BASH_SOURCE" ]] && main "$@"
