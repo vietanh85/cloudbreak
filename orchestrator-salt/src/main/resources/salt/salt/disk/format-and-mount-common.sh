@@ -27,7 +27,9 @@ exit_with_code() {
     local log_file=$1
     local error_code=$2
     shift 2
-    log $log_file $@, exiting with code: $error_code.
+    local error_message="$@, exiting with code: $error_code."
+    log $log_file $error_message
+    [[ ! $error_code -eq 0 ]] && echo $error_message >&2
     exit $((error_code))
 }
 

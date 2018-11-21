@@ -2,13 +2,21 @@
 source format-and-mount-common.sh
 
 LOG_FILE=/var/log/find_device_and_format.log
+VERSION="V1.0"
 
-# expected lists
-# ATTACHED_VOLUME_NAME_LIST - contains a list of volume device names attached to the instance
-# ATTACHED_VOLUME_SERIAL_LIST - contains a list of volume serial ids
-# FSTAB - contains the fstab if any from a previous instance
+# INPUT - expected lists
+#   ATTACHED_VOLUME_NAME_LIST - contains a list of volume device names attached to the instance, format: space separated list
+#   ATTACHED_VOLUME_SERIAL_LIST - contains a list of volume serial ids, format: space separated list
+#
+# OUTPUT:
+#   happy case:
+#       exit code: 0
+#       STDOUT:   list of uuids, format: comma separated list
+#
+#   error:
+#       exit code: 1
+#       STDERR: a one-line summary of the type of error, without details. Details are in the log
 
-# TODO turn on semaphore file: name is not printed into file now
 
 unmount_device_if_mounted() {
       local device_name_list=$1
@@ -54,15 +62,20 @@ format_disks_if_unformatted() {
 
 get_uuid_list() {
   local device_name_list=$1
+  local uuid_list=""
   for device in $device_name_list; do
       uuid=$(blkid -o value $device | head -1)
       if [ -z "$(blkid $device)" ]; then
-          log $LOG_FILE uuid still does not exists => error
+          log $LOG_FILE "uuid still does not exists for device $device => error"
       else
-        echo $uuid
+        if [[ $uuid_list == "" ]]; then
+            uuid_list=$uuid
+        else
+            uuid_list="$uuid_list, $uuid"
+        fi
       fi
   done
-
+  echo $uuid_list
 }
 
 are_all_attached_volume_names_present() {
@@ -123,15 +136,16 @@ save_env_vars_to_log_file() {
 }
 
 main() {
+    log $LOG_FILE "started, version: $VERSION"
     save_env_vars_to_log_file
     local script_name="find-device-and-format"
     can_start $script_name $LOG_FILE
 
     device_name_list=$(get_device_names)
     if [ ! $? -eq 0 ]; then
-        exit_with_code $LOG_FILE $EXIT_CODE_ERROR "could not find all devices"
+        exit_with_code $LOG_FILE $EXIT_CODE_ERROR "some volumes are missing"
     fi
-    log $LOG_FILE exit code of get_device_names: $?, found devices: $device_name_list
+    log $LOG_FILE found devices: $device_name_list
 
     format_disks_if_unformatted "$device_name_list"
     if [ ! $? -eq 0 ]; then

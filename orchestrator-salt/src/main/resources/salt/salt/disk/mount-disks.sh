@@ -2,10 +2,19 @@
 source format-and-mount-common.sh
 
 LOG_FILE=/var/log/mount-disks.log
+VERSION="V1.0"
 
-# expected lists
-# ATTACHED_VOLUME_UUID_LIST - contains a list of uuids of volumes attached to the instance
-# PREVIOUS_FSTAB - contains the fstab if any from a previous instance
+# INPUT
+#   ATTACHED_VOLUME_UUID_LIST - contains a list of uuids of volumes attached to the instance, format: space separated list
+#   PREVIOUS_FSTAB - contains the fstab if any from a previous instance, format: the file contents as is
+#
+# OUTPUT
+#   happy path:
+#       exit code: 0
+#
+#   error:
+#       exit code: not 0
+#       stderr: a one line info. Details are in the log
 
 mount_all_from_fstab() {
       local return_value=0
@@ -74,12 +83,14 @@ save_env_vars_to_log_file() {
 }
 
 main() {
-    local script_name="mount-disk"
+    log $LOG_FILE "started, version: $VERSION"
     save_env_vars_to_log_file
+    local script_name="mount-disk"
     can_start $script_name $LOG_FILE
     mount_common
     return_code=$?
-    exit_with_code $LOG_FILE $return_code "Script $script_name ended"
+    [[ ! $return_code -eq 0 ]] && exit_with_code $LOG_FILE $return_code "Not all devices were mounted"
+    exit_with_code $LOG_FILE 0 "Script $script_name ended"
 }
 
 [[ "$0" == "$BASH_SOURCE" ]] && main "$@"
