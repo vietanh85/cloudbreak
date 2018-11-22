@@ -50,7 +50,7 @@ was_script_executed() {
         log $log_file "script $script_name was already executed, line from semaphore file: $script_executed. Exiting"
         exit
     fi
-    #echo "$(date +%Y-%m-%d:%H:%M:%S) - $script_name executed" >> $SEMAPHORE_FILE
+    echo "$(date +%Y-%m-%d:%H:%M:%S) - $script_name executed" >> $SEMAPHORE_FILE
 }
 
 is_cloud_platform_supported() {
