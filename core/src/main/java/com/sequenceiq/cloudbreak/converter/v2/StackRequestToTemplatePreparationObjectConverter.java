@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
@@ -28,6 +29,7 @@ import com.sequenceiq.cloudbreak.domain.KerberosConfig;
 import com.sequenceiq.cloudbreak.domain.LdapConfig;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 import com.sequenceiq.cloudbreak.domain.SmartSenseSubscription;
+import com.sequenceiq.cloudbreak.domain.environment.Environment;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.gateway.Gateway;
 import com.sequenceiq.cloudbreak.domain.workspace.User;
@@ -36,6 +38,7 @@ import com.sequenceiq.cloudbreak.service.CloudbreakRestRequestThreadLocalService
 import com.sequenceiq.cloudbreak.service.CloudbreakServiceException;
 import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
+import com.sequenceiq.cloudbreak.service.environment.EnvironmentService;
 import com.sequenceiq.cloudbreak.service.filesystem.FileSystemConfigService;
 import com.sequenceiq.cloudbreak.service.flex.FlexSubscriptionService;
 import com.sequenceiq.cloudbreak.service.ldapconfig.LdapConfigService;
@@ -110,13 +113,16 @@ public class StackRequestToTemplatePreparationObjectConverter extends AbstractCo
     @Inject
     private WorkspaceService workspaceService;
 
+    @Inject
+    private EnvironmentService environmentService;
+
     @Override
     public TemplatePreparationObject convert(StackV2Request source) {
         try {
             CloudbreakUser cloudbreakUser = restRequestThreadLocalService.getCloudbreakUser();
             User user = userService.getOrCreate(cloudbreakUser);
             Workspace workspace = workspaceService.get(restRequestThreadLocalService.getRequestedWorkspaceId(), user);
-            Credential credential = credentialService.getByNameForWorkspace(source.getGeneral().getCredentialName(), workspace);
+            Credential credential = getCredential(source, workspace);
             Optional<FlexSubscription> flexSubscription = getFlexSubscription(source);
             SmartSenseSubscription smartsenseSubscription = flexSubscription.isPresent() ? flexSubscription.get().getSmartSenseSubscription() : null;
             KerberosConfig kerberosConfig = getKerberosConfig(source);
@@ -170,6 +176,18 @@ public class StackRequestToTemplatePreparationObjectConverter extends AbstractCo
         }
     }
 
+    private Credential getCredential(StackV2Request source, Workspace workspace) {
+        Credential credential;
+        String environmentName = source.getGeneral().getEnvironmentName();
+        if (StringUtils.isNoneEmpty(environmentName)) {
+            Environment environment = environmentService.getByNameForWorkspace(environmentName, workspace);
+            credential = environment.getCredential();
+        } else {
+            credential = credentialService.getByNameForWorkspace(source.getGeneral().getCredentialName(), workspace);
+        }
+        return credential;
+    }
+
     private Blueprint getBlueprint(StackV2Request source, Workspace workspace) {
         Blueprint blueprint;
         blueprint = Strings.isNullOrEmpty(source.getCluster().getAmbari().getBlueprintName())
@@ -181,12 +199,6 @@ public class StackRequestToTemplatePreparationObjectConverter extends AbstractCo
     private Optional<FlexSubscription> getFlexSubscription(StackV2Request source) {
         return source.getFlexId() != null
                 ? Optional.ofNullable(flexSubscriptionService.get(source.getFlexId()))
-                : Optional.empty();
-    }
-
-    private Optional<String> getSmartsenseSubscriptionId(Optional<FlexSubscription> flexSubscription) {
-        return flexSubscription.isPresent()
-                ? Optional.ofNullable(flexSubscription.get().getSubscriptionId())
                 : Optional.empty();
     }
 
