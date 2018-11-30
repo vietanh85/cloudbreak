@@ -23,15 +23,15 @@ import com.sequenceiq.cloudbreak.core.flow2.cluster.repair.ChangePrimaryGatewayE
 import com.sequenceiq.cloudbreak.core.flow2.event.ClusterAndStackDownscaleTriggerEvent;
 import com.sequenceiq.cloudbreak.core.flow2.event.ClusterDownscaleDetails;
 import com.sequenceiq.cloudbreak.core.flow2.event.StackAndClusterUpscaleTriggerEvent;
+import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
-import com.sequenceiq.cloudbreak.domain.stack.Stack;
-import com.sequenceiq.cloudbreak.domain.view.StackView;
 import com.sequenceiq.cloudbreak.reactor.api.event.orchestration.ChangePrimaryGatewayTriggerEvent;
 import com.sequenceiq.cloudbreak.reactor.api.event.orchestration.ClusterRepairTriggerEvent;
 import com.sequenceiq.cloudbreak.reactor.api.event.orchestration.EphemeralClustersUpgradeTriggerEvent;
 import com.sequenceiq.cloudbreak.repository.InstanceMetaDataRepository;
+import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.service.hostgroup.HostGroupService;
 import com.sequenceiq.cloudbreak.service.stack.StackService;
 
@@ -48,6 +48,9 @@ public class ClusterRepairFlowEventChainFactory implements FlowEventChainFactory
     @Inject
     private InstanceMetaDataRepository instanceMetadataRepository;
 
+    @Inject
+    private ClusterService clusterService;
+
     @Override
     public String initEvent() {
         return FlowChainTriggers.CLUSTER_REPAIR_TRIGGER_EVENT;
@@ -55,24 +58,25 @@ public class ClusterRepairFlowEventChainFactory implements FlowEventChainFactory
 
     @Override
     public Queue<Selectable> createFlowTriggerEventQueue(ClusterRepairTriggerEvent event) {
-        StackView stackView = stackService.getViewByIdWithoutAuth(event.getStackId());
+//        StackView stackView = stackService.getViewByIdWithoutAuth(event.getStackId());
+        Stack stack = stackService.getByIdWithListsInTransaction(event.getStackId());
+        stackService.getByIdWithListsInTransaction(event.getStackId());
         Queue<Selectable> flowChainTriggers = new ConcurrentLinkedDeque<>();
         Map<String, List<String>> failedNodesMap = event.getFailedNodesMap();
         for (Entry<String, List<String>> failedNodes : failedNodesMap.entrySet()) {
             String hostGroupName = failedNodes.getKey();
             List<String> hostNames = failedNodes.getValue();
-            HostGroup hostGroup = hostGroupService.getByClusterIdAndName(stackView.getClusterView().getId(), hostGroupName);
+            HostGroup hostGroup = hostGroupService.getByClusterIdAndName(stack.getCluster().getId(), hostGroupName);
             InstanceGroup instanceGroup = hostGroup.getConstraint().getInstanceGroup();
             if (InstanceGroupType.GATEWAY.equals(instanceGroup.getInstanceGroupType())) {
                 List<InstanceMetaData> primary = instanceMetadataRepository.findAllByInstanceGroup(instanceGroup).stream().filter(
                         imd -> hostNames.contains(imd.getDiscoveryFQDN())
                                 && imd.getInstanceMetadataType() == InstanceMetadataType.GATEWAY_PRIMARY).collect(Collectors.toList());
-                if (!primary.isEmpty()) {
+                if (!primary.isEmpty() && clusterService.isMultipleGateway(stack)) {
                     flowChainTriggers.add(new ChangePrimaryGatewayTriggerEvent(ChangePrimaryGatewayEvent.CHANGE_PRIMARY_GATEWAY_TRIGGER_EVENT.event(),
                             event.getStackId(), event.accepted()));
                 }
             }
-            Stack stack = stackService.getByIdWithListsInTransaction(event.getStackId());
             Set<Long> privateIdsForHostNames = stackService.getPrivateIdsForHostNames(stack.getInstanceMetaDataAsList(), hostNames);
             flowChainTriggers.add(new ClusterAndStackDownscaleTriggerEvent(FlowChainTriggers.FULL_DOWNSCALE_TRIGGER_EVENT, event.getStackId(),
                     hostGroupName, Sets.newHashSet(privateIdsForHostNames), ScalingType.DOWNSCALE_TOGETHER, event.accepted(), new ClusterDownscaleDetails()));

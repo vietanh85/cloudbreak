@@ -314,7 +314,7 @@ public class ClusterService {
         }
     }
 
-    private boolean isMultipleGateway(Stack stack) {
+    public boolean isMultipleGateway(Stack stack) {
         int gatewayCount = 0;
         for (InstanceGroup ig : stack.getInstanceGroups()) {
             if (ig.getInstanceGroupType() == InstanceGroupType.GATEWAY) {
@@ -666,9 +666,9 @@ public class ClusterService {
     }
 
     private void validateRepair(Stack stack, HostMetadata hostMetadata, boolean repairWithReattach) {
-        if (!repairWithReattach || (isGateway(hostMetadata) && !isMultipleGateway(stack))) {
-            throw new BadRequestException("Ambari server failure cannot be repaired with single gateway!");
-        }
+//        if (!repairWithReattach || (isGateway(hostMetadata) && !isMultipleGateway(stack))) {
+//            throw new BadRequestException("Ambari server failure cannot be repaired with single gateway!");
+//        }
         if (isGateway(hostMetadata) && withEmbeddedAmbariDB(stack.getCluster())) {
             throw new BadRequestException("Ambari server failure with embedded database cannot be repaired!");
         }
