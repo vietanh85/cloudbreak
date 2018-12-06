@@ -199,9 +199,10 @@ public class StackUpscaleActions {
                     throws TransactionExecutionException {
                 Set<String> upscaleCandidateAddresses = stackUpscaleService.finishExtendMetadata(context.getStack(), context.getInstanceGroupName(), payload);
                 variables.put(UPSCALE_CANDIDATE_ADDRESSES, upscaleCandidateAddresses);
+                Stack stack = stackService.getByIdWithListsInTransaction(context.getStack().getId());
                 InstanceGroup ig = instanceGroupRepository.findOneByGroupNameInStack(payload.getStackId(), context.getInstanceGroupName());
                 if (InstanceGroupType.GATEWAY == ig.getInstanceGroupType()) {
-                    InstanceMetaData gatewayMetaData = context.getStack().getPrimaryGatewayInstance();
+                    InstanceMetaData gatewayMetaData = stack.getPrimaryGatewayInstance();
                     CloudInstance gatewayInstance = metadataConverter.convert(gatewayMetaData);
                     Selectable sshFingerPrintReq = new GetSSHFingerprintsRequest<GetSSHFingerprintsResult>(context.getCloudContext(),
                             context.getCloudCredential(), gatewayInstance);

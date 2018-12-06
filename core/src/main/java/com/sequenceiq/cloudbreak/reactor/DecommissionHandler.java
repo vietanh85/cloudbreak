@@ -1,8 +1,5 @@
 package com.sequenceiq.cloudbreak.reactor;
 
-import static com.sequenceiq.cloudbreak.service.PollingResult.isSuccess;
-
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +21,6 @@ import com.sequenceiq.cloudbreak.reactor.api.event.EventSelectorUtil;
 import com.sequenceiq.cloudbreak.reactor.api.event.resource.DecommissionRequest;
 import com.sequenceiq.cloudbreak.reactor.api.event.resource.DecommissionResult;
 import com.sequenceiq.cloudbreak.reactor.handler.ReactorEventHandler;
-import com.sequenceiq.cloudbreak.service.PollingResult;
 import com.sequenceiq.cloudbreak.service.cluster.ambari.AmbariDecommissioner;
 import com.sequenceiq.cloudbreak.service.cluster.flow.recipe.RecipeEngine;
 import com.sequenceiq.cloudbreak.service.hostgroup.HostGroupService;
@@ -66,18 +62,18 @@ public class DecommissionHandler implements ReactorEventHandler<DecommissionRequ
         try {
             Stack stack = stackService.getByIdWithListsInTransaction(request.getStackId());
             Set<String> hostNames = getHostNamesForPrivateIds(request, stack);
-            Map<String, HostMetadata> hostsToRemove = ambariDecommissioner.collectHostsToRemove(stack, hostGroupName, hostNames);
+//            Map<String, HostMetadata> hostsToRemove = ambariDecommissioner.collectHostsToRemove(stack, hostGroupName, hostNames);
             Set<String> decomissionedHostNames;
-            if (skipAmbariDecomission(request, hostsToRemove)) {
+//            if (skipAmbariDecomission(request, hostsToRemove)) {
                 decomissionedHostNames = hostNames;
-            } else {
-                executePreTerminationRecipes(stack, request.getHostGroupName(), hostsToRemove.keySet());
-                decomissionedHostNames = ambariDecommissioner.decommissionAmbariNodes(stack, hostsToRemove);
-            }
-            PollingResult orchestratorRemovalPollingResult = ambariDecommissioner.removeHostsFromOrchestrator(stack, new ArrayList<>(decomissionedHostNames));
-            if (!isSuccess(orchestratorRemovalPollingResult)) {
-                LOGGER.warn("Can not remove hosts from orchestrator: {}", decomissionedHostNames);
-            }
+//            } else {
+//                executePreTerminationRecipes(stack, request.getHostGroupName(), hostsToRemove.keySet());
+//                decomissionedHostNames = ambariDecommissioner.decommissionAmbariNodes(stack, hostsToRemove);
+//            }
+//            PollingResult orchestratorRemovalPollingResult = ambariDecommissioner.removeHostsFromOrchestrator(stack, new ArrayList<>(decomissionedHostNames));
+//            if (!isSuccess(orchestratorRemovalPollingResult)) {
+//                LOGGER.warn("Can not remove hosts from orchestrator: {}", decomissionedHostNames);
+//            }
             result = new DecommissionResult(request, decomissionedHostNames);
         } catch (Exception e) {
             result = new DecommissionResult(e.getMessage(), e, request);

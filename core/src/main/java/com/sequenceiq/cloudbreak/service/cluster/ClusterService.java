@@ -666,6 +666,7 @@ public class ClusterService {
     }
 
     private void validateRepair(Stack stack, HostMetadata hostMetadata, boolean repairWithReattach) {
+        // TODO-MASTER-REPAIR: add a condition that suits master repair in single node, but most likely delete this
 //        if (!repairWithReattach || (isGateway(hostMetadata) && !isMultipleGateway(stack))) {
 //            throw new BadRequestException("Ambari server failure cannot be repaired with single gateway!");
 //        }

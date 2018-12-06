@@ -24,7 +24,8 @@ public class NameNodeFilter implements HostFilter {
             while (iterator.hasNext()) {
                 String hostName = iterator.next().getHostName();
                 if (hostName.equals(nameNodeHost) || hostName.equals(secondaryNameNodeHost)) {
-                    iterator.remove();
+                    // TODO-MASTER-REPAIR fix not using namenode filter
+//                    iterator.remove();
                 }
             }
         } catch (RuntimeException e) {

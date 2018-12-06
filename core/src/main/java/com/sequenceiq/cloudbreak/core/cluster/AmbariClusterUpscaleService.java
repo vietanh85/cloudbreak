@@ -112,7 +112,7 @@ public class AmbariClusterUpscaleService {
         LOGGER.info("Start installing Ambari services");
         HostGroup hostGroup = hostGroupService.getByClusterIdAndName(stack.getCluster().getId(), hostGroupName);
         Set<HostMetadata> hostMetadata = hostGroupService.findEmptyHostMetadataInHostGroup(hostGroup.getId());
-        ambariClusterConnector.upscaleCluster(stack, hostGroup, hostMetadata);
+//        ambariClusterConnector.upscaleCluster(stack, hostGroup, hostMetadata);
     }
 
     public void executePostRecipesOnNewHosts(Long stackId) throws CloudbreakException {

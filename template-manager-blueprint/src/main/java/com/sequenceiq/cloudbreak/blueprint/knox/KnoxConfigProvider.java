@@ -23,7 +23,8 @@ public class KnoxConfigProvider implements BlueprintComponentConfigProvider {
                 .filter(hostgroupView -> InstanceGroupType.isGateway(hostgroupView.getInstanceGroupType()))
                 .map(HostgroupView::getName)
                 .collect(Collectors.toSet());
-        return blueprintProcessor.addComponentToHostgroups(KNOX_GATEWAY, hostGroupNames::contains);
+        return blueprintProcessor;
+//        return blueprintProcessor.addComponentToHostgroups(KNOX_GATEWAY, hostGroupNames::contains);
     }
 
     @Override

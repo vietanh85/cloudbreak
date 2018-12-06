@@ -208,7 +208,6 @@ public class ClusterHostServiceRunner {
             putIfNotNull(kerberosPillarConf, cluster.getCloudbreakAmbariPassword(), "clusterPassword");
             servicePillar.put("kerberos", new SaltPillarProperties("/kerberos/init.sls", singletonMap("kerberos", kerberosPillarConf)));
         }
-        servicePillar.put("disk", new SaltPillarProperties("/disk/disk.sls", singletonMap("disk", diskMountParameters(stack))));
         servicePillar.put("discovery", new SaltPillarProperties("/discovery/init.sls", singletonMap("platform", stack.cloudPlatform())));
         servicePillar.put("metadata", new SaltPillarProperties("/metadata/init.sls",
                 singletonMap("cluster", singletonMap("name", stack.getCluster().getName()))));
