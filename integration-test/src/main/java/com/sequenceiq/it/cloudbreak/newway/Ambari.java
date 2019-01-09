@@ -3,7 +3,6 @@ package com.sequenceiq.it.cloudbreak.newway;
 import com.sequenceiq.cloudbreak.api.model.AmbariRepoDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.AmbariStackDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.ConfigStrategy;
-import com.sequenceiq.cloudbreak.api.model.ConnectedClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.gateway.GatewayJson;
 import com.sequenceiq.cloudbreak.api.model.v2.AmbariV2Request;
 
@@ -51,11 +50,6 @@ public class Ambari extends Entity  {
 
     public Ambari withConfigStrategy(ConfigStrategy configStrategy) {
         request.setConfigStrategy(configStrategy);
-        return this;
-    }
-
-    public Ambari withConnectedCluster(ConnectedClusterRequest connectedClusterRequest) {
-        request.setConnectedCluster(connectedClusterRequest);
         return this;
     }
 

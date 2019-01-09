@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -174,6 +175,10 @@ public class EnvironmentService extends AbstractWorkspaceAwareResourceService<En
 
     public Set<Environment> findByNamesInWorkspace(Set<String> names, @NotNull Long workspaceId) {
         return CollectionUtils.isEmpty(names) ? new HashSet<>() : environmentRepository.findAllByNameInAndWorkspaceId(names, workspaceId);
+    }
+
+    public Optional<Environment> findById(Long id) {
+        return environmentRepository.findById(id);
     }
 
     @Override

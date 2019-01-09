@@ -1,13 +1,11 @@
 package com.sequenceiq.cloudbreak.service.stack;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -42,6 +40,7 @@ import com.sequenceiq.cloudbreak.core.flow2.service.ReactorFlowManager;
 import com.sequenceiq.cloudbreak.domain.SecurityConfig;
 import com.sequenceiq.cloudbreak.domain.StackAuthentication;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
 import com.sequenceiq.cloudbreak.domain.workspace.User;
 import com.sequenceiq.cloudbreak.domain.workspace.Workspace;
@@ -55,6 +54,7 @@ import com.sequenceiq.cloudbreak.service.StackUpdater;
 import com.sequenceiq.cloudbreak.service.TlsSecurityService;
 import com.sequenceiq.cloudbreak.service.TransactionService;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.events.CloudbreakEventService;
 import com.sequenceiq.cloudbreak.service.image.ImageService;
 import com.sequenceiq.cloudbreak.service.image.StatedImage;
@@ -69,6 +69,8 @@ public class StackServiceTest {
     private static final Long STACK_ID = 1L;
 
     private static final Long DATALAKE_STACK_ID = 2L;
+
+    private static final Long DATALAKE_RESOURCE_ID = 3L;
 
     private static final Long WORKSPACE_ID = 1L;
 
@@ -189,12 +191,19 @@ public class StackServiceTest {
     @Mock
     private PermissionCheckingUtils permissionCheckingUtils;
 
+    @Mock
+    private DatalakeResourcesService datalakeResourcesService;
+
     @Before
     public void setup() {
         when(stack.getId()).thenReturn(STACK_ID);
         when(stack.getName()).thenReturn(STACK_NAME);
         when(stack.getWorkspace()).thenReturn(workspace);
         when(workspace.getId()).thenReturn(WORKSPACE_ID);
+        DatalakeResources datalakeResources = new DatalakeResources();
+        datalakeResources.setDatalakeStackId(STACK_ID);
+        datalakeResources.setId(DATALAKE_RESOURCE_ID);
+        when(datalakeResourcesService.getDatalakeResourcesByDatalakeStackId(anyLong())).thenReturn(datalakeResources);
     }
 
     @Test
@@ -428,7 +437,7 @@ public class StackServiceTest {
         when(stack1.getName()).thenReturn("stack1");
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -450,7 +459,7 @@ public class StackServiceTest {
         when(stack1.getName()).thenReturn("stack1");
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -472,7 +481,7 @@ public class StackServiceTest {
         when(stack1.getName()).thenReturn("stack1");
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -494,7 +503,7 @@ public class StackServiceTest {
         when(stack1.getName()).thenReturn("stack1");
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -514,7 +523,7 @@ public class StackServiceTest {
         Stack stack = mock(Stack.class);
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -534,7 +543,7 @@ public class StackServiceTest {
         Stack stack = mock(Stack.class);
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -554,7 +563,7 @@ public class StackServiceTest {
         Stack stack = mock(Stack.class);
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -574,7 +583,7 @@ public class StackServiceTest {
         Stack stack = mock(Stack.class);
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -597,7 +606,7 @@ public class StackServiceTest {
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -620,7 +629,7 @@ public class StackServiceTest {
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -643,7 +652,7 @@ public class StackServiceTest {
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -666,7 +675,7 @@ public class StackServiceTest {
         when(stack2.getName()).thenReturn("stack2");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack1, stack2));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack1, stack2));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, String.format("%s, %s", "stack1", "stack2")));
@@ -687,7 +696,7 @@ public class StackServiceTest {
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(this.stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -708,7 +717,7 @@ public class StackServiceTest {
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(this.stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -729,7 +738,7 @@ public class StackServiceTest {
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(this.stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -750,7 +759,7 @@ public class StackServiceTest {
         when(stack.getName()).thenReturn("stack");
         when(stackRepository.findById(STACK_ID)).thenReturn(Optional.of(this.stack));
         when(stackRepository.findByNameAndWorkspaceId(STACK_NAME, WORKSPACE_ID)).thenReturn(this.stack);
-        when(stackRepository.findEphemeralClusters(STACK_ID)).thenReturn(Set.of(stack));
+        when(stackRepository.findEphemeralClusters(DATALAKE_RESOURCE_ID)).thenReturn(Set.of(stack));
 
 
         expectedException.expectMessage(String.format(HAS_ATTACHED_CLUSTERS_MESSAGE, "stack"));
@@ -816,21 +825,5 @@ public class StackServiceTest {
 
             verify(stackUpdater, times(0)).updateStackStatus(eq(Long.MAX_VALUE), eq(DetailedStackStatus.PROVISION_FAILED), anyString());
         }
-    }
-
-    @Test
-    public void testFindDatalakeConnectedToStackExists() {
-        Stack datalake = mock(Stack.class);
-        Stack workload = mock(Stack.class);
-        when(workload.getDatalakeId()).thenReturn(DATALAKE_STACK_ID);
-        when(stackRepository.findById(DATALAKE_STACK_ID)).thenReturn(Optional.of(datalake));
-        assertEquals(datalake, underTest.findDatalakeConnectedToStack(workload));
-    }
-
-    @Test
-    public void testFindDatalakeConnectedToStackNotExists() {
-        Stack workload = mock(Stack.class);
-        when(workload.getDatalakeId()).thenReturn(null);
-        assertNull(underTest.findDatalakeConnectedToStack(workload));
     }
 }

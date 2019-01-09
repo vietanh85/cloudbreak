@@ -17,7 +17,6 @@ import com.sequenceiq.cloudbreak.api.model.AmbariStackDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.BlueprintInputJson;
 import com.sequenceiq.cloudbreak.api.model.BlueprintRequest;
 import com.sequenceiq.cloudbreak.api.model.ConfigStrategy;
-import com.sequenceiq.cloudbreak.api.model.ConnectedClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.CustomContainerRequest;
 import com.sequenceiq.cloudbreak.api.model.ExecutorType;
 import com.sequenceiq.cloudbreak.api.model.FileSystemRequest;
@@ -144,9 +143,6 @@ public class ClusterRequest implements JsonEntity {
 
     @ApiModelProperty(ClusterModelDescription.EXECUTOR_TYPE)
     private ExecutorType executorType = ExecutorType.DEFAULT;
-
-    @ApiModelProperty(ClusterModelDescription.CONNECTED_CLUSTER)
-    private ConnectedClusterRequest connectedCluster;
 
     @ApiModelProperty(ClusterModelDescription.AMBARI_SECURITY_MASTER_KEY)
     @Size(max = 100, min = 5, message = "The length of the password has to be in range of 5 to 100")
@@ -358,14 +354,6 @@ public class ClusterRequest implements JsonEntity {
 
     public void setCustomContainer(CustomContainerRequest customContainer) {
         this.customContainer = customContainer;
-    }
-
-    public ConnectedClusterRequest getConnectedCluster() {
-        return connectedCluster;
-    }
-
-    public void setConnectedCluster(ConnectedClusterRequest connectedCluster) {
-        this.connectedCluster = connectedCluster;
     }
 
     public ExecutorType getExecutorType() {

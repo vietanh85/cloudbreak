@@ -83,6 +83,8 @@ public abstract class StackBase implements JsonEntity {
     @ApiModelProperty(StackModelDescription.ENVIRONMENT)
     private String environment;
 
+    private String datalakeResourceName;
+
     public OnFailureAction getOnFailureAction() {
         return onFailureAction;
     }
@@ -243,5 +245,13 @@ public abstract class StackBase implements JsonEntity {
 
     public void setEnvironment(String environment) {
         this.environment = environment;
+    }
+
+    public String getDatalakeResourceName() {
+        return datalakeResourceName;
+    }
+
+    public void setDatalakeResourceName(String datalakeResourceName) {
+        this.datalakeResourceName = datalakeResourceName;
     }
 }

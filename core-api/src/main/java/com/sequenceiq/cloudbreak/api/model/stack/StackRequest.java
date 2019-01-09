@@ -59,9 +59,6 @@ public class StackRequest extends StackBase {
     @ApiModelProperty(StackModelDescription.SOURCE_CREDENTIAL)
     private CredentialSourceRequest credentialSource;
 
-    @ApiModelProperty(StackModelDescription.SHARED_SERVICE_REQUEST)
-    private Long clusterToAttach;
-
     @ApiModelProperty(StackModelDescription.CREDENTIAL_NAME)
     private String credentialName;
 
@@ -166,14 +163,6 @@ public class StackRequest extends StackBase {
 
     public void setCredentialName(String credentialName) {
         this.credentialName = credentialName;
-    }
-
-    public Long getClusterToAttach() {
-        return clusterToAttach;
-    }
-
-    public void setClusterToAttach(Long clusterToAttach) {
-        this.clusterToAttach = clusterToAttach;
     }
 
     public void setOs(String os) {

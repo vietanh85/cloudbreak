@@ -1,7 +1,6 @@
 package com.sequenceiq.cloudbreak.service.decorator;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +16,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.core.convert.ConversionService;
 
 import com.sequenceiq.cloudbreak.FileReaderUtil;
-import com.sequenceiq.cloudbreak.api.model.ConnectedClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
 import com.sequenceiq.cloudbreak.blueprint.validation.BlueprintValidator;
 import com.sequenceiq.cloudbreak.controller.validation.ldapconfig.LdapConfigValidator;
@@ -103,7 +101,6 @@ public class ClusterDecoratorTest {
         Blueprint blueprint = new Blueprint();
         String blueprintText = FileReaderUtil.readResourceFile(this, "ha-components.bp");
         blueprint.setBlueprintText(blueprintText);
-        when(request.getConnectedCluster()).thenReturn(mock(ConnectedClusterRequest.class));
         when(sharedServiceConfigProvider.configureCluster(any(Cluster.class), any(User.class), any(Workspace.class)))
                 .thenReturn(expectedClusterInstance);
         when(clusterProxyDecorator.prepareProxyConfig(any(Cluster.class), any())).thenReturn(expectedClusterInstance);

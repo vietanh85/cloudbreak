@@ -7,11 +7,11 @@ import static com.sequenceiq.cloudbreak.authorization.WorkspacePermissions.Actio
 import static com.sequenceiq.cloudbreak.controller.exception.NotFoundException.notFound;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,6 +67,7 @@ import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.StackStatus;
 import com.sequenceiq.cloudbreak.domain.stack.StackValidation;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
@@ -95,6 +96,7 @@ import com.sequenceiq.cloudbreak.service.TransactionService.TransactionExecution
 import com.sequenceiq.cloudbreak.service.TransactionService.TransactionRuntimeExecutionException;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.service.credential.OpenSshPublicKeyValidator;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.decorator.StackResponseDecorator;
 import com.sequenceiq.cloudbreak.service.events.CloudbreakEventService;
 import com.sequenceiq.cloudbreak.service.image.ImageService;
@@ -204,6 +206,9 @@ public class StackService {
     @Inject
     private PermissionCheckingUtils permissionCheckingUtils;
 
+    @Inject
+    private DatalakeResourcesService datalakeResourcesService;
+
     public Long countAliveByEnvironment(Environment environment) {
         return stackRepository.countAliveOnesByWorkspaceAndEnvironment(environment.getWorkspace().getId(), environment.getId());
     }
@@ -268,17 +273,13 @@ public class StackService {
         }
     }
 
-    public Set<Stack> findClustersConnectedToDatalake(Long stackId) {
-        return stackRepository.findEphemeralClusters(stackId);
+    public Set<Stack> findClustersConnectedToDatalakeByDatalakeResourceId(Long datalakeResourceId) {
+        return stackRepository.findEphemeralClusters(datalakeResourceId);
     }
 
-    public Stack findDatalakeConnectedToStack(Stack workloadClusterStack) {
-        Stack datalake = null;
-        Long datalakeId = workloadClusterStack.getDatalakeId();
-        if (Objects.nonNull(datalakeId) && datalakeId != 0L) {
-            datalake = getById(datalakeId);
-        }
-        return datalake;
+    public Set<Stack> findClustersConnectedToDatalakeByDatalakeStackId(Long datalakeStackId) {
+        DatalakeResources datalakeResources = datalakeResourcesService.getDatalakeResourcesByDatalakeStackId(datalakeStackId);
+        return datalakeResources == null ? Collections.emptySet() : stackRepository.findEphemeralClusters(datalakeResources.getId());
     }
 
     public Stack getByIdWithLists(Long id) {
@@ -762,10 +763,6 @@ public class StackService {
                 .findFirst();
     }
 
-    public Long countDatalakeStacksInEnvironment(Long environmentId) {
-        return stackRepository.countDatalakeStacksInEnvironment(environmentId);
-    }
-
     public void validateStack(StackValidation stackValidation, boolean validateBlueprint) {
         if (stackValidation.getNetwork() != null) {
             networkConfigurationValidator.validateNetworkForStack(stackValidation.getNetwork(), stackValidation.getInstanceGroups());
@@ -890,7 +887,7 @@ public class StackService {
     }
 
     private void checkStackHasNoAttachedClusters(Stack stack) {
-        Set<Stack> attachedOnes = findClustersConnectedToDatalake(stack.getId());
+        Set<Stack> attachedOnes = findClustersConnectedToDatalakeByDatalakeStackId(stack.getId());
         if (!attachedOnes.isEmpty()) {
             throw new BadRequestException(String.format("Stack has attached clusters! Please remove them before try to delete this one. %nThe following clusters"
                             + " has to be deleted before terminating the datalake cluster: %s",

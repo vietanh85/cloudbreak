@@ -12,11 +12,13 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Before;
@@ -40,6 +42,7 @@ import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterResponse;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.gateway.GatewayJson;
 import com.sequenceiq.cloudbreak.api.model.users.WorkspaceResourceResponse;
+import com.sequenceiq.cloudbreak.api.model.v2.AttachedClusterInfoResponse;
 import com.sequenceiq.cloudbreak.blueprint.validation.StackServiceComponentDescriptor;
 import com.sequenceiq.cloudbreak.common.model.OrchestratorType;
 import com.sequenceiq.cloudbreak.converter.AbstractEntityConverterTest;
@@ -50,6 +53,7 @@ import com.sequenceiq.cloudbreak.domain.ProxyConfig;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.gateway.Gateway;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
@@ -60,6 +64,7 @@ import com.sequenceiq.cloudbreak.service.ClusterComponentConfigProvider;
 import com.sequenceiq.cloudbreak.service.ServiceEndpointCollector;
 import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
 import com.sequenceiq.cloudbreak.service.cluster.ambari.AmbariViewProvider;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.rdsconfig.RdsConfigService;
 import com.sequenceiq.cloudbreak.service.stack.StackService;
 import com.sequenceiq.cloudbreak.util.StackUtil;
@@ -120,13 +125,16 @@ public class ClusterToClusterResponseConverterTest extends AbstractEntityConvert
     @Mock
     private BlueprintService blueprintService;
 
+    @Mock
+    private DatalakeResourcesService datalakeResourcesService;
+
     @Before
     public void setUp() throws CloudbreakException {
         underTest = new ClusterToClusterResponseConverter();
         MockitoAnnotations.initMocks(this);
         given(orchestratorTypeResolver.resolveType(any(Orchestrator.class))).willReturn(OrchestratorType.HOST);
         given(rdsConfigService.findByClusterId(anyLong())).willReturn(new HashSet<>());
-        given(stackService.findClustersConnectedToDatalake(anyLong())).willReturn(new HashSet<>());
+        given(stackService.findClustersConnectedToDatalakeByDatalakeResourceId(anyLong())).willReturn(new HashSet<>());
         given(conversionService.convert(any(Workspace.class), eq(WorkspaceResourceResponse.class)))
                 .willReturn(new WorkspaceResourceResponse());
         given(blueprintService.isAmbariBlueprint(any())).willReturn(true);
@@ -206,6 +214,40 @@ public class ClusterToClusterResponseConverterTest extends AbstractEntityConvert
         assertEquals(1L, clusterExposedServicesForTopologies.keySet().size());
         Collection<ClusterExposedServiceResponse> topology1ServiceList = clusterExposedServicesForTopologies.get("topology1");
         assertEquals(2L, topology1ServiceList.size());
+    }
+
+    @Test
+    public void testConvertAttached() throws IOException {
+        mockAll();
+        getSource().getStack().setDatalakeResourceId(1L);
+        DatalakeResources datalakeResources = new DatalakeResources();
+        datalakeResources.setName("dlname");
+        datalakeResources.setDatalakeStackId(12L);
+        given(datalakeResourcesService.getDatalakeResourcesById(anyLong())).willReturn(Optional.of(datalakeResources));
+
+        ClusterResponse clusterResponse = underTest.convert(getSource());
+
+        assertEquals(datalakeResources.getName(), clusterResponse.getSharedServiceResponse().getSharedClusterName());
+        assertEquals(datalakeResources.getDatalakeStackId(), clusterResponse.getSharedServiceResponse().getSharedClusterId());
+    }
+
+    @Test
+    public void testConvertDl() throws IOException {
+        mockAll();
+        DatalakeResources datalakeResources = new DatalakeResources();
+        datalakeResources.setId(12L);
+        given(datalakeResourcesService.getDatalakeResourcesByDatalakeStackId(anyLong())).willReturn(datalakeResources);
+        Stack stack = new Stack();
+        stack.setName("stackName");
+        stack.setId(33L);
+        given(stackService.findClustersConnectedToDatalakeByDatalakeResourceId(datalakeResources.getId())).willReturn(Collections.singleton(stack));
+
+        ClusterResponse clusterResponse = underTest.convert(getSource());
+
+        assertEquals(1L, clusterResponse.getSharedServiceResponse().getAttachedClusters().size());
+        AttachedClusterInfoResponse attachedClusterInfoResponse = clusterResponse.getSharedServiceResponse().getAttachedClusters().stream().findFirst().get();
+        assertEquals(stack.getName(), attachedClusterInfoResponse.getName());
+        assertEquals(stack.getId(), attachedClusterInfoResponse.getId());
     }
 
     @Override

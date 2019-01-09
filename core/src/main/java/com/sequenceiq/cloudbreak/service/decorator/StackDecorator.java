@@ -172,7 +172,7 @@ public class StackDecorator {
     }
 
     private void checkSharedServiceStackRequirements(StackRequest request, User user, Workspace workspace) {
-        if (request.getClusterToAttach() != null && !isSharedServiceRequirementsMeets(request, user, workspace)) {
+        if (request.getDatalakeResourceName() != null && !isSharedServiceRequirementsMeets(request, user, workspace)) {
             throw new BadRequestException("Shared service stack should contains both Hive RDS and Ranger RDS and a properly configured LDAP also. "
                     + "One of them may be missing");
         }

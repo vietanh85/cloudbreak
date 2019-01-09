@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
-import com.sequenceiq.cloudbreak.api.model.SharedServiceRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.StackAuthenticationRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.ClusterV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.CustomDomainSettings;
@@ -35,7 +34,6 @@ import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.service.ComponentConfigProvider;
-import com.sequenceiq.cloudbreak.service.stack.StackService;
 
 @Component
 public class StackToStackV2RequestConverter extends AbstractConversionServiceAwareConverter<Stack, StackV2Request> {
@@ -44,9 +42,6 @@ public class StackToStackV2RequestConverter extends AbstractConversionServiceAwa
 
     @Inject
     private ComponentConfigProvider componentConfigProvider;
-
-    @Inject
-    private StackService stackService;
 
     @Override
     public StackV2Request convert(Stack source) {
@@ -63,16 +58,7 @@ public class StackToStackV2RequestConverter extends AbstractConversionServiceAwa
         prepareImage(source, stackV2Request);
         prepareTags(source, stackV2Request);
         prepareInputs(source, stackV2Request);
-        prepareDatalakeRequest(source, stackV2Request);
         return stackV2Request;
-    }
-
-    private void prepareDatalakeRequest(Stack source, StackV2Request stackV2Request) {
-        if (source.getDatalakeId() != null) {
-            SharedServiceRequest sharedServiceRequest = new SharedServiceRequest();
-            sharedServiceRequest.setSharedCluster(stackService.get(source.getDatalakeId()).getName());
-            stackV2Request.getCluster().setSharedService(sharedServiceRequest);
-        }
     }
 
     private PlacementSettings getPlacementSettings(String region, String availabilityZone) {

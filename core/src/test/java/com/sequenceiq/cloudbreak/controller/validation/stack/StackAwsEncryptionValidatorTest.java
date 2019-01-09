@@ -101,7 +101,6 @@ public class StackAwsEncryptionValidatorTest extends StackRequestValidatorTestBa
     @Before
     public void setup() {
         parameters = new LinkedHashMap<>();
-        when(subject.getClusterToAttach()).thenReturn(null);
         when(templateRequestValidator.validate(any())).thenReturn(ValidationResult.builder().build());
         when(restRequestThreadLocalService.getRequestedWorkspaceId()).thenReturn(1L);
         when(subject.getClusterRequest()).thenReturn(clusterRequest);

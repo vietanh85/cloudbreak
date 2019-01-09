@@ -5,7 +5,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Set;
 
 import com.sequenceiq.cloudbreak.api.model.ExecutorType;
-import com.sequenceiq.cloudbreak.api.model.SharedServiceRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterResponse;
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.ClusterV2Request;
@@ -80,9 +79,6 @@ public class ClusterEntity extends AbstractCloudbreakEntity<ClusterV2Request, Cl
     }
 
     public ClusterEntity withSharedService(String datalakeClusterName) {
-        SharedServiceRequest sharedServiceRequest = new SharedServiceRequest();
-        sharedServiceRequest.setSharedCluster(datalakeClusterName);
-        getRequest().setSharedService(sharedServiceRequest);
         return this;
     }
 }

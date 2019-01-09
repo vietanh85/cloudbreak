@@ -50,7 +50,7 @@ public class SparkServer {
 
     private int port;
 
-    @Value("${mock.server.request.response.print:false}")
+    @Value("${mock.server.request.response.print:true}")
     private boolean printRequestBody;
 
     private Service sparkService;

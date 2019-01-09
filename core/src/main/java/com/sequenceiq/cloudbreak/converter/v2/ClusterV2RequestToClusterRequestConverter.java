@@ -6,20 +6,15 @@ import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
 
-import com.sequenceiq.cloudbreak.api.model.ConnectedClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.FileSystemRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.AmbariV2Request;
 import com.sequenceiq.cloudbreak.api.model.v2.ClusterV2Request;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
 import com.sequenceiq.cloudbreak.converter.util.CloudStorageValidationUtil;
-import com.sequenceiq.cloudbreak.service.sharedservice.SharedServiceConfigProvider;
 
 @Component
 public class ClusterV2RequestToClusterRequestConverter extends AbstractConversionServiceAwareConverter<ClusterV2Request, ClusterRequest> {
-
-    @Inject
-    private SharedServiceConfigProvider sharedServiceConfigProvider;
 
     @Inject
     private CloudStorageValidationUtil cloudStorageValidationUtil;
@@ -45,7 +40,6 @@ public class ClusterV2RequestToClusterRequestConverter extends AbstractConversio
             cluster.setBlueprintId(ambariRequest.getBlueprintId());
             cluster.setBlueprintName(ambariRequest.getBlueprintName());
             cluster.setConfigStrategy(ambariRequest.getConfigStrategy());
-            cluster.setConnectedCluster(ambariRequest.getConnectedCluster());
             cluster.setGateway(ambariRequest.getGateway());
             cluster.setKerberosConfigName(ambariRequest.getKerberosConfigName());
             cluster.setPassword(ambariRequest.getPassword());
@@ -53,11 +47,6 @@ public class ClusterV2RequestToClusterRequestConverter extends AbstractConversio
             cluster.setValidateBlueprint(ambariRequest.getValidateBlueprint());
             cluster.setValidateRepositories(ambariRequest.getValidateRepositories());
             cluster.setAmbariSecurityMasterKey(ambariRequest.getAmbariSecurityMasterKey());
-            if (sharedServiceConfigProvider.isConfigured(source)) {
-                ConnectedClusterRequest connectedClusterRequest = new ConnectedClusterRequest();
-                connectedClusterRequest.setSourceClusterName(source.getSharedService().getSharedCluster());
-                cluster.setConnectedCluster(connectedClusterRequest);
-            }
         }
         cluster.setHostGroups(new HashSet<>());
         return cluster;

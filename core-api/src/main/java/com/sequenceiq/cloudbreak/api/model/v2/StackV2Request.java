@@ -86,6 +86,8 @@ public class StackV2Request implements JsonEntity {
     @Max(value = 65535, message = "Port should be between 1025 and 65535")
     private Integer gatewayPort;
 
+    private String datalakeResourceName;
+
     public FailurePolicyRequest getFailurePolicy() {
         return failurePolicy;
     }
@@ -220,5 +222,13 @@ public class StackV2Request implements JsonEntity {
 
     public void setGatewayPort(Integer gatewayPort) {
         this.gatewayPort = gatewayPort;
+    }
+
+    public String getDatalakeResourceName() {
+        return datalakeResourceName;
+    }
+
+    public void setDatalakeResourceName(String datalakeResourceName) {
+        this.datalakeResourceName = datalakeResourceName;
     }
 }

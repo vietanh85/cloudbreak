@@ -258,6 +258,11 @@ public class StackEntity extends AbstractCloudbreakEntity<StackV2Request, StackR
         return this;
     }
 
+    public StackEntity withDatalakeResourceName(String name) {
+        getRequest().setDatalakeResourceName(name);
+        return this;
+    }
+
     public StackEntity withParameters(Map<String, String> parameters) {
         getRequest().setParameters(parameters);
         return this;

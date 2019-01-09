@@ -12,7 +12,6 @@ import com.sequenceiq.cloudbreak.api.model.AmbariDatabaseDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.AmbariRepoDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.AmbariStackDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.ConfigStrategy;
-import com.sequenceiq.cloudbreak.api.model.ConnectedClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.JsonEntity;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.gateway.GatewayJson;
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions.ClusterModelDescription;
@@ -73,9 +72,6 @@ public class AmbariV2Request implements JsonEntity {
 
     @ApiModelProperty(ClusterModelDescription.CONFIG_STRATEGY)
     private ConfigStrategy configStrategy = ConfigStrategy.ALWAYS_APPLY_DONT_OVERRIDE_CUSTOM_VALUES;
-
-    @ApiModelProperty(ClusterModelDescription.CONNECTED_CLUSTER)
-    private ConnectedClusterRequest connectedCluster;
 
     @ApiModelProperty(ClusterModelDescription.AMBARI_SECURITY_MASTER_KEY)
     @Size(max = 100, min = 5, message = "The length of the password has to be in range of 5 to 100")
@@ -175,14 +171,6 @@ public class AmbariV2Request implements JsonEntity {
 
     public void setConfigStrategy(ConfigStrategy configStrategy) {
         this.configStrategy = configStrategy;
-    }
-
-    public ConnectedClusterRequest getConnectedCluster() {
-        return connectedCluster;
-    }
-
-    public void setConnectedCluster(ConnectedClusterRequest connectedCluster) {
-        this.connectedCluster = connectedCluster;
     }
 
     public String getAmbariSecurityMasterKey() {

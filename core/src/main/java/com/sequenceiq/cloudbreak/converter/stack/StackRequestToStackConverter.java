@@ -87,7 +87,6 @@ public class StackRequestToStackConverter extends AbstractConversionServiceAware
         stack.setTags(getTags(mergeTags(sourceTags, source.getUserDefinedTags(),
                 getDefaultTags(source, restRequestThreadLocalService.getCloudbreakUser()))));
         stack.setInputs(getInputs(mergeInputs(source.getCustomInputs())));
-        preparateSharedServiceProperties(source, stack, sourceTags);
         StackAuthentication stackAuthentication = conversionService.convert(source.getStackAuthentication(), StackAuthentication.class);
         stack.setStackAuthentication(stackAuthentication);
         validateStackAuthentication(source);
@@ -113,14 +112,6 @@ public class StackRequestToStackConverter extends AbstractConversionServiceAware
         stack.setGatewayPort(source.getGatewayPort());
         stack.setUuid(UUID.randomUUID().toString());
         return stack;
-    }
-
-    private void preparateSharedServiceProperties(StackRequest source, Stack stack, Map<String, String> sourceTags) {
-        if (sourceTags != null && sourceTags.containsKey("datalakeId")) {
-            stack.setDatalakeId(Long.valueOf(String.valueOf(sourceTags.get("datalakeId"))));
-        } else if (source.getClusterToAttach() != null) {
-            stack.setDatalakeId(source.getClusterToAttach());
-        }
     }
 
     private void validateStackAuthentication(StackRequest source) {

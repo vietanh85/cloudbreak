@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import com.sequenceiq.cloudbreak.api.model.NetworkRequest;
 import com.sequenceiq.cloudbreak.api.model.OrchestratorRequest;
-import com.sequenceiq.cloudbreak.api.model.SharedServiceRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.StackRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.host.HostGroupRequest;
@@ -30,8 +29,6 @@ import com.sequenceiq.cloudbreak.domain.workspace.Workspace;
 import com.sequenceiq.cloudbreak.service.CloudbreakRestRequestThreadLocalService;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
 import com.sequenceiq.cloudbreak.service.environment.EnvironmentViewService;
-import com.sequenceiq.cloudbreak.service.sharedservice.SharedServiceConfigProvider;
-import com.sequenceiq.cloudbreak.service.stack.StackService;
 import com.sequenceiq.cloudbreak.service.user.UserService;
 import com.sequenceiq.cloudbreak.service.workspace.WorkspaceService;
 
@@ -49,12 +46,6 @@ public class StackV2RequestToStackRequestConverter extends AbstractConversionSer
 
     @Inject
     private EnvironmentViewService environmentViewService;
-
-    @Inject
-    private StackService stackService;
-
-    @Inject
-    private SharedServiceConfigProvider sharedServiceConfigProvider;
 
     @Inject
     private UserService userService;
@@ -118,6 +109,7 @@ public class StackV2RequestToStackRequestConverter extends AbstractConversionSer
         setCloudPlatform(stackRequest, workspace);
         convertCustomInputs(source, stackRequest);
         stackRequest.setGatewayPort(source.getGatewayPort());
+        stackRequest.setDatalakeResourceName(source.getDatalakeResourceName());
         return stackRequest;
     }
 
@@ -156,10 +148,6 @@ public class StackV2RequestToStackRequestConverter extends AbstractConversionSer
                 stackRequest.getClusterRequest().getHostGroups().add(convert);
             }
             stackRequest.getClusterRequest().setName(source.getGeneral().getName());
-            if (sharedServiceConfigProvider.isConfigured(source.getCluster())) {
-                SharedServiceRequest sharedService = source.getCluster().getSharedService();
-                stackRequest.setClusterToAttach(stackService.getByNameInWorkspace(sharedService.getSharedCluster(), workspace.getId()).getId());
-            }
         }
     }
 }

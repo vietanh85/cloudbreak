@@ -42,6 +42,7 @@ import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.service.ClusterComponentConfigProvider;
 import com.sequenceiq.cloudbreak.service.ComponentConfigProvider;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.image.ImageService;
 
 @Component
@@ -60,6 +61,9 @@ public class StackToStackResponseConverter extends AbstractConversionServiceAwar
 
     @Inject
     private ClusterComponentConfigProvider clusterComponentConfigProvider;
+
+    @Inject
+    private DatalakeResourcesService datalakeResourcesService;
 
     @Override
     public StackResponse convert(Stack source) {
@@ -125,6 +129,10 @@ public class StackToStackResponseConverter extends AbstractConversionServiceAwar
         addFlexSubscription(stackJson, source);
         if (source.getEnvironment() != null) {
             stackJson.setEnvironment(source.getEnvironment().getName());
+        }
+        if (source.getDatalakeResourceId() != null) {
+            datalakeResourcesService.getDatalakeResourcesById(source.getDatalakeResourceId())
+                    .ifPresent(datalakeResources -> stackJson.setDatalakeResourceName(datalakeResources.getName()));
         }
         return stackJson;
     }

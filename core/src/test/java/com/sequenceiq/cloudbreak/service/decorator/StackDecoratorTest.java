@@ -161,7 +161,6 @@ public class StackDecoratorTest {
         when(conversionService.convert(any(InstanceGroup.class), any())).thenReturn(instanceGroupParameterRequest);
         when(subject.getFullNodeCount()).thenReturn(2);
         when(subject.getInstanceGroups()).thenReturn(createInstanceGroups(GATEWAY));
-        when(request.getClusterToAttach()).thenReturn(null);
 
         Stack result = underTest.decorate(subject, request, user, workspace);
 
@@ -184,8 +183,8 @@ public class StackDecoratorTest {
         when(conversionService.convert(any(InstanceGroup.class), any())).thenReturn(instanceGroupParameterRequest);
         when(subject.getFullNodeCount()).thenReturn(2);
         when(subject.getInstanceGroups()).thenReturn(createInstanceGroups(GATEWAY));
-        when(request.getClusterToAttach()).thenReturn(1L);
         when(request.getClusterRequest()).thenReturn(clusterRequest);
+        when(request.getDatalakeResourceName()).thenReturn("dlname");
         when(clusterRequest.getLdapConfig()).thenReturn(new LdapConfigRequest());
         when(clusterRequest.getRdsConfigJsons()).thenReturn(rdsConfigRequests);
 
@@ -208,8 +207,8 @@ public class StackDecoratorTest {
         when(conversionService.convert(any(InstanceGroup.class), any())).thenReturn(instanceGroupParameterRequest);
         when(subject.getFullNodeCount()).thenReturn(2);
         when(subject.getInstanceGroups()).thenReturn(createInstanceGroups(GATEWAY));
-        when(request.getClusterToAttach()).thenReturn(1L);
         when(request.getClusterRequest()).thenReturn(clusterRequest);
+        when(request.getDatalakeResourceName()).thenReturn("dlname");
         when(clusterRequest.getLdapConfig()).thenReturn(null);
         when(clusterRequest.getRdsConfigJsons()).thenReturn(rdsConfigRequests);
 
@@ -232,8 +231,8 @@ public class StackDecoratorTest {
         when(conversionService.convert(any(InstanceGroup.class), any())).thenReturn(instanceGroupParameterRequest);
         when(subject.getFullNodeCount()).thenReturn(2);
         when(subject.getInstanceGroups()).thenReturn(createInstanceGroups(GATEWAY));
-        when(request.getClusterToAttach()).thenReturn(1L);
         when(request.getClusterRequest()).thenReturn(clusterRequest);
+        when(request.getDatalakeResourceName()).thenReturn("dlname");
         when(clusterRequest.getLdapConfig()).thenReturn(new LdapConfigRequest());
         when(clusterRequest.getRdsConfigJsons()).thenReturn(rdsConfigRequests);
 
@@ -259,8 +258,8 @@ public class StackDecoratorTest {
         when(conversionService.convert(any(InstanceGroup.class), any())).thenReturn(instanceGroupParameterRequest);
         when(subject.getFullNodeCount()).thenReturn(2);
         when(subject.getInstanceGroups()).thenReturn(createInstanceGroups(GATEWAY));
-        when(request.getClusterToAttach()).thenReturn(1L);
         when(request.getClusterRequest()).thenReturn(clusterRequest);
+        when(request.getDatalakeResourceName()).thenReturn("dlname");
         when(clusterRequest.getLdapConfig()).thenReturn(new LdapConfigRequest());
         when(clusterRequest.getRdsConfigJsons()).thenReturn(rdsConfigRequests);
 
@@ -286,8 +285,8 @@ public class StackDecoratorTest {
         when(conversionService.convert(any(InstanceGroup.class), any())).thenReturn(instanceGroupParameterRequest);
         when(subject.getFullNodeCount()).thenReturn(2);
         when(subject.getInstanceGroups()).thenReturn(createInstanceGroups(GATEWAY));
-        when(request.getClusterToAttach()).thenReturn(1L);
         when(request.getClusterRequest()).thenReturn(clusterRequest);
+        when(request.getDatalakeResourceName()).thenReturn("dlname");
         when(clusterRequest.getLdapConfig()).thenReturn(new LdapConfigRequest());
         when(clusterRequest.getRdsConfigJsons()).thenReturn(rdsConfigRequests);
 

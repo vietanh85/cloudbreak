@@ -33,11 +33,13 @@ import com.sequenceiq.cloudbreak.domain.Blueprint;
 import com.sequenceiq.cloudbreak.domain.Credential;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.repository.StackRepository;
 import com.sequenceiq.cloudbreak.service.CloudbreakRestRequestThreadLocalService;
 import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.kerberos.KerberosService;
 import com.sequenceiq.cloudbreak.service.rdsconfig.RdsConfigService;
 
@@ -75,16 +77,20 @@ public class StackRequestValidator implements Validator<StackRequest> {
     @Inject
     private KerberosService kerberosService;
 
+    @Inject
+    private DatalakeResourcesService datalakeResourcesService;
+
     @Override
     public ValidationResult validate(StackRequest subject) {
         ValidationResultBuilder validationBuilder = ValidationResult.builder();
+        Long workspaceId = restRequestThreadLocalService.getRequestedWorkspaceId();
         if (CollectionUtils.isEmpty(subject.getInstanceGroups())) {
             validationBuilder.error("Stack request must contain instance groups.");
         }
         validateHostgroupInstanceGroupMapping(subject, validationBuilder);
         validateTemplates(subject, validationBuilder);
-        validateSharedService(subject, validationBuilder);
-        validateEncryptionKey(subject, validationBuilder);
+        validateSharedService(subject, validationBuilder, workspaceId);
+        validateEncryptionKey(subject, validationBuilder, workspaceId);
         validateKerberos(subject.getClusterRequest().getKerberosConfigName(), validationBuilder);
         return validationBuilder.build();
     }
@@ -124,25 +130,31 @@ public class StackRequestValidator implements Validator<StackRequest> {
                 .ifPresent(resultBuilder::merge);
     }
 
-    private void validateSharedService(StackRequest stackRequest, ValidationResultBuilder validationBuilder) {
+    private void validateSharedService(StackRequest stackRequest, ValidationResultBuilder validationBuilder, Long workspaceId) {
         checkResourceRequirementsIfBlueprintIsDatalakeReady(stackRequest, validationBuilder);
-        if (stackRequest.getClusterToAttach() != null) {
-            Optional<Stack> stack = stackRepository.findById(stackRequest.getClusterToAttach());
+        if (stackRequest.getDatalakeResourceName() != null) {
+            DatalakeResources datalakeResources = datalakeResourcesService.getByNameForWorkspaceId(stackRequest.getDatalakeResourceName(), workspaceId);
+            Optional<Stack> stack = datalakeResources.getDatalakeStackId() == null ? Optional.empty()
+                    : stackRepository.findById(datalakeResources.getDatalakeStackId());
             if (stack.isPresent() && AVAILABLE.equals(stack.get().getStatus())) {
-                Optional<Cluster> cluster = Optional.ofNullable(clusterService.retrieveClusterByStackIdWithoutAuth(stackRequest.getClusterToAttach()));
-                if (cluster.isPresent() && !AVAILABLE.equals(cluster.get().getStatus())) {
-                    validationBuilder.error("Ambari installation in progress or some of it's components has failed. "
-                            + "Please check Ambari before trying to attach cluster to datalake.");
-                }
+                validateAvailableDatalakeStack(validationBuilder, stack);
             } else if (stack.isPresent() && !AVAILABLE.equals(stack.get().getStatus())) {
                 validationBuilder.error("Unable to attach to datalake because it's infrastructure is not ready.");
-            } else if (!stack.isPresent()) {
+            } else if (!stack.isPresent() && datalakeResources.getDatalakeStackId() != null) {
                 validationBuilder.error("Unable to attach to datalake because it doesn't exists.");
             }
         }
     }
 
-    private void validateEncryptionKey(StackRequest stackRequest, ValidationResultBuilder validationBuilder) {
+    private void validateAvailableDatalakeStack(ValidationResultBuilder validationBuilder, Optional<Stack> stack) {
+        Optional<Cluster> cluster = Optional.ofNullable(clusterService.retrieveClusterByStackIdWithoutAuth(stack.get().getId()));
+        if (cluster.isPresent() && !AVAILABLE.equals(cluster.get().getStatus())) {
+            validationBuilder.error("Ambari installation in progress or some of it's components has failed. "
+                    + "Please check Ambari before trying to attach cluster to datalake.");
+        }
+    }
+
+    private void validateEncryptionKey(StackRequest stackRequest, ValidationResultBuilder validationBuilder, Long workspaceId) {
         stackRequest.getInstanceGroups().stream()
                 .filter(request -> request.getTemplate().getParameters().containsKey(TYPE))
                 .filter(request -> {
@@ -150,7 +162,7 @@ public class StackRequestValidator implements Validator<StackRequest> {
                     return valueForTypeKey != null && EncryptionType.CUSTOM.equals(getEncryptionIfTypeMatches(valueForTypeKey));
                 })
                 .forEach(request -> checkEncryptionKeyValidityForInstanceGroupWhenKeysAreListable(request, stackRequest.getCredentialName(),
-                        stackRequest.getRegion(), validationBuilder));
+                        stackRequest.getRegion(), validationBuilder, workspaceId));
     }
 
     private EncryptionType getEncryptionIfTypeMatches(Object o) {
@@ -158,8 +170,8 @@ public class StackRequestValidator implements Validator<StackRequest> {
     }
 
     private void checkEncryptionKeyValidityForInstanceGroupWhenKeysAreListable(InstanceGroupRequest instanceGroupRequest, String credentialName,
-            String region, ValidationResultBuilder validationBuilder) {
-        Long workspaceId = restRequestThreadLocalService.getRequestedWorkspaceId();
+            String region, ValidationResultBuilder validationBuilder, Long workspaceId) {
+
         Credential cred = credentialService.getByNameForWorkspaceId(credentialName, workspaceId);
         Optional<PlatformEncryptionKeysResponse> keys = getEncryptionKeysWithExceptionHandling(cred.getId(), region);
         if (keys.isPresent() && !keys.get().getEncryptionKeyConfigs().isEmpty()) {

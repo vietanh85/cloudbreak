@@ -1146,8 +1146,7 @@ public class ClusterService {
 
     public ConfigsResponse retrieveOutputs(Long stackId) {
         Stack stack = stackService.getById(stackId);
-        Stack datalake = stackService.getById(stack.getDatalakeId());
-        return sharedServiceConfigProvider.retrieveOutputs(datalake, stack.getCluster().getBlueprint(), stack.getName());
+        return sharedServiceConfigProvider.retrieveOutputs(stack.getDatalakeResourceId(), stack.getCluster().getBlueprint(), stack.getName());
     }
 
     public Map<String, String> getHostStatuses(Long stackId) {

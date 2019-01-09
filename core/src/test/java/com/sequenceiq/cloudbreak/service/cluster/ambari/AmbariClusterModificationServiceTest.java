@@ -89,7 +89,7 @@ public class AmbariClusterModificationServiceTest {
         when(ambariClient.getClusterHosts()).thenReturn(cluster.getHostGroups().stream()
                 .flatMap(hostGroup -> hostGroup.getHostNames().stream())
                 .collect(Collectors.toList()));
-        when(clientFactory.getAmbariClient(any(), any())).thenReturn(ambariClient);
+        when(clientFactory.getAmbariClient(any(Stack.class), any())).thenReturn(ambariClient);
 
         ImmutablePair<PollingResult, Exception> pair = new ImmutablePair<>(PollingResult.SUCCESS, null);
         when(ambariOperationService.waitForOperations(eq(stack), eq(ambariClient), any(), eq(UPSCALE_AMBARI_PROGRESS_STATE))).thenReturn(pair);
@@ -136,7 +136,7 @@ public class AmbariClusterModificationServiceTest {
         when(ambariClient.getClusterHosts()).thenReturn(cluster.getHostGroups().stream()
                 .flatMap(hostGroup -> hostGroup.getHostNames().stream())
                 .collect(Collectors.toList()));
-        when(clientFactory.getAmbariClient(any(), any())).thenReturn(ambariClient);
+        when(clientFactory.getAmbariClient(any(Stack.class), any())).thenReturn(ambariClient);
 
         ImmutablePair<PollingResult, Exception> pair = new ImmutablePair<>(PollingResult.SUCCESS, null);
         when(ambariOperationService.waitForOperations(eq(stack), eq(ambariClient), any(), eq(UPSCALE_AMBARI_PROGRESS_STATE))).thenReturn(pair);
@@ -182,7 +182,7 @@ public class AmbariClusterModificationServiceTest {
         when(ambariClient.getClusterHosts()).thenReturn(cluster.getHostGroups().stream()
                 .flatMap(hostGroup -> hostGroup.getHostNames().stream())
                 .collect(Collectors.toList()));
-        when(clientFactory.getAmbariClient(any(), any())).thenReturn(ambariClient);
+        when(clientFactory.getAmbariClient(any(Stack.class), any())).thenReturn(ambariClient);
 
         ImmutablePair<PollingResult, Exception> pair = new ImmutablePair<>(PollingResult.SUCCESS, null);
         when(ambariOperationService.waitForOperations(eq(stack), eq(ambariClient), any(), eq(UPSCALE_AMBARI_PROGRESS_STATE))).thenReturn(pair);

@@ -1,7 +1,5 @@
 package com.sequenceiq.cloudbreak.converter.v2;
 
-import static org.mockito.Mockito.when;
-
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -18,7 +16,6 @@ import com.sequenceiq.cloudbreak.api.model.AmbariDatabaseDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.AmbariRepoDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.AmbariStackDetailsJson;
 import com.sequenceiq.cloudbreak.api.model.ConfigStrategy;
-import com.sequenceiq.cloudbreak.api.model.ConnectedClusterRequest;
 import com.sequenceiq.cloudbreak.api.model.ExecutorType;
 import com.sequenceiq.cloudbreak.api.model.SharedServiceRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
@@ -88,7 +85,6 @@ public class ClusterV2RequestToClusterRequestConverterTest {
     public void testConvertWhenHasAmbariRequestButSharedServiceIsNotConfiguredThenSharedServiceRelatedFieldsShouldntBeConfigured() {
         AmbariV2Request ambariV2Request = createAmbariV2Request();
         ClusterV2Request source = createClusterV2Request(Collections.emptySet(), ambariV2Request);
-        when(sharedServiceConfigProvider.isConfigured(source)).thenReturn(false);
 
         ClusterRequest result = underTest.convert(source);
 
@@ -103,7 +99,6 @@ public class ClusterV2RequestToClusterRequestConverterTest {
     public void testConvertWhenRdsConfigNamesIsEmptyAndHasAmbariRequestAndSharedServiceIsConfiguredThenSharedServiceRelatedFieldsShouldtBeConfiguredCorrectly() {
         AmbariV2Request ambariV2Request = createAmbariV2Request();
         ClusterV2Request source = createClusterV2Request(Collections.emptySet(), ambariV2Request);
-        when(sharedServiceConfigProvider.isConfigured(source)).thenReturn(true);
 
         ClusterRequest result = underTest.convert(source);
 
@@ -112,8 +107,6 @@ public class ClusterV2RequestToClusterRequestConverterTest {
         Assert.assertEquals(source.getAmbari().getAmbariStackDetails(), result.getAmbariStackDetails());
         Assert.assertEquals(source.getAmbari().getBlueprintId(), result.getBlueprintId());
         Assert.assertEquals(source.getAmbari().getBlueprintName(), result.getBlueprintName());
-        Assert.assertNotEquals(source.getAmbari().getConnectedCluster(), result.getConnectedCluster());
-        Assert.assertEquals(source.getSharedService().getSharedCluster(), result.getConnectedCluster().getSourceClusterName());
     }
 
     @Test
@@ -151,7 +144,6 @@ public class ClusterV2RequestToClusterRequestConverterTest {
         request.setLdapConfigName("nameOfTheLdapConfig");
         request.setName("some name");
         request.setProxyName("proxy name");
-        request.setSharedService(createSharedServiceRequest());
         request.setRdsConfigNames(rdsConfigNames == null ? Collections.emptySet() : rdsConfigNames);
         request.setAmbari(ambariV2Request);
         return request;
@@ -177,7 +169,6 @@ public class ClusterV2RequestToClusterRequestConverterTest {
         request.setBlueprintId(1L);
         request.setBlueprintName("blueprintName");
         request.setConfigStrategy(ConfigStrategy.ALWAYS_APPLY);
-        request.setConnectedCluster(new ConnectedClusterRequest());
         request.setGateway(new GatewayJson());
         request.setKerberosConfigName(null);
         request.setPassword("somePwd");

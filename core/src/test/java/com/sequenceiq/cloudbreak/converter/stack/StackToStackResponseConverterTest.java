@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -46,9 +47,11 @@ import com.sequenceiq.cloudbreak.domain.Resource;
 import com.sequenceiq.cloudbreak.domain.StackAuthentication;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.domain.view.EnvironmentView;
 import com.sequenceiq.cloudbreak.service.ClusterComponentConfigProvider;
 import com.sequenceiq.cloudbreak.service.ComponentConfigProvider;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.image.ImageService;
 
 public class StackToStackResponseConverterTest extends AbstractEntityConverterTest<Stack> {
@@ -68,6 +71,9 @@ public class StackToStackResponseConverterTest extends AbstractEntityConverterTe
     @Mock
     private ComponentConfigProvider componentConfigProvider;
 
+    @Mock
+    private DatalakeResourcesService datalakeResourcesService;
+
     @Before
     public void setUp() throws CloudbreakImageNotFoundException {
         underTest = new StackToStackResponseConverter();
@@ -79,6 +85,9 @@ public class StackToStackResponseConverterTest extends AbstractEntityConverterTe
         when(clusterComponentConfigProvider.getHDPRepo(anyLong())).thenReturn(new StackRepoDetails());
         when(clusterComponentConfigProvider.getAmbariDatabase(anyLong())).thenReturn(new AmbariDatabase());
         when(clusterComponentConfigProvider.getAmbariRepo(anyLong())).thenReturn(new AmbariRepo());
+        DatalakeResources datalakeResources = new DatalakeResources();
+        datalakeResources.setName("name");
+        when(datalakeResourcesService.getDatalakeResourcesById(anyLong())).thenReturn(Optional.of(datalakeResources));
     }
 
     @Test
@@ -218,6 +227,7 @@ public class StackToStackResponseConverterTest extends AbstractEntityConverterTe
         stack.getStackAuthentication().setLoginUserName("cloudbreak");
         stack.setHostgroupNameAsHostname(false);
         stack.setClusterNameAsSubdomain(false);
+        stack.setDatalakeResourceId(1L);
         Resource s3ArnResource = new Resource(ResourceType.S3_ACCESS_ROLE_ARN, "s3Arn", stack);
         stack.setResources(Collections.singleton(s3ArnResource));
         EnvironmentView environmentView = new EnvironmentView();

@@ -26,7 +26,6 @@ public class ClusterToAmbariV2RequestRequestConverter extends AbstractConversion
         ambariV2Request.setBlueprintName(source.getBlueprint().getName());
         prepareRepoDetails(source, ambariV2Request);
         ambariV2Request.setConfigStrategy(null);
-        ambariV2Request.setConnectedCluster(null);
         ambariV2Request.setPassword("");
         ambariV2Request.setUserName("");
         ambariV2Request.setValidateBlueprint(null);

@@ -13,10 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -160,88 +157,6 @@ public class StackRequestToStackConverterTest extends AbstractJsonConverterTest<
         stackRequest.setOrchestrator(orchestratorRequest);
         stackRequest.setRegion(null);
         underTest.convert(stackRequest);
-    }
-
-    @Test
-    public void testConvertSharedServicePreparateWhenSourceTagsAndClusterToAttachFieldsAreNullThenDatalakeIdShouldNotBeSet() throws CloudbreakException {
-        StackRequest source = getRequest("stack.json");
-        source.setApplicationTags(null);
-        InstanceGroup instanceGroup = mock(InstanceGroup.class);
-        when(instanceGroup.getInstanceGroupType()).thenReturn(InstanceGroupType.GATEWAY);
-
-        //GIVEN
-        given(orchestratorTypeResolver.resolveType(any(String.class))).willReturn(OrchestratorType.HOST);
-        given(conversionService.convert(any(InstanceGroupRequest.class), eq(InstanceGroup.class))).willReturn(instanceGroup);
-
-        //WHEN
-        Stack result = underTest.convert(source);
-
-        //THEN
-        Assert.assertNull(result.getDatalakeId());
-    }
-
-    @Test
-    public void testConvertSharedServicePreparateWhenSourceTagsNotNullButNoDatalakeIdEntryInItAndClusterToAttachIsNullThenDatalakeIdShouldNotBeSet()
-            throws CloudbreakException {
-        StackRequest source = getRequest("stack.json");
-        source.setApplicationTags(Collections.emptyMap());
-        InstanceGroup instanceGroup = mock(InstanceGroup.class);
-        when(instanceGroup.getInstanceGroupType()).thenReturn(InstanceGroupType.GATEWAY);
-
-        //GIVEN
-        given(orchestratorTypeResolver.resolveType(any(String.class))).willReturn(OrchestratorType.HOST);
-        given(conversionService.convert(any(InstanceGroupRequest.class), eq(InstanceGroup.class))).willReturn(instanceGroup);
-
-        //WHEN
-        Stack result = underTest.convert(source);
-
-        //THEN
-        Assert.assertNull(result.getDatalakeId());
-    }
-
-    @Test
-    public void testConvertSharedServicePreparateWhenThereIsNoDatalakeIdInSourceTagsButClusterToAttachIsNotNullThenThisDataShoudlBeTheDatalakeId()
-            throws CloudbreakException {
-        Long expectedDataLakeId = 1L;
-        StackRequest source = getRequest("stack.json");
-        source.setApplicationTags(Collections.emptyMap());
-        source.setClusterToAttach(expectedDataLakeId);
-        InstanceGroup instanceGroup = mock(InstanceGroup.class);
-        when(instanceGroup.getInstanceGroupType()).thenReturn(InstanceGroupType.GATEWAY);
-
-        //GIVEN
-        given(orchestratorTypeResolver.resolveType(any(String.class))).willReturn(OrchestratorType.HOST);
-        given(conversionService.convert(any(InstanceGroupRequest.class), eq(InstanceGroup.class))).willReturn(instanceGroup);
-
-        //WHEN
-        Stack result = underTest.convert(source);
-
-        //THEN
-        assertEquals(expectedDataLakeId, result.getDatalakeId());
-    }
-
-    @Test
-    public void testConvertSharedServicePreparateWhenThereIsNoClusterToAttachButApplicationTagsContansDatalakeIdKeyThenItsValueShouldBeSetAsDatalakeId()
-            throws CloudbreakException {
-        String expectedDataLakeId = "1";
-        StackRequest source = getRequest("stack.json");
-        Map<String, String> applicationTags = new LinkedHashMap<>(1);
-        applicationTags.put("datalakeId", expectedDataLakeId);
-        source.setApplicationTags(applicationTags);
-        source.setClusterToAttach(Long.parseLong(expectedDataLakeId) + 1L);
-        InstanceGroup instanceGroup = mock(InstanceGroup.class);
-        when(instanceGroup.getInstanceGroupType()).thenReturn(InstanceGroupType.GATEWAY);
-
-        //GIVEN
-        given(orchestratorTypeResolver.resolveType(any(String.class))).willReturn(OrchestratorType.HOST);
-        given(conversionService.convert(any(InstanceGroupRequest.class), eq(InstanceGroup.class))).willReturn(instanceGroup);
-
-        //WHEN
-        Stack result = underTest.convert(source);
-
-        //THEN
-        assertEquals(Long.valueOf(expectedDataLakeId), result.getDatalakeId());
-        Assert.assertNotEquals(source.getClusterToAttach(), result.getDatalakeId());
     }
 
     @Override

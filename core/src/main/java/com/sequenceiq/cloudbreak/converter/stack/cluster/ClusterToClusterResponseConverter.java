@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -47,10 +48,12 @@ import com.sequenceiq.cloudbreak.domain.RDSConfig;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
+import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.host.HostGroup;
 import com.sequenceiq.cloudbreak.service.ClusterComponentConfigProvider;
 import com.sequenceiq.cloudbreak.service.ServiceEndpointCollector;
 import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.rdsconfig.RdsConfigService;
 import com.sequenceiq.cloudbreak.service.stack.StackService;
 import com.sequenceiq.cloudbreak.util.StackUtil;
@@ -84,6 +87,9 @@ public class ClusterToClusterResponseConverter extends AbstractConversionService
 
     @Inject
     private BlueprintService blueprintService;
+
+    @Inject
+    private DatalakeResourcesService datalakeResourcesService;
 
     @Value("${cb.disable.show.blueprint:false}")
     private boolean disableShowBlueprint;
@@ -196,15 +202,22 @@ public class ClusterToClusterResponseConverter extends AbstractConversionService
 
     private void addSharedServiceResponse(Cluster cluster, ClusterResponse clusterResponse) {
         SharedServiceResponse sharedServiceResponse = new SharedServiceResponse();
-        if (cluster.getStack().getDatalakeId() != null) {
-            sharedServiceResponse.setSharedClusterId(cluster.getStack().getDatalakeId());
-            sharedServiceResponse.setSharedClusterName(stackService.getByIdWithTransaction(cluster.getStack().getDatalakeId()).getName());
+        if (cluster.getStack().getDatalakeResourceId() != null) {
+            Optional<DatalakeResources> datalakeResources = datalakeResourcesService.getDatalakeResourcesById(cluster.getStack().getDatalakeResourceId());
+            if (datalakeResources.isPresent()) {
+                DatalakeResources datalakeResource = datalakeResources.get();
+                sharedServiceResponse.setSharedClusterId(datalakeResource.getDatalakeStackId());
+                sharedServiceResponse.setSharedClusterName(datalakeResource.getName());
+            }
         } else {
-            for (Stack stack : stackService.findClustersConnectedToDatalake(cluster.getStack().getId())) {
-                AttachedClusterInfoResponse attachedClusterInfoResponse = new AttachedClusterInfoResponse();
-                attachedClusterInfoResponse.setId(stack.getId());
-                attachedClusterInfoResponse.setName(stack.getName());
-                sharedServiceResponse.getAttachedClusters().add(attachedClusterInfoResponse);
+            DatalakeResources datalakeResources = datalakeResourcesService.getDatalakeResourcesByDatalakeStackId(cluster.getStack().getId());
+            if (datalakeResources != null) {
+                for (Stack stack : stackService.findClustersConnectedToDatalakeByDatalakeResourceId(datalakeResources.getId())) {
+                    AttachedClusterInfoResponse attachedClusterInfoResponse = new AttachedClusterInfoResponse();
+                    attachedClusterInfoResponse.setId(stack.getId());
+                    attachedClusterInfoResponse.setName(stack.getName());
+                    sharedServiceResponse.getAttachedClusters().add(attachedClusterInfoResponse);
+                }
             }
         }
         clusterResponse.setSharedServiceResponse(sharedServiceResponse);

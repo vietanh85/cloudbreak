@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,7 +40,6 @@ import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.StackType;
 import com.sequenceiq.cloudbreak.domain.stack.StackValidation;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
-import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceGroup;
 import com.sequenceiq.cloudbreak.domain.stack.instance.InstanceMetaData;
 import com.sequenceiq.cloudbreak.domain.workspace.User;
@@ -208,7 +208,7 @@ public class StackCreatorService {
                 stack = stackService.create(stack, platformString, imgFromCatalog, user, workspace);
                 LOGGER.debug("Stack object and its dependencies has been created in {} ms for stack {}", System.currentTimeMillis() - start, stackName);
 
-                decorateWithDatalakeResourceId(stack);
+                decorateWithDatalakeResourceId(stack, stackRequest, workspace);
                 try {
                     createClusterIfNeed(user, workspace, stackRequest, stack, stackName, blueprint);
                 } catch (CloudbreakImageNotFoundException | IOException | TransactionExecutionException e) {
@@ -238,15 +238,12 @@ public class StackCreatorService {
         return response;
     }
 
-    private void decorateWithDatalakeResourceId(Stack stack) {
-        if (stack.getEnvironment() != null && !CollectionUtils.isEmpty(stack.getEnvironment().getDatalakeResources())
+    private void decorateWithDatalakeResourceId(Stack stack, StackRequest stackRequest, Workspace workspace) {
+        if (StringUtils.isNotBlank(stackRequest.getDatalakeResourceName())) {
+            stack.setDatalakeResourceId(datalakeResourcesService.getByNameForWorkspace(stackRequest.getDatalakeResourceName(), workspace).getId());
+        } else if (stack.getEnvironment() != null && !CollectionUtils.isEmpty(stack.getEnvironment().getDatalakeResources())
                 &&  stack.getEnvironment().getDatalakeResources().size() == 1 && stack.getDatalakeResourceId() == null) {
             stack.setDatalakeResourceId(stack.getEnvironment().getDatalakeResources().stream().findFirst().get().getId());
-        } else if (stack.getDatalakeId() != null) {
-            DatalakeResources datalakeResources = datalakeResourcesService.getDatalakeResources(stack.getDatalakeId());
-            if (datalakeResources != null) {
-                stack.setDatalakeResourceId(datalakeResources.getId());
-            }
         }
     }
 
@@ -254,7 +251,7 @@ public class StackCreatorService {
         if (blueprintService.isDatalakeBlueprint(blueprint)) {
             stack.setType(StackType.DATALAKE);
             if (stack.getEnvironment() != null) {
-                Long datalakesInEnv = stackService.countDatalakeStacksInEnvironment(stack.getEnvironment().getId());
+                Long datalakesInEnv = datalakeResourcesService.countDatalakeResourcesInEnvironment(stack.getEnvironment());
                 if (datalakesInEnv >= 1L) {
                     throw new BadRequestException("Only 1 datalake cluster / environment is allowed.");
                 }
@@ -283,8 +280,7 @@ public class StackCreatorService {
 
     private Stack prepareSharedServiceIfNeed(StackRequest stackRequest, Stack stack) {
         if (credentialPrerequisiteService.isCumulusCredential(stack.getCredential().getAttributes())
-                || stack.getDatalakeResourceId() != null
-                || (stackRequest.getClusterRequest() != null && stackRequest.getClusterRequest().getConnectedCluster() != null)) {
+                || stack.getDatalakeResourceId() != null) {
             long start = System.currentTimeMillis();
             stack = sharedServiceConfigProvider.prepareDatalakeConfigs(stack);
             LOGGER.debug("Cluster object and its dependencies has been created in {} ms for stack {}", System.currentTimeMillis() - start, stack.getName());

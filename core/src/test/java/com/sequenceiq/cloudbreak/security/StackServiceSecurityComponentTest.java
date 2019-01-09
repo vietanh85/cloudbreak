@@ -43,6 +43,7 @@ import com.sequenceiq.cloudbreak.service.TransactionService;
 import com.sequenceiq.cloudbreak.service.TransactionService.TransactionRuntimeExecutionException;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.service.credential.OpenSshPublicKeyValidator;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.decorator.StackResponseDecorator;
 import com.sequenceiq.cloudbreak.service.events.CloudbreakEventService;
 import com.sequenceiq.cloudbreak.service.image.ImageService;
@@ -187,6 +188,9 @@ public class StackServiceSecurityComponentTest extends SecurityComponentTestBase
 
         @MockBean
         private WorkspaceService workspaceService;
+
+        @MockBean
+        private DatalakeResourcesService datalakeResourcesService;
 
         @Bean
         public StackRepository stackRepository() {

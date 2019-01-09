@@ -1,8 +1,9 @@
 package com.sequenceiq.cloudbreak.converter.v2;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,7 +26,6 @@ import org.springframework.core.convert.ConversionService;
 
 import com.sequenceiq.cloudbreak.api.model.FailurePolicyRequest;
 import com.sequenceiq.cloudbreak.api.model.NetworkRequest;
-import com.sequenceiq.cloudbreak.api.model.SharedServiceRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.StackAuthenticationRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.StackRequest;
 import com.sequenceiq.cloudbreak.api.model.stack.cluster.ClusterRequest;
@@ -126,20 +126,20 @@ public class StackV2RequestToStackRequestConverterTest {
         when(conversionService.convert(source.getNetwork(), NetworkRequest.class)).thenReturn(NETWORK_REQUEST);
         StackRequest result = underTest.convert(source);
 
-        Assert.assertEquals(source.getGeneral().getName(), result.getName());
-        Assert.assertEquals(source.getPlatformVariant(), result.getPlatformVariant());
-        Assert.assertEquals(source.getAmbariVersion(), result.getAmbariVersion());
-        Assert.assertEquals(source.getHdpVersion(), result.getHdpVersion());
+        assertEquals(source.getGeneral().getName(), result.getName());
+        assertEquals(source.getPlatformVariant(), result.getPlatformVariant());
+        assertEquals(source.getAmbariVersion(), result.getAmbariVersion());
+        assertEquals(source.getHdpVersion(), result.getHdpVersion());
         Assert.assertTrue(result.getParameters().isEmpty());
         Assert.assertTrue(result.getInstanceGroups().isEmpty());
-        Assert.assertEquals(source.getFailurePolicy(), result.getFailurePolicy());
-        Assert.assertEquals(source.getStackAuthentication(), result.getStackAuthentication());
-        Assert.assertEquals(NETWORK_REQUEST, result.getNetwork());
-        Assert.assertEquals("SALT", result.getOrchestrator().getType());
-        Assert.assertEquals(source.getFlexId(), result.getFlexId());
-        Assert.assertEquals(source.getGeneral().getCredentialName(), result.getCredentialName());
-        Assert.assertEquals(source.getGeneral().getEnvironmentName(), result.getEnvironment());
-        Assert.assertEquals(CLOUD_PLATFORM, result.getCloudPlatform());
+        assertEquals(source.getFailurePolicy(), result.getFailurePolicy());
+        assertEquals(source.getStackAuthentication(), result.getStackAuthentication());
+        assertEquals(NETWORK_REQUEST, result.getNetwork());
+        assertEquals("SALT", result.getOrchestrator().getType());
+        assertEquals(source.getFlexId(), result.getFlexId());
+        assertEquals(source.getGeneral().getCredentialName(), result.getCredentialName());
+        assertEquals(source.getGeneral().getEnvironmentName(), result.getEnvironment());
+        assertEquals(CLOUD_PLATFORM, result.getCloudPlatform());
         verify(conversionService, times(1)).convert(any(), any());
         verify(restRequestThreadLocalService, times(1)).getCloudbreakUser();
     }
@@ -166,10 +166,10 @@ public class StackV2RequestToStackRequestConverterTest {
         StackRequest result = underTest.convert(source);
 
         Assert.assertFalse(result.getParameters().isEmpty());
-        Assert.assertEquals(parameters.size(), result.getParameters().size());
+        assertEquals(parameters.size(), result.getParameters().size());
         parameters.forEach((s, s2) -> {
             Assert.assertTrue(result.getParameters().containsKey(s));
-            Assert.assertEquals(s2, result.getParameters().get(s));
+            assertEquals(s2, result.getParameters().get(s));
         });
         verify(conversionService, times(1)).convert(any(), any());
         verify(restRequestThreadLocalService, times(1)).getCloudbreakUser();
@@ -186,8 +186,8 @@ public class StackV2RequestToStackRequestConverterTest {
 
         StackRequest result = underTest.convert(source);
 
-        Assert.assertEquals(placementSettings.getAvailabilityZone(), result.getAvailabilityZone());
-        Assert.assertEquals(placementSettings.getRegion(), result.getRegion());
+        assertEquals(placementSettings.getAvailabilityZone(), result.getAvailabilityZone());
+        assertEquals(placementSettings.getRegion(), result.getRegion());
         verify(conversionService, times(1)).convert(any(), any());
         verify(restRequestThreadLocalService, times(1)).getCloudbreakUser();
     }
@@ -240,21 +240,21 @@ public class StackV2RequestToStackRequestConverterTest {
         Assert.assertFalse(result.getApplicationTags().isEmpty());
         tags.getApplicationTags().forEach((s, s2) -> {
             Assert.assertTrue(result.getApplicationTags().containsKey(s));
-            Assert.assertEquals(s2, result.getApplicationTags().get(s));
+            assertEquals(s2, result.getApplicationTags().get(s));
         });
 
         Assert.assertNotNull(result.getDefaultTags());
         Assert.assertFalse(result.getDefaultTags().isEmpty());
         tags.getDefaultTags().forEach((s, s2) -> {
             Assert.assertTrue(result.getDefaultTags().containsKey(s));
-            Assert.assertEquals(s2, result.getDefaultTags().get(s));
+            assertEquals(s2, result.getDefaultTags().get(s));
         });
 
         Assert.assertNotNull(result.getUserDefinedTags());
         Assert.assertFalse(result.getUserDefinedTags().isEmpty());
         tags.getUserDefinedTags().forEach((s, s2) -> {
             Assert.assertTrue(result.getUserDefinedTags().containsKey(s));
-            Assert.assertEquals(s2, result.getUserDefinedTags().get(s));
+            assertEquals(s2, result.getUserDefinedTags().get(s));
         });
         verify(conversionService, times(1)).convert(any(), any());
         verify(restRequestThreadLocalService, times(1)).getCloudbreakUser();
@@ -273,7 +273,7 @@ public class StackV2RequestToStackRequestConverterTest {
         StackRequest result = underTest.convert(source);
 
         Assert.assertNotNull(result.getInstanceGroups());
-        Assert.assertEquals(source.getInstanceGroups().size(), result.getInstanceGroups().size());
+        assertEquals(source.getInstanceGroups().size(), result.getInstanceGroups().size());
         instanceGroupRequest.forEach(request -> Assert.assertTrue(result.getInstanceGroups().contains(request)));
 
         verify(conversionService, times(instanceGroupV2Requests.size() + 1)).convert(any(), any());
@@ -305,8 +305,8 @@ public class StackV2RequestToStackRequestConverterTest {
 
         StackRequest result = underTest.convert(source);
 
-        Assert.assertEquals(source.getImageSettings().getImageCatalog(), result.getImageCatalog());
-        Assert.assertEquals(source.getImageSettings().getImageId(), result.getImageId());
+        assertEquals(source.getImageSettings().getImageCatalog(), result.getImageCatalog());
+        assertEquals(source.getImageSettings().getImageId(), result.getImageId());
         verify(conversionService, times(1)).convert(any(), any());
         verify(restRequestThreadLocalService, times(1)).getCloudbreakUser();
     }
@@ -404,34 +404,31 @@ public class StackV2RequestToStackRequestConverterTest {
     }
 
     @Test
-    public void testConvertWhenClusterIsNullThenThereShouldBeNoConversionAndSharedServiceConfigProviderCall() {
+    public void testConvertWhenClusterIsNullThenThereShouldBeNoConversion() {
         StackV2Request source = createStackV2Request();
         source.setCluster(null);
 
         StackRequest result = underTest.convert(source);
 
         Assert.assertNull(result.getClusterRequest());
-        verify(sharedServiceConfigProvider, times(0)).isConfigured(any());
     }
 
     @Test
-    public void testConvertWhenClusterIsNotNullButTheInstanceGroupsAreEmptyAndTheClusterIsNotConfiguredBySharedServiceConfigProvider() {
+    public void testConvertWhenClusterIsNotNullButTheInstanceGroupsAreEmptyAndTheClusterIsNotAttached() {
         StackV2Request source = createStackV2Request();
         source.setCluster(createClusterV2Request());
         ClusterRequest convertedRequest = createClusterRequest();
         when(conversionService.convert(source.getCluster(), ClusterRequest.class)).thenReturn(convertedRequest);
-        when(sharedServiceConfigProvider.isConfigured(source.getCluster())).thenReturn(false);
 
         StackRequest result = underTest.convert(source);
 
-        Assert.assertEquals(convertedRequest, result.getClusterRequest());
-        Assert.assertEquals(source.getGeneral().getName(), result.getClusterRequest().getName());
+        assertEquals(convertedRequest, result.getClusterRequest());
+        assertEquals(source.getGeneral().getName(), result.getClusterRequest().getName());
         verify(conversionService, times(2)).convert(any(), any());
-        verify(sharedServiceConfigProvider, times(1)).isConfigured(source.getCluster());
     }
 
     @Test
-    public void testConvertWhenClusterIsNotNullAndTheInstanceGroupIsNotEmptyButTheClusterIsNotConfiguredBySharedServiceConfigProvider() {
+    public void testConvertWhenClusterIsNotNullAndTheInstanceGroupIsNotEmptyButTheClusterIsNotAttached() {
         StackV2Request source = createStackV2Request();
         source.setCluster(createClusterV2Request());
         List<InstanceGroupV2Request> instanceGroupV2Requests = createInstanceGroupV2Request();
@@ -442,39 +439,33 @@ public class StackV2RequestToStackRequestConverterTest {
         when(conversionService.convert(instanceGroupV2Requests.get(1), InstanceGroupRequest.class)).thenReturn(instanceGroupRequest.get(1));
         when(conversionService.convert(instanceGroupV2Requests.get(1), HostGroupRequest.class)).thenReturn(hostGroupRequest.get(1));
         source.setInstanceGroups(instanceGroupV2Requests);
-        when(sharedServiceConfigProvider.isConfigured(source.getCluster())).thenReturn(false);
         ClusterRequest convertedRequest = createClusterRequest();
         when(conversionService.convert(source.getCluster(), ClusterRequest.class)).thenReturn(convertedRequest);
 
         StackRequest result = underTest.convert(source);
 
-        Assert.assertEquals(convertedRequest, result.getClusterRequest());
-        Assert.assertEquals(source.getGeneral().getName(), result.getClusterRequest().getName());
+        assertEquals(convertedRequest, result.getClusterRequest());
+        assertEquals(source.getGeneral().getName(), result.getClusterRequest().getName());
         verify(conversionService, times(hostGroupRequest.size() + instanceGroupRequest.size() + 2)).convert(any(), any());
-        verify(sharedServiceConfigProvider, times(1)).isConfigured(source.getCluster());
     }
 
     @Test
-    public void testConvertWhenClusterIsNotNullAndIsConfiguredByTheSharedServiceProvider() {
+    public void testConvertWhenClusterIsNotNullAndAttached() {
         StackV2Request source = createStackV2Request();
         source.setCluster(createClusterV2Request());
+        source.setDatalakeResourceName("dlName");
         ClusterRequest convertedRequest = createClusterRequest();
         when(conversionService.convert(source.getCluster(), ClusterRequest.class)).thenReturn(convertedRequest);
-        when(sharedServiceConfigProvider.isConfigured(source.getCluster())).thenReturn(true);
         Stack mockStack = mock(Stack.class);
-        when(stackService.getByNameInWorkspace(eq(source.getCluster().getSharedService().getSharedCluster()), anyLong())).thenReturn(mockStack);
         Long id = 1L;
         when(mockStack.getId()).thenReturn(id);
 
         StackRequest result = underTest.convert(source);
 
-        Assert.assertEquals(convertedRequest, result.getClusterRequest());
-        Assert.assertEquals(source.getGeneral().getName(), result.getClusterRequest().getName());
-        Assert.assertEquals(id, result.getClusterToAttach());
+        assertEquals(convertedRequest, result.getClusterRequest());
+        assertEquals(source.getGeneral().getName(), result.getClusterRequest().getName());
+        assertEquals(source.getDatalakeResourceName(), result.getDatalakeResourceName());
         verify(conversionService, times(2)).convert(any(), any());
-        verify(sharedServiceConfigProvider, times(1)).isConfigured(source.getCluster());
-        verify(stackService, times(1)).getByNameInWorkspace(eq(source.getCluster().getSharedService().getSharedCluster()), anyLong());
-        verify(mockStack, times(1)).getId();
         verify(restRequestThreadLocalService, times(1)).getCloudbreakUser();
     }
 
@@ -538,11 +529,7 @@ public class StackV2RequestToStackRequestConverterTest {
     }
 
     private ClusterV2Request createClusterV2Request() {
-        ClusterV2Request request = new ClusterV2Request();
-        SharedServiceRequest sharedServiceRequest = new SharedServiceRequest();
-        sharedServiceRequest.setSharedCluster("shared cluster");
-        request.setSharedService(sharedServiceRequest);
-        return request;
+        return new ClusterV2Request();
     }
 
     private ClusterRequest createClusterRequest() {

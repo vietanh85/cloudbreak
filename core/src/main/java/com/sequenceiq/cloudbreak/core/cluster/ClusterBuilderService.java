@@ -2,6 +2,8 @@ package com.sequenceiq.cloudbreak.core.cluster;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
@@ -14,6 +16,9 @@ import com.sequenceiq.cloudbreak.service.stack.StackService;
 
 @Service
 public class ClusterBuilderService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClusterBuilderService.class);
+
     @Inject
     private StackService stackService;
 
