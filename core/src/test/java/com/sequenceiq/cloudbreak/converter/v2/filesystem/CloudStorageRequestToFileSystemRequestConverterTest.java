@@ -8,8 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,9 +19,8 @@ import org.mockito.MockitoAnnotations;
 import com.sequenceiq.cloudbreak.api.model.FileSystemRequest;
 import com.sequenceiq.cloudbreak.api.model.filesystem.FileSystemType;
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
-import com.sequenceiq.cloudbreak.api.model.v2.StorageLocationRequest;
-import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsGen2CloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsCloudStorageParameters;
+import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsGen2CloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.CloudStorageParameters;
 import com.sequenceiq.cloudbreak.common.type.APIResourceType;
 import com.sequenceiq.cloudbreak.service.MissingResourceNameGenerator;
@@ -33,6 +31,14 @@ public class CloudStorageRequestToFileSystemRequestConverterTest {
     private static final String TEST_FILE_SYSTEM_NAME = "fsName";
 
     private static final FileSystemType TEST_FILE_SYSTEM = WASB;
+
+    private static final Map<String, String> OP_LOGS = Map.of("oK1", "oV1", "oK2", "oV2");
+
+    private static final Map<String, String> NOTEBOOK = Map.of("nK1", "nV1", "nK2", "nV2");
+
+    private static final Map<String, String> WAREHOUSE = Map.of("wK1", "wV1", "wK2", "wV2");
+
+    private static final Map<String, String> AUDIT = Map.of("aK1", "aV1", "aK2", "aV2");
 
     @InjectMocks
     private CloudStorageRequestToFileSystemRequestConverter underTest;
@@ -56,14 +62,17 @@ public class CloudStorageRequestToFileSystemRequestConverterTest {
     }
 
     @Test
-    public void testConvertCheckAllParamsHasPassedProperlyWhenOneOfTheFileSystemTypeIsNotNull() {
+    public void testConvertCheckAllParamsArePassedProperlyWhenOneOfTheFileSystemTypeIsNotNull() {
         AdlsCloudStorageParameters adls = new AdlsCloudStorageParameters();
-        Set<StorageLocationRequest> storageLocations = new LinkedHashSet<>();
         when(request.getAdls()).thenReturn(adls);
         when(request.getWasb()).thenReturn(null);
         when(request.getGcs()).thenReturn(null);
         when(request.getS3()).thenReturn(null);
         when(request.getAdlsGen2()).thenReturn(null);
+        when(request.getOpLogs()).thenReturn(OP_LOGS);
+        when(request.getNotebook()).thenReturn(NOTEBOOK);
+        when(request.getWarehouse()).thenReturn(WAREHOUSE);
+        when(request.getAudit()).thenReturn(AUDIT);
         when(fileSystemResolver.propagateConfiguration(request)).thenReturn(cloudStorageParameters);
         when(cloudStorageParameters.getType()).thenReturn(TEST_FILE_SYSTEM);
 
@@ -76,21 +85,27 @@ public class CloudStorageRequestToFileSystemRequestConverterTest {
         assertNull(result.getS3());
         assertNull(result.getWasb());
         assertNull(result.getAdlsGen2());
-        assertEquals(storageLocations, result.getLocations());
+        assertEquals(OP_LOGS, result.getOpLogs());
+        assertEquals(NOTEBOOK, result.getNotebook());
+        assertEquals(WAREHOUSE, result.getWarehouse());
+        assertEquals(AUDIT, result.getAudit());
         assertEquals(TEST_FILE_SYSTEM.name(), result.getType());
         verify(nameGenerator, times(1)).generateName(APIResourceType.FILESYSTEM);
         verify(fileSystemResolver, times(1)).propagateConfiguration(request);
     }
 
     @Test
-    public void testConvertCheckAllParamsHasPassedProperlyWhenAdlsGen2IsNotNull() {
+    public void testConvertCheckAllParamsArePassedProperlyWhenAdlsGen2IsNotNull() {
         AdlsGen2CloudStorageParameters adlsGen2 = new AdlsGen2CloudStorageParameters();
-        Set<StorageLocationRequest> storageLocations = new LinkedHashSet<>();
         when(request.getAdlsGen2()).thenReturn(adlsGen2);
         when(request.getAdls()).thenReturn(null);
         when(request.getWasb()).thenReturn(null);
         when(request.getGcs()).thenReturn(null);
         when(request.getS3()).thenReturn(null);
+        when(request.getOpLogs()).thenReturn(OP_LOGS);
+        when(request.getNotebook()).thenReturn(NOTEBOOK);
+        when(request.getWarehouse()).thenReturn(WAREHOUSE);
+        when(request.getAudit()).thenReturn(AUDIT);
         when(fileSystemResolver.propagateConfiguration(request)).thenReturn(cloudStorageParameters);
         when(cloudStorageParameters.getType()).thenReturn(TEST_FILE_SYSTEM);
 
@@ -103,7 +118,10 @@ public class CloudStorageRequestToFileSystemRequestConverterTest {
         assertNull(result.getS3());
         assertNull(result.getWasb());
         assertNull(result.getAdls());
-        assertEquals(storageLocations, result.getLocations());
+        assertEquals(OP_LOGS, result.getOpLogs());
+        assertEquals(NOTEBOOK, result.getNotebook());
+        assertEquals(WAREHOUSE, result.getWarehouse());
+        assertEquals(AUDIT, result.getAudit());
         assertEquals(TEST_FILE_SYSTEM.name(), result.getType());
         verify(nameGenerator, times(1)).generateName(APIResourceType.FILESYSTEM);
         verify(fileSystemResolver, times(1)).propagateConfiguration(request);

@@ -1,5 +1,9 @@
 package com.sequenceiq.it.cloudbreak.newway.cloud;
 
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
+import static com.sequenceiq.it.cloudbreak.filesystem.CloudStorageTypePathPrefix.WASB;
+
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.WasbCloudStorageParameters;
 import com.sequenceiq.it.cloudbreak.newway.RdsConfig;
@@ -7,10 +11,6 @@ import com.sequenceiq.it.cloudbreak.newway.TestParameter;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Azure.Database.Hive;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Azure.Database.Ranger;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Azure.Storage.Wasb;
-
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
-import static com.sequenceiq.it.cloudbreak.filesystem.CloudStorageTypePathPrefix.WASB;
 
 public class AzureWasbResourceHelper extends ResourceHelper<WasbCloudStorageParameters> {
 
@@ -44,7 +44,7 @@ public class AzureWasbResourceHelper extends ResourceHelper<WasbCloudStoragePara
     public CloudStorageRequest getCloudStorageRequestForDatalake() {
         var request = new CloudStorageRequest();
         request.setWasb(getCloudStorage());
-        request.setLocations(defaultDatalakeStorageLocations(WASB, getTestParameter().get(Wasb.STORAGE_NAME)));
+        setStorageLocations(request, defaultDatalakeStorageLocations(WASB, getTestParameter().get(Wasb.STORAGE_NAME)));
         return request;
     }
 

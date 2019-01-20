@@ -271,7 +271,10 @@ public class ModelDescriptions {
         public static final String UPTIME = "duration - how long the cluster is running in milliseconds";
         public static final String PROXY_NAME = "proxy configuration name for the cluster";
         public static final String PROXY_CONFIG_ID = "proxy configuration id for the cluster";
-        public static final String LOCATIONS = "cloud storage locations";
+        public static final String OP_LOGS = "cloud storage locations for category 'operational logs'";
+        public static final String NOTEBOOK = "cloud storage locations for category 'notebook'";
+        public static final String WAREHOUSE = "cloud storage locations for category 'warehouse'";
+        public static final String AUDIT = "cloud storage locations for category 'audit'";
         public static final String STATUS_MAINTENANCE_MODE = "maintenance mode status";
         public static final String SECURE = "tells wether the cluster is secured or not";
         public static final String KERBEROSCONFIG_NAME = "Kerberos config name for the cluster";
@@ -399,7 +402,10 @@ public class ModelDescriptions {
         public static final String TYPE = "type of the filesystem";
         public static final String DEFAULT = "true if fs.defaultFS should point to this filesystem";
         public static final String PROPERTIES = "configuration of the filesystem access as key-value pairs";
-        public static final String LOCATIONS = "configuration of the filesystem location";
+        public static final String OP_LOGS = "configuration of the filesystem locations for category 'operational logs'";
+        public static final String NOTEBOOK = "configuration of the filesystem locations for category 'notebook'";
+        public static final String WAREHOUSE = "configuration of the filesystem locations for category 'warehouse'";
+        public static final String AUDIT = "configuration of the filesystem locations for category 'audit'";
     }
 
     public static class RecipeModelDescription {

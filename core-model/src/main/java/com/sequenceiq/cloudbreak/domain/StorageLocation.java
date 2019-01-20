@@ -1,22 +1,42 @@
 package com.sequenceiq.cloudbreak.domain;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 
 import java.util.Objects;
 
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonAutoDetect(fieldVisibility = ANY, getterVisibility = NONE, setterVisibility = NONE)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class StorageLocation implements ProvisionEntity {
+
+    private String id;
+
+    private StorageLocationCategory category;
 
     private String configFile;
 
     private String property;
 
     private String value;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public StorageLocationCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(StorageLocationCategory category) {
+        this.category = category;
+    }
 
     public String getConfigFile() {
         return configFile;
@@ -51,13 +71,16 @@ public class StorageLocation implements ProvisionEntity {
             return false;
         }
         StorageLocation that = (StorageLocation) o;
-        return Objects.equals(getConfigFile(), that.getConfigFile())
+        return Objects.equals(getId(), that.getId())
+                && Objects.equals(getCategory(), that.getCategory())
+                && Objects.equals(getConfigFile(), that.getConfigFile())
                 && Objects.equals(getProperty(), that.getProperty())
                 && Objects.equals(getValue(), that.getValue());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getConfigFile(), getProperty(), getValue());
+        return Objects.hash(getId(), getCategory(), getConfigFile(), getProperty(), getValue());
     }
+
 }

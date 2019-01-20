@@ -1,6 +1,8 @@
 {
   "entries": [
     {
+      "id": "clusterDaemonLogs",
+      "category": "OP_LOGS",
       "propertyName": "logfeeder.cloud.storage.base.path",
       "propertyFile": "logfeeder-properties",
       "description": "This is the directory where cluster daemon logs will be stored by Log Feeder",
@@ -11,6 +13,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "zeppelinNotebookRoot",
+      "category": "NOTEBOOK",
       "propertyName": "zeppelin.notebook.dir",
       "propertyFile": "zeppelin-site",
       "description": "The directory where Zeppelin notebooks are saved",
@@ -21,6 +25,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "tezHistoryRoot",
+      "category": "WAREHOUSE",
       "propertyName": "tez.history.logging.proto-base-dir",
       "propertyFile": "tez-site",
       "description": "The directory into which Tez/Hive job history data will be written",
@@ -31,6 +37,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "yarnApplicationLogs",
+      "category": "OP_LOGS",
       "propertyName": "yarn.nodemanager.remote-app-log-dir",
       "propertyFile": "yarn-site",
       "description": "This is the directory where aggregated application logs will be stored by YARN",
@@ -41,6 +49,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "sparkEventLogs",
+      "category": "OP_LOGS",
       "propertyName": "spark.eventLog.dir",
       "propertyFile": "spark2-defaults",
       "description": "The directory into which Spark events are logged",
@@ -51,6 +61,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "sparkHistoryRoot",
+      "category": "OP_LOGS",
       "propertyName": "spark.history.fs.logDirectory",
       "propertyFile": "spark2-defaults",
       "description": "The directory containing application event logs to load into Spark History Server",
@@ -61,6 +73,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "sparkSqlWarehouse",
+      "category": "WAREHOUSE",
       "propertyName": "spark.sql.warehouse.dir",
       "propertyFile": "spark2-defaults",
       "description": "Spark SQL stores the table data for managed tables in the warehouse directory",
@@ -71,6 +85,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "hiveWarehouse",
+      "category": "WAREHOUSE",
       "propertyName": "hive.metastore.warehouse.dir",
       "propertyFile": "hive-site",
       "description": "Hive stores the table data for managed tables in the warehouse directory",
@@ -81,6 +97,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "hiveExternalWarehouse",
+      "category": "WAREHOUSE",
       "propertyName": "hive.metastore.warehouse.external.dir",
       "propertyFile": "hive-site",
       "description": "Hive stores the table data for external tables in the warehouse directory",
@@ -91,6 +109,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "rangerAudit",
+      "category": "AUDIT",
       "propertyName": "xasecure.audit.destination.hdfs.dir",
       "propertyFile": "ranger-env",
       "description": "This is the directory where audit logs will be stored",
@@ -101,6 +121,8 @@
       "supportedStorages": ["ADLS", "WASB", "S3", "GCS", "ADLS_GEN_2"]
     },
     {
+      "id": "rangerHiveAudit",
+      "category": "AUDIT",
       "propertyName": "xasecure.audit.destination.hdfs.dir",
       "propertyFile": "ranger-hive-audit",
       "description": "This is the directory where audit logs will be stored by Hive",

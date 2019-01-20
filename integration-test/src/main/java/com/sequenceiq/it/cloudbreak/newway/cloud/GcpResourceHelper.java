@@ -1,5 +1,9 @@
 package com.sequenceiq.it.cloudbreak.newway.cloud;
 
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
+import static com.sequenceiq.it.cloudbreak.filesystem.CloudStorageTypePathPrefix.GCS;
+
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.GcsCloudStorageParameters;
 import com.sequenceiq.it.cloudbreak.newway.RdsConfig;
@@ -7,10 +11,6 @@ import com.sequenceiq.it.cloudbreak.newway.TestParameter;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Gcp.Database.Hive;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Gcp.Database.Ranger;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Gcp.Storage;
-
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
-import static com.sequenceiq.it.cloudbreak.filesystem.CloudStorageTypePathPrefix.GCS;
 
 public class GcpResourceHelper extends ResourceHelper<GcsCloudStorageParameters> {
 
@@ -44,7 +44,7 @@ public class GcpResourceHelper extends ResourceHelper<GcsCloudStorageParameters>
     public CloudStorageRequest getCloudStorageRequestForDatalake() {
         var request = new CloudStorageRequest();
         request.setGcs(getCloudStorage());
-        request.setLocations(defaultDatalakeStorageLocations(GCS, getTestParameter().get(Storage.BUCKET_NAME)));
+        setStorageLocations(request, defaultDatalakeStorageLocations(GCS, getTestParameter().get(Storage.BUCKET_NAME)));
         return request;
     }
 

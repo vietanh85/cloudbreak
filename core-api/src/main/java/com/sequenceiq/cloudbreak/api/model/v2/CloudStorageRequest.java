@@ -1,7 +1,7 @@
 package com.sequenceiq.cloudbreak.api.model.v2;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -9,12 +9,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.sequenceiq.cloudbreak.api.model.JsonEntity;
-import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsGen2CloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsCloudStorageParameters;
+import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsGen2CloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.GcsCloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.S3CloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.WasbCloudStorageParameters;
-import com.sequenceiq.cloudbreak.doc.ModelDescriptions;
+import com.sequenceiq.cloudbreak.doc.ModelDescriptions.ClusterModelDescription;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -44,9 +44,18 @@ public class CloudStorageRequest implements JsonEntity {
     @ApiModelProperty
     private AdlsGen2CloudStorageParameters adlsGen2;
 
-    @Valid
-    @ApiModelProperty(value = ModelDescriptions.ClusterModelDescription.LOCATIONS)
-    private Set<StorageLocationRequest> locations = new HashSet<>();
+    // TODO add request validation for storage location categories
+    @ApiModelProperty(ClusterModelDescription.OP_LOGS)
+    private Map<String, String> opLogs = new HashMap<>();
+
+    @ApiModelProperty(ClusterModelDescription.NOTEBOOK)
+    private Map<String, String> notebook = new HashMap<>();
+
+    @ApiModelProperty(ClusterModelDescription.WAREHOUSE)
+    private Map<String, String> warehouse = new HashMap<>();
+
+    @ApiModelProperty(ClusterModelDescription.AUDIT)
+    private Map<String, String> audit = new HashMap<>();
 
     public AdlsCloudStorageParameters getAdls() {
         return adls;
@@ -80,14 +89,6 @@ public class CloudStorageRequest implements JsonEntity {
         this.s3 = s3;
     }
 
-    public Set<StorageLocationRequest> getLocations() {
-        return locations;
-    }
-
-    public void setLocations(Set<StorageLocationRequest> locations) {
-        this.locations = locations;
-    }
-
     public AdlsGen2CloudStorageParameters getAdlsGen2() {
         return adlsGen2;
     }
@@ -95,4 +96,37 @@ public class CloudStorageRequest implements JsonEntity {
     public void setAdlsGen2(AdlsGen2CloudStorageParameters adlsGen2) {
         this.adlsGen2 = adlsGen2;
     }
+
+    public Map<String, String> getOpLogs() {
+        return opLogs;
+    }
+
+    public void setOpLogs(Map<String, String> opLogs) {
+        this.opLogs = opLogs;
+    }
+
+    public Map<String, String> getNotebook() {
+        return notebook;
+    }
+
+    public void setNotebook(Map<String, String> notebook) {
+        this.notebook = notebook;
+    }
+
+    public Map<String, String> getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Map<String, String> warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public Map<String, String> getAudit() {
+        return audit;
+    }
+
+    public void setAudit(Map<String, String> audit) {
+        this.audit = audit;
+    }
+
 }

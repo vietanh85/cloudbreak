@@ -125,6 +125,7 @@ public class StackCommonService implements StackEndpoint {
     private CloudbreakRestRequestThreadLocalService restRequestThreadLocalService;
 
     public StackResponse createInWorkspace(StackRequest stackRequest, CloudbreakUser cloudbreakUser, User user, Workspace workspace) {
+        // TODO validate & expand cloud storage locations (based on blueprint services)
         return stackCreatorService.createStack(cloudbreakUser, user, workspace, stackRequest);
     }
 
@@ -287,6 +288,7 @@ public class StackCommonService implements StackEndpoint {
     }
 
     public GeneratedBlueprintResponse postStackForBlueprint(StackV2Request stackRequest) {
+        // TODO validate & expand cloud storage locations (based on blueprint services)
         TemplatePreparationObject templatePreparationObject = conversionService.convert(stackRequest, TemplatePreparationObject.class);
         String blueprintText = centralBlueprintUpdater.getBlueprintText(templatePreparationObject);
         return new GeneratedBlueprintResponse(blueprintText);

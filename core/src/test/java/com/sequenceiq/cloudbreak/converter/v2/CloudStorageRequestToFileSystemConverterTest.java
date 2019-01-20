@@ -31,6 +31,7 @@ import com.sequenceiq.cloudbreak.api.model.v2.filesystem.GcsCloudStorageParamete
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.WasbCloudStorageParameters;
 import com.sequenceiq.cloudbreak.common.model.user.CloudbreakUser;
 import com.sequenceiq.cloudbreak.common.type.APIResourceType;
+import com.sequenceiq.cloudbreak.converter.util.FileSystemConvertUtil;
 import com.sequenceiq.cloudbreak.converter.v2.filesystem.CloudStorageRequestToFileSystemConverter;
 import com.sequenceiq.cloudbreak.domain.FileSystem;
 import com.sequenceiq.cloudbreak.service.MissingResourceNameGenerator;
@@ -59,6 +60,9 @@ public class CloudStorageRequestToFileSystemConverterTest {
 
     @Mock
     private FileSystemResolver fileSystemResolver;
+
+    @Mock
+    private FileSystemConvertUtil fileSystemConvertUtil;
 
     @Mock
     private ConversionService conversionService;

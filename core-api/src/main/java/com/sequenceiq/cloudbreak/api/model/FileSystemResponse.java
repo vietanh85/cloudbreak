@@ -1,13 +1,13 @@
 package com.sequenceiq.cloudbreak.api.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sequenceiq.cloudbreak.api.model.v2.StorageLocationResponse;
 import com.sequenceiq.cloudbreak.doc.ModelDescriptions;
+import com.sequenceiq.cloudbreak.doc.ModelDescriptions.FileSystem;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,8 +19,17 @@ public class FileSystemResponse extends FileSystemBase {
     @ApiModelProperty(ModelDescriptions.ID)
     private Long id;
 
-    @ApiModelProperty(ModelDescriptions.FileSystem.LOCATIONS)
-    private Set<StorageLocationResponse> locations = new HashSet<>();
+    @ApiModelProperty(FileSystem.OP_LOGS)
+    private Map<String, String> opLogs = new HashMap<>();
+
+    @ApiModelProperty(FileSystem.NOTEBOOK)
+    private Map<String, String> notebook = new HashMap<>();
+
+    @ApiModelProperty(FileSystem.WAREHOUSE)
+    private Map<String, String> warehouse = new HashMap<>();
+
+    @ApiModelProperty(FileSystem.AUDIT)
+    private Map<String, String> audit = new HashMap<>();
 
     @JsonProperty("id")
     public Long getId() {
@@ -31,11 +40,36 @@ public class FileSystemResponse extends FileSystemBase {
         this.id = id;
     }
 
-    public Set<StorageLocationResponse> getLocations() {
-        return locations;
+    public Map<String, String> getOpLogs() {
+        return opLogs;
     }
 
-    public void setLocations(Set<StorageLocationResponse> locations) {
-        this.locations = locations;
+    public void setOpLogs(Map<String, String> opLogs) {
+        this.opLogs = opLogs;
     }
+
+    public Map<String, String> getNotebook() {
+        return notebook;
+    }
+
+    public void setNotebook(Map<String, String> notebook) {
+        this.notebook = notebook;
+    }
+
+    public Map<String, String> getWarehouse() {
+        return warehouse;
+    }
+
+    public void setWarehouse(Map<String, String> warehouse) {
+        this.warehouse = warehouse;
+    }
+
+    public Map<String, String> getAudit() {
+        return audit;
+    }
+
+    public void setAudit(Map<String, String> audit) {
+        this.audit = audit;
+    }
+
 }

@@ -1,5 +1,9 @@
 package com.sequenceiq.it.cloudbreak.newway.cloud;
 
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
+import static com.sequenceiq.it.cloudbreak.filesystem.CloudStorageTypePathPrefix.S3;
+
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.S3CloudStorageParameters;
 import com.sequenceiq.it.cloudbreak.newway.RdsConfig;
@@ -7,10 +11,6 @@ import com.sequenceiq.it.cloudbreak.newway.TestParameter;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Aws.Database.Hive;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Aws.Database.Ranger;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Aws.Storage;
-
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
-import static com.sequenceiq.it.cloudbreak.filesystem.CloudStorageTypePathPrefix.S3;
 
 public class AwsResourceHelper extends ResourceHelper<S3CloudStorageParameters> {
 
@@ -44,7 +44,7 @@ public class AwsResourceHelper extends ResourceHelper<S3CloudStorageParameters> 
     public CloudStorageRequest getCloudStorageRequestForDatalake() {
         var request = new CloudStorageRequest();
         request.setS3(getCloudStorage());
-        request.setLocations(defaultDatalakeStorageLocations(S3, getTestParameter().get(Storage.S3_BUCKET_NAME)));
+        setStorageLocations(request, defaultDatalakeStorageLocations(S3, getTestParameter().get(Storage.S3_BUCKET_NAME)));
         return request;
     }
 

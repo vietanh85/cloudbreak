@@ -14,7 +14,7 @@ public enum FileSystemType {
 
     ADLS(AdlsFileSystem.class, "adl", "{{{ accountName }}}.azuredatalakestore.net/{{{ storageName }}}"),
 
-    ADLS_GEN_2(AdlsGen2FileSystem.class, "abfs", "{{{ storageName }}}@{{{ accountName }}}.blob.core.windows.net"),
+    ADLS_GEN_2(AdlsGen2FileSystem.class, "abfs", "{{{ storageName }}}@{{{ accountName }}}.dfs.core.windows.net"),
 
     S3(S3FileSystem.class, "s3a", "{{{ storageName }}}");
 
@@ -42,7 +42,7 @@ public enum FileSystemType {
         return defaultPath;
     }
 
-    public static FileSystemType fromClass(Class clazz) {
+    public static FileSystemType fromClass(Class<? extends BaseFileSystem> clazz) {
         for (FileSystemType fileSystemType : FileSystemType.values()) {
             if (fileSystemType.clazz.equals(clazz)) {
                 return fileSystemType;

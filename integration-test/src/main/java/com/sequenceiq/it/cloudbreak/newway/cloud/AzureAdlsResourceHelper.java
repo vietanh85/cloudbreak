@@ -1,5 +1,8 @@
 package com.sequenceiq.it.cloudbreak.newway.cloud;
 
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
+import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
+
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsCloudStorageParameters;
 import com.sequenceiq.it.cloudbreak.filesystem.CloudStorageTypePathPrefix;
@@ -8,9 +11,6 @@ import com.sequenceiq.it.cloudbreak.newway.TestParameter;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Azure.Database.Hive;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Azure.Database.Ranger;
 import com.sequenceiq.it.cloudbreak.parameters.RequiredInputParameters.Azure.Storage.Adls;
-
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.HIVE;
-import static com.sequenceiq.cloudbreak.api.model.rds.RdsType.RANGER;
 
 public class AzureAdlsResourceHelper extends ResourceHelper<AdlsCloudStorageParameters> {
 
@@ -44,7 +44,7 @@ public class AzureAdlsResourceHelper extends ResourceHelper<AdlsCloudStoragePara
     public CloudStorageRequest getCloudStorageRequestForDatalake() {
         var request = new CloudStorageRequest();
         request.setAdls(getCloudStorage());
-        request.setLocations(defaultDatalakeStorageLocations(CloudStorageTypePathPrefix.ADLS, getTestParameter().get(Adls.ACCOUNT_NAME)));
+        setStorageLocations(request, defaultDatalakeStorageLocations(CloudStorageTypePathPrefix.ADLS, getTestParameter().get(Adls.ACCOUNT_NAME)));
         return request;
     }
 

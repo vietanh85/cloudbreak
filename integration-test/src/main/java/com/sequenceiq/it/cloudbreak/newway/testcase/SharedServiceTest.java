@@ -26,7 +26,6 @@ import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigJson;
 import com.sequenceiq.cloudbreak.api.model.rds.RDSConfigRequest;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.api.model.v2.CloudStorageRequest;
-import com.sequenceiq.cloudbreak.api.model.v2.StorageLocationRequest;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsCloudStorageParameters;
 import com.sequenceiq.it.cloudbreak.exception.TestFailException;
 import com.sequenceiq.it.cloudbreak.newway.Blueprint;
@@ -245,7 +244,7 @@ public class SharedServiceTest extends AbstractIntegrationTest {
     private CloudStorageRequest cloudStorage() {
         AdlsCloudStorageParameters adls = new AdlsCloudStorageParameters();
         CloudStorageRequest csr = new CloudStorageRequest();
-        csr.setLocations(Set.of(storageLocation()));
+        csr.setOpLogs(storageLocationOpLogs());
         adls.setCredential("value");
         adls.setAccountName("some");
         adls.setClientId("other");
@@ -254,12 +253,8 @@ public class SharedServiceTest extends AbstractIntegrationTest {
         return csr;
     }
 
-    private StorageLocationRequest storageLocation() {
-        StorageLocationRequest storageLocation = new StorageLocationRequest();
-        storageLocation.setValue("TheValueOfGivePropertyForStorageLocation");
-        storageLocation.setPropertyName("NameOfThisProperty");
-        storageLocation.setPropertyFile("SomePropertyHere");
-        return storageLocation;
+    private Map<String, String> storageLocationOpLogs() {
+        return Map.of("yarnApplicationLogs", "TheValueOfGivenPropertyForStorageLocation");
     }
 
     private ClusterEntity datalakeReadyCluster(TestContext testContext, String hiveRdsName, String rangerRdsName, String ldapName, String blueprintName,

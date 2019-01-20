@@ -1,8 +1,10 @@
 package com.sequenceiq.cloudbreak.converter.v2.cli;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,21 +16,22 @@ import com.sequenceiq.cloudbreak.api.model.filesystem.AdlsFileSystem;
 import com.sequenceiq.cloudbreak.api.model.filesystem.GcsFileSystem;
 import com.sequenceiq.cloudbreak.api.model.filesystem.S3FileSystem;
 import com.sequenceiq.cloudbreak.api.model.filesystem.WasbFileSystem;
-import com.sequenceiq.cloudbreak.api.model.v2.StorageLocationResponse;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsGen2CloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.AdlsCloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.GcsCloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.S3CloudStorageParameters;
 import com.sequenceiq.cloudbreak.api.model.v2.filesystem.WasbCloudStorageParameters;
 import com.sequenceiq.cloudbreak.converter.AbstractConversionServiceAwareConverter;
+import com.sequenceiq.cloudbreak.converter.util.FileSystemConvertUtil;
 import com.sequenceiq.cloudbreak.domain.FileSystem;
-import com.sequenceiq.cloudbreak.domain.StorageLocation;
-import com.sequenceiq.cloudbreak.domain.StorageLocations;
 
 @Component
 public class FileSystemToFileSystemResponseConverter extends AbstractConversionServiceAwareConverter<FileSystem, FileSystemResponse> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileSystemToFileSystemResponseConverter.class);
+
+    @Inject
+    private FileSystemConvertUtil fileSystemConvertUtil;
 
     @Override
     public FileSystemResponse convert(FileSystem source) {
@@ -36,7 +39,7 @@ public class FileSystemToFileSystemResponseConverter extends AbstractConversionS
         response.setId(source.getId());
         response.setName(source.getName());
         response.setDefaultFs(source.isDefaultFs());
-        response.setLocations(getStorageLocationRequests(source));
+        populateStorageLocations(source, response);
         try {
             if (source.getType().isAdls()) {
                 AdlsCloudStorageParameters adls = getConversionService()
@@ -60,23 +63,20 @@ public class FileSystemToFileSystemResponseConverter extends AbstractConversionS
         return response;
     }
 
-    private Set<StorageLocationResponse> getStorageLocationRequests(FileSystem source) {
-        Set<StorageLocationResponse> locations = new HashSet<>();
+    private void populateStorageLocations(FileSystem source, FileSystemResponse response) {
+        Map<String, String> opLogs = new HashMap<>();
+        Map<String, String> notebook = new HashMap<>();
+        Map<String, String> warehouse = new HashMap<>();
+        Map<String, String> audit = new HashMap<>();
         try {
-            if (source.getLocations() != null && source.getLocations().getValue() != null) {
-                StorageLocations storageLocations = source.getLocations().get(StorageLocations.class);
-                if (storageLocations != null) {
-                    for (StorageLocation storageLocation : storageLocations.getLocations()) {
-                        locations.add(getConversionService().convert(storageLocation, StorageLocationResponse.class));
-                    }
-                }
-            } else {
-                locations = new HashSet<>();
-            }
-        } catch (IOException e) {
-            locations = new HashSet<>();
+            fileSystemConvertUtil.populateStorageLocationsFromFileSystem(source, opLogs, notebook, warehouse, audit);
+        } catch (IOException ioe) {
+            LOGGER.info("Error when attempting to obtain/convert file system locations", ioe);
         }
-        return locations;
+        response.setOpLogs(opLogs);
+        response.setNotebook(notebook);
+        response.setWarehouse(warehouse);
+        response.setAudit(audit);
     }
 
 }
