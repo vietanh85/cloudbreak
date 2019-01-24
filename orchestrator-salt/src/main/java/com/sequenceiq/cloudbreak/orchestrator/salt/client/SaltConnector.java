@@ -1,6 +1,7 @@
 package com.sequenceiq.cloudbreak.orchestrator.salt.client;
 
 import static com.sequenceiq.cloudbreak.orchestrator.salt.client.SaltEndpoint.BOOT_HOSTNAME_ENDPOINT;
+import static com.sequenceiq.cloudbreak.orchestrator.salt.client.SaltEndpoint.SALT_EVENTS;
 import static java.util.Collections.singletonMap;
 
 import java.io.ByteArrayInputStream;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -29,6 +31,10 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,6 +48,10 @@ import com.sequenceiq.cloudbreak.orchestrator.salt.client.target.Target;
 import com.sequenceiq.cloudbreak.orchestrator.salt.domain.Pillar;
 import com.sequenceiq.cloudbreak.orchestrator.salt.domain.SaltAction;
 import com.sequenceiq.cloudbreak.util.JaxRSUtil;
+
+import io.netty.handler.ssl.SslContextBuilder;
+import reactor.core.publisher.Flux;
+import reactor.netty.http.client.HttpClient;
 
 public class SaltConnector implements Closeable {
 
@@ -69,10 +79,19 @@ public class SaltConnector implements Closeable {
 
     private final String signatureKey;
 
+    private final WebClient webClient;
+
     public SaltConnector(GatewayConfig gatewayConfig, boolean debug) {
         try {
-            restClient = RestClientUtil.createClient(
-                    gatewayConfig.getServerCert(), gatewayConfig.getClientCert(), gatewayConfig.getClientKey(), debug, SaltConnector.class);
+            SSLContext sslContext = RestClientUtil.getSslContext(gatewayConfig.getServerCert(), gatewayConfig.getClientCert(), gatewayConfig.getClientKey());
+            HttpClient httpClient = HttpClient.create().secure(sslContextSpec -> {
+                sslContextSpec.sslContext(SslContextBuilder.forClient().sslContextProvider(sslContext.getProvider()));
+            });
+            webClient = WebClient.builder()
+                    .baseUrl(gatewayConfig.getGatewayUrl())
+                    .clientConnector(new ReactorClientHttpConnector(httpClient))
+                    .build();
+            restClient = RestClientUtil.createClient(sslContext, debug, SaltConnector.class);
             String saltBootPasswd = Optional.ofNullable(gatewayConfig.getSaltBootPassword()).orElse(SALT_BOOT_PASSWORD);
             HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(SALT_BOOT_USER, saltBootPasswd);
             saltTarget = restClient.target(gatewayConfig.getGatewayUrl()).register(feature);
@@ -81,6 +100,16 @@ public class SaltConnector implements Closeable {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create rest client with 2-way-ssl config", e);
         }
+    }
+
+    public void flux() {
+        final Flux<ServerSentEvent<String>> eventStream = webClient
+                .get().uri(SALT_EVENTS.getContextPath())
+                .accept(org.springframework.http.MediaType.TEXT_EVENT_STREAM)
+                .retrieve()
+//                 .bodyToFlux(new ParameterizedTypeReference<>() {}); https://bugs.openjdk.java.net/browse/JDK-8210197
+                .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {});
+        eventStream.subscribe(event -> LOGGER.info(event.data()));
     }
 
     public GenericResponse health() {
