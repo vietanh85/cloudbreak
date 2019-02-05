@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Strings;
 import com.sequenceiq.ambari.client.AmbariClient;
 import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.request.StackV4Request;
 import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.request.cluster.sharedservice.SharedServiceV4Request;
@@ -31,7 +30,6 @@ import com.sequenceiq.cloudbreak.domain.KerberosConfig;
 import com.sequenceiq.cloudbreak.domain.LdapConfig;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 import com.sequenceiq.cloudbreak.domain.SmartSenseSubscription;
-import com.sequenceiq.cloudbreak.domain.stack.Stack;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.DatalakeResources;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.gateway.Gateway;
 import com.sequenceiq.cloudbreak.domain.view.EnvironmentView;
@@ -42,13 +40,13 @@ import com.sequenceiq.cloudbreak.service.CloudbreakServiceException;
 import com.sequenceiq.cloudbreak.service.blueprint.BlueprintService;
 import com.sequenceiq.cloudbreak.service.cluster.ambari.AmbariClientFactory;
 import com.sequenceiq.cloudbreak.service.credential.CredentialService;
+import com.sequenceiq.cloudbreak.service.datalake.DatalakeResourcesService;
 import com.sequenceiq.cloudbreak.service.environment.EnvironmentViewService;
 import com.sequenceiq.cloudbreak.service.flex.FlexSubscriptionService;
 import com.sequenceiq.cloudbreak.service.kerberos.KerberosService;
 import com.sequenceiq.cloudbreak.service.ldapconfig.LdapConfigService;
 import com.sequenceiq.cloudbreak.service.rdsconfig.RdsConfigService;
 import com.sequenceiq.cloudbreak.service.sharedservice.DatalakeConfigProvider;
-import com.sequenceiq.cloudbreak.service.stack.StackService;
 import com.sequenceiq.cloudbreak.service.user.UserService;
 import com.sequenceiq.cloudbreak.service.workspace.WorkspaceService;
 import com.sequenceiq.cloudbreak.template.BlueprintProcessingException;
@@ -70,9 +68,6 @@ public class StackV4RequestToTemplatePreparationObjectConverter extends Abstract
 
     @Inject
     private LdapConfigService ldapConfigService;
-
-    @Inject
-    private StackService stackService;
 
     @Inject
     private RdsConfigService rdsConfigService;
@@ -115,6 +110,9 @@ public class StackV4RequestToTemplatePreparationObjectConverter extends Abstract
 
     @Inject
     private AmbariClientFactory ambariClientFactory;
+
+    @Inject
+    private DatalakeResourcesService datalakeResourcesService;
 
     @Override
     public TemplatePreparationObject convert(StackV4Request source) {
@@ -159,16 +157,15 @@ public class StackV4RequestToTemplatePreparationObjectConverter extends Abstract
                     .withLdapConfig(ldapConfig, bindDn, bindPassword)
                     .withKerberosConfig(kerberosConfig);
 
-            SharedServiceV4Request sharedService = source.getCluster().getSharedService();
-            if (sharedService != null && !Strings.isNullOrEmpty(sharedService.getSharedClusterName())) {
-                Stack dataLakeStack = stackService.getByNameInWorkspaceWithLists(sharedService.getSharedClusterName(), workspace.getId());
-                AmbariClient datalakeAmbariClient = ambariClientFactory.getAmbariClient(dataLakeStack, dataLakeStack.getCluster());
-                DatalakeResources datalakeResources = datalakeConfigProvider.collectAndStoreDatalakeResources(dataLakeStack, datalakeAmbariClient);
-                if (datalakeResources != null) {
-                    SharedServiceConfigsView sharedServiceConfigsView = datalakeConfigProvider.createSharedServiceConfigView(datalakeResources);
+            SharedServiceV4Request sharedService = source.getSharedService();
+            if (sharedService != null && StringUtils.isNotBlank(sharedService.getDatalakeName())) {
+                DatalakeResources datalakeResource = datalakeResourcesService.getByNameForWorkspace(source.getSharedService().getDatalakeName(), workspace);
+                if (datalakeResource != null) {
+                    AmbariClient datalakeAmbariClient = ambariClientFactory.getAmbariClient(datalakeResource, credential);
+                    SharedServiceConfigsView sharedServiceConfigsView = datalakeConfigProvider.createSharedServiceConfigView(datalakeResource);
                     Map<String, String> blueprintConfigParams =
-                            datalakeConfigProvider.getBlueprintConfigParameters(datalakeResources, blueprint, datalakeAmbariClient);
-                    Map<String, String> additionalParams = datalakeConfigProvider.getAdditionalParameters(source, datalakeResources);
+                            datalakeConfigProvider.getBlueprintConfigParameters(datalakeResource, blueprint, datalakeAmbariClient);
+                    Map<String, String> additionalParams = datalakeConfigProvider.getAdditionalParameters(source, datalakeResource);
                     builder.withSharedServiceConfigs(sharedServiceConfigsView)
                             .withFixInputs((Map) additionalParams)
                             .withCustomInputs((Map) blueprintConfigParams);
