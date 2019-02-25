@@ -1,6 +1,6 @@
 {
-  "name": "${blueprintName}",
-  "ambariBlueprint": {
+  "name": "${clusterDefinitionName}",
+  "clusterDefinition": {
     "configurations": [],
     "host_groups": [
       {

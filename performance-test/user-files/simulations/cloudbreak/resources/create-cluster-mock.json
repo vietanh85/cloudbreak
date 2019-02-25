@@ -1,6 +1,6 @@
 {
   "name": "${stackName}",
-  "blueprintId": ${blueprintId},
+  "clusterDefinitionId": $,{clusterDefinitionId},
   "enableShipyard": false,
   "hostGroups": [
     {

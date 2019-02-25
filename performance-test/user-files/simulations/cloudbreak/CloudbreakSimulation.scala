@@ -5,6 +5,7 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
 
+// TODO should be updated to v4 api
 class CloudbreakSimulation extends Simulation {
 
   val r = scala.util.Random
@@ -47,8 +48,8 @@ class CloudbreakSimulation extends Simulation {
     .pause(1)
 
     .exec(CredentialRequests.queryCredentials)
-    .exec(Utils.addVariableToSession(_, "blueprintName", "multinode-hdfs-yarn-" + r.alphanumeric.take(10).mkString.toLowerCase))
-    .exec(BlueprintRequests.createBlueprint)
+    .exec(Utils.addVariableToSession(_, "clusterDefinitionName", "multinode-hdfs-yarn-" + r.alphanumeric.take(10).mkString.toLowerCase))
+    .exec(ClusterDefinitionRequests.createClusterDefinition)
     .pause(1)
     .exec(Utils.addVariableToSession(_, "credentialName", "mock-credential-" + r.alphanumeric.take(10).mkString.toLowerCase))
     .exec(CredentialRequests.createMock)
@@ -69,7 +70,7 @@ class CloudbreakSimulation extends Simulation {
         pause(10)
         .exec(StackRequests.getStack)
     }
-    .exec(BlueprintRequests.deleteBlueprint)
+    .exec(ClusterDefinitionRequests.deleteClusterDefinition)
     .exec(CredentialRequests.deleteMock)
     .exec(ImageCatalogRequests.deleteMock)
 
@@ -79,8 +80,8 @@ class CloudbreakSimulation extends Simulation {
     .exec(getToken)
     //init
     .exec(CredentialRequests.queryCredentials)
-    .exec(Utils.addVariableToSession(_, "blueprintName", "multinode-hdfs-yarn-" + r.alphanumeric.take(10).mkString.toLowerCase))
-    .exec(BlueprintRequests.createBlueprint)
+    .exec(Utils.addVariableToSession(_, "clusterDefinitionName", "multinode-hdfs-yarn-" + r.alphanumeric.take(10).mkString.toLowerCase))
+    .exec(ClusterDefinitionRequests.createClusterDefinition)
     .exec(Utils.addVariableToSession(_, "credentialName", "mock-credential-" + r.alphanumeric.take(10).mkString.toLowerCase))
     .exec(CredentialRequests.createMock)
     .exec(Utils.addVariableToSession(_, "networkName", "mock-network-" + r.alphanumeric.take(10).mkString.toLowerCase))
@@ -103,7 +104,7 @@ class CloudbreakSimulation extends Simulation {
         pause(10)
         .exec(StackRequests.getStack)
     }
-    .exec(BlueprintRequests.deleteBlueprint)
+    .exec(ClusterDefinitionRequests.deleteClusterDefinition)
     .exec(CredentialRequests.deleteMock)
 
   setUp(scn2.inject(rampUsers(numberOfUsers) over (rampupSeconds seconds)).protocols(httpConf))
