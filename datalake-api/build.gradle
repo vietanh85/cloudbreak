@@ -1,0 +1,31 @@
+apply plugin: 'java'
+
+repositories {
+  mavenLocal()
+  maven { url = "$repoUrl" }
+  mavenCentral()
+}
+
+jar {
+  baseName = 'datalake-api'
+  archiveName = 'datalake-api.jar'
+}
+
+dependencies {
+  implementation project(":core-api")
+}
+
+
+task testJar(type: Jar, dependsOn: testClasses) {
+  baseName = "test-${project.archivesBaseName}"
+  from sourceSets.test.output
+  from sourceSets.main.output
+}
+
+configurations {
+  tests
+}
+
+artifacts {
+  tests testJar
+}
