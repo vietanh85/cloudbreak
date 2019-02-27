@@ -36,7 +36,7 @@ public class AccessConfigsTest extends AbstractIntegrationTest {
                 .when(PlatformAccessConfigsTestAction::getAccessConfigs);
     }
 
-    @Test(dataProvider = "contextWithCredentialNameAndException")
+    @Test(dataProvider = "contextWithCredentialNameAndException", description = "pina")
     public void testGetAccessConfigsByCredentialNameWhenCredentialIsInvalid(MockedTestContext testContext, String credentialName, String exceptionKey,
             Class<Exception> exception) {
         testContext

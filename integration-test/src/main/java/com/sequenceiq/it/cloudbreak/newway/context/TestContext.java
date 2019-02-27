@@ -46,6 +46,8 @@ public abstract class TestContext implements ApplicationContextAware {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestContext.class);
 
+    private static final String DESCRIPTION = "DESCRIPTION";
+
     private ApplicationContext applicationContext;
 
     private final Map<String, CloudbreakEntity> resources = new LinkedHashMap<>();
@@ -61,6 +63,8 @@ public abstract class TestContext implements ApplicationContextAware {
     private final Map<String, Object> selections = new HashMap<>();
 
     private final Map<String, Capture> captures = new HashMap<>();
+
+    private Map<String, Object> contextParameters = new HashMap<>();
 
     @Inject
     private WaitUtilForMultipleStatuses waitUtil;
@@ -197,6 +201,19 @@ public abstract class TestContext implements ApplicationContextAware {
             workspace.ifPresent(workspaceResponse -> cloudbreakClient.setWorkspaceId(workspaceResponse.getId()));
         }
         return this;
+    }
+
+    public TestContext withDescription(String testCaseDesription) {
+        this.contextParameters.put(DESCRIPTION, testCaseDesription);
+        return this;
+    }
+
+    public Optional<String> getDescription() {
+        Object description = this.contextParameters.get(DESCRIPTION);
+        if (description == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(description.toString());
     }
 
     protected String getDefaultUser() {

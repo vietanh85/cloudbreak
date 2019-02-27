@@ -3,6 +3,7 @@ package com.sequenceiq.it.cloudbreak.newway.testcase;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.ConfigFileApplicationContextInitial
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.ITestContext;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
@@ -28,8 +30,8 @@ import com.sequenceiq.cloudbreak.api.endpoint.v4.common.Status;
 import com.sequenceiq.it.cloudbreak.newway.Environment;
 import com.sequenceiq.it.cloudbreak.newway.EnvironmentEntity;
 import com.sequenceiq.it.cloudbreak.newway.RandomNameCreator;
-import com.sequenceiq.it.cloudbreak.newway.action.credential.CredentialTestAction;
 import com.sequenceiq.it.cloudbreak.newway.action.clusterdefinition.ClusterDefinitionGetListAction;
+import com.sequenceiq.it.cloudbreak.newway.action.credential.CredentialTestAction;
 import com.sequenceiq.it.cloudbreak.newway.action.database.DatabaseCreateIfNotExistsAction;
 import com.sequenceiq.it.cloudbreak.newway.action.imagecatalog.ImageCatalogCreateIfNotExistsAction;
 import com.sequenceiq.it.cloudbreak.newway.action.ldap.LdapConfigCreateIfNotExistsAction;
@@ -40,8 +42,8 @@ import com.sequenceiq.it.cloudbreak.newway.context.PurgeGarbageService;
 import com.sequenceiq.it.cloudbreak.newway.context.SparklessTestContext;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.entity.ImageCatalogDto;
-import com.sequenceiq.it.cloudbreak.newway.entity.credential.CredentialTestDto;
 import com.sequenceiq.it.cloudbreak.newway.entity.clusterdefinition.ClusterDefinitionEntity;
+import com.sequenceiq.it.cloudbreak.newway.entity.credential.CredentialTestDto;
 import com.sequenceiq.it.cloudbreak.newway.entity.database.DatabaseEntity;
 import com.sequenceiq.it.cloudbreak.newway.entity.ldap.LdapConfigTestDto;
 import com.sequenceiq.it.cloudbreak.newway.entity.proxy.ProxyConfigEntity;
@@ -72,12 +74,14 @@ public abstract class AbstractIntegrationTest extends AbstractTestNGSpringContex
 
     @BeforeSuite
     public void beforeSuite(ITestContext testngContext) {
+        //testngContext.getSuite().addListener(new CloudbreakCustomHTMLReporter());
         MDC.put("testlabel", "init of " + getClass().getSimpleName());
     }
 
     @BeforeMethod
     public void beforeMethod(Method method) {
         MDC.put("testlabel", method.getDeclaringClass().getSimpleName() + '.' + method.getName());
+
     }
 
     @BeforeClass
@@ -90,8 +94,15 @@ public abstract class AbstractIntegrationTest extends AbstractTestNGSpringContex
     }
 
     @AfterMethod
-    public void afterMethod() {
+    public void afterMethod(Method method, ITestResult testResult) {
         MDC.put("testlabel", null);
+        prepareDescriptionField(testResult);
+    }
+
+    private void prepareDescriptionField(ITestResult testResult) {
+        Optional<String> description = getBean(TestContext.class).getDescription();
+        testResult.getTestContext().setAttribute("description",
+                description.orElse("Missing description"));
     }
 
     @AfterClass(alwaysRun = true)
