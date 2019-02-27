@@ -1,5 +1,5 @@
 name: "mock-tests"
-parallel: TESTS
+parallel: METHODS
 threadCount: 8
 tests:
   - name: "newway mock testcases"
