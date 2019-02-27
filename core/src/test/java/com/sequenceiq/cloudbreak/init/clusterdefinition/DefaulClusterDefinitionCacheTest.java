@@ -26,7 +26,7 @@ import com.sequenceiq.cloudbreak.domain.ClusterDefinition;
 import com.sequenceiq.cloudbreak.util.JsonUtil;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultAmbariBlueprintCacheTest {
+public class DefaulClusterDefinitionCacheTest {
 
     @Mock
     private AmbariBlueprintUtils ambariBlueprintUtils;
@@ -35,7 +35,7 @@ public class DefaultAmbariBlueprintCacheTest {
     private ClusterDefinitionV4RequestToClusterDefinitionConverter converter;
 
     @InjectMocks
-    private DefaultAmbariBlueprintCache underTest;
+    private DefaulClusterDefinitionCache underTest;
 
     @Before
     public void setup() throws IOException {
