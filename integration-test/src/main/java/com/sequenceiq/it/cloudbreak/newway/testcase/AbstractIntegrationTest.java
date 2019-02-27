@@ -1,9 +1,10 @@
 package com.sequenceiq.it.cloudbreak.newway.testcase;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -26,7 +27,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 
+import com.google.common.base.Strings;
 import com.sequenceiq.cloudbreak.api.endpoint.v4.common.Status;
+import com.sequenceiq.it.cloudbreak.exception.TestCaseDescriptionMissingException;
 import com.sequenceiq.it.cloudbreak.newway.Environment;
 import com.sequenceiq.it.cloudbreak.newway.EnvironmentEntity;
 import com.sequenceiq.it.cloudbreak.newway.RandomNameCreator;
@@ -37,9 +40,11 @@ import com.sequenceiq.it.cloudbreak.newway.action.imagecatalog.ImageCatalogCreat
 import com.sequenceiq.it.cloudbreak.newway.action.ldap.LdapConfigCreateIfNotExistsAction;
 import com.sequenceiq.it.cloudbreak.newway.action.proxy.ProxyConfigCreateIfNotExistsAction;
 import com.sequenceiq.it.cloudbreak.newway.actor.Actor;
+import com.sequenceiq.it.cloudbreak.newway.context.Description;
 import com.sequenceiq.it.cloudbreak.newway.context.MockedTestContext;
 import com.sequenceiq.it.cloudbreak.newway.context.PurgeGarbageService;
 import com.sequenceiq.it.cloudbreak.newway.context.SparklessTestContext;
+import com.sequenceiq.it.cloudbreak.newway.context.TestCaseDescription;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.entity.ImageCatalogDto;
 import com.sequenceiq.it.cloudbreak.newway.entity.clusterdefinition.ClusterDefinitionEntity;
@@ -47,6 +52,7 @@ import com.sequenceiq.it.cloudbreak.newway.entity.credential.CredentialTestDto;
 import com.sequenceiq.it.cloudbreak.newway.entity.database.DatabaseEntity;
 import com.sequenceiq.it.cloudbreak.newway.entity.ldap.LdapConfigTestDto;
 import com.sequenceiq.it.cloudbreak.newway.entity.proxy.ProxyConfigEntity;
+import com.sequenceiq.it.cloudbreak.newway.log.Log;
 import com.sequenceiq.it.config.IntegrationTestConfiguration;
 
 @ContextConfiguration(classes = {IntegrationTestConfiguration.class}, initializers = ConfigFileApplicationContextInitializer.class)
@@ -74,8 +80,8 @@ public abstract class AbstractIntegrationTest extends AbstractTestNGSpringContex
 
     @BeforeSuite
     public void beforeSuite(ITestContext testngContext) {
-        //testngContext.getSuite().addListener(new CloudbreakCustomHTMLReporter());
         MDC.put("testlabel", "init of " + getClass().getSimpleName());
+
     }
 
     @BeforeMethod
@@ -94,15 +100,49 @@ public abstract class AbstractIntegrationTest extends AbstractTestNGSpringContex
     }
 
     @AfterMethod
-    public void afterMethod(Method method, ITestResult testResult) {
+    public void afterMethod(Method method, ITestResult testResult, ITestContext c) {
         MDC.put("testlabel", null);
-        prepareDescriptionField(testResult);
+        prepareDescriptionField(method, testResult, c);
     }
 
-    private void prepareDescriptionField(ITestResult testResult) {
-        Optional<String> description = getBean(TestContext.class).getDescription();
-        testResult.getTestContext().setAttribute("description",
-                description.orElse("Missing description"));
+    private void prepareDescriptionField(Method method, ITestResult testResult, ITestContext c) {
+        TestCaseDescription testCaseDescription = null;
+
+        Description declaredAnnotation = method.getDeclaredAnnotation(Description.class);
+        if (declaredAnnotation != null) {
+            testCaseDescription = new TestCaseDescription.TestCaseDescriptionBuilder()
+                    .given(declaredAnnotation.given())
+                    .when(declaredAnnotation.when())
+                    .then(declaredAnnotation.then());
+        } else {
+            Annotation[][] annotations = method.getParameterAnnotations();
+            for (int i = 0; i < annotations.length; i++) {
+                Annotation[] annotation = annotations[i];
+                for (Annotation annotationOnParameter : annotation) {
+                    if (annotationOnParameter.annotationType().equals(Description.class)) {
+                        Object parameter = testResult.getParameters()[i];
+                        if (parameter.getClass().equals(TestCaseDescription.class)) {
+                            testCaseDescription = (TestCaseDescription) parameter;
+                            break;
+                        }
+                    }
+                    if (testCaseDescription != null) {
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        if (Objects.isNull(testCaseDescription) || Strings.isNullOrEmpty(testCaseDescription.getValue())) {
+            throw new TestCaseDescriptionMissingException();
+        } else {
+            Log.log(LOGGER, "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+
+            Log.log(LOGGER, testCaseDescription.getValue());
+            testResult.getTestContext().setAttribute("description",
+                    testCaseDescription.getValue());
+        }
     }
 
     @AfterClass(alwaysRun = true)

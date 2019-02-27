@@ -203,7 +203,7 @@ public abstract class TestContext implements ApplicationContextAware {
         return this;
     }
 
-    public TestContext withDescription(String testCaseDesription) {
+    public TestContext withDescription(TestCaseDescription testCaseDesription) {
         this.contextParameters.put(DESCRIPTION, testCaseDesription);
         return this;
     }

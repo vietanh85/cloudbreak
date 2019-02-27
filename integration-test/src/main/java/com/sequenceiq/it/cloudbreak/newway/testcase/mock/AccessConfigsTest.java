@@ -11,7 +11,10 @@ import org.testng.annotations.Test;
 
 import com.sequenceiq.it.cloudbreak.newway.action.accessconfig.PlatformAccessConfigsTestAction;
 import com.sequenceiq.it.cloudbreak.newway.action.credential.CredentialTestAction;
+import com.sequenceiq.it.cloudbreak.newway.context.Description;
 import com.sequenceiq.it.cloudbreak.newway.context.MockedTestContext;
+import com.sequenceiq.it.cloudbreak.newway.context.TestCaseDescription;
+import com.sequenceiq.it.cloudbreak.newway.context.TestCaseDescription.TestCaseDescriptionBuilder;
 import com.sequenceiq.it.cloudbreak.newway.context.TestContext;
 import com.sequenceiq.it.cloudbreak.newway.entity.accessconfig.PlatformAccessConfigsTestDto;
 import com.sequenceiq.it.cloudbreak.newway.entity.credential.CredentialTestDto;
@@ -25,6 +28,10 @@ public class AccessConfigsTest extends AbstractIntegrationTest {
     }
 
     @Test(dataProvider = TEST_CONTEXT_WITH_MOCK)
+    @Description(
+            given = "using a valid MOCK credential",
+            when = "calling get access config",
+            then = "returns with valid access config for MOCK")
     public void testGetAccessConfigsByCredentialName(MockedTestContext testContext) {
         String credentialName = getNameGenerator().getRandomNameForResource();
         testContext
@@ -33,12 +40,17 @@ public class AccessConfigsTest extends AbstractIntegrationTest {
                 .when(CredentialTestAction::create)
                 .given(PlatformAccessConfigsTestDto.class)
                 .withCredentialName(credentialName)
-                .when(PlatformAccessConfigsTestAction::getAccessConfigs);
+                .when(PlatformAccessConfigsTestAction::getAccessConfigs)
+                .validate();
     }
 
-    @Test(dataProvider = "contextWithCredentialNameAndException", description = "pina")
-    public void testGetAccessConfigsByCredentialNameWhenCredentialIsInvalid(MockedTestContext testContext, String credentialName, String exceptionKey,
-            Class<Exception> exception) {
+    @Test(dataProvider = "contextWithCredentialNameAndException")
+    public void testGetAccessConfigsByCredentialNameWhenCredentialIsInvalid(
+            MockedTestContext testContext,
+            String credentialName,
+            String exceptionKey,
+            Class<Exception> exception,
+            @Description TestCaseDescription description) {
         testContext
                 .given(PlatformAccessConfigsTestDto.class)
                 .withCredentialName(credentialName)
@@ -50,9 +62,23 @@ public class AccessConfigsTest extends AbstractIntegrationTest {
     @DataProvider(name = "contextWithCredentialNameAndException")
     public Object[][] provideInvalidAttributes() {
         return new Object[][]{
-                {getBean(MockedTestContext.class), "", "badRequest", BadRequestException.class},
-                {getBean(MockedTestContext.class), null, "badRequest", BadRequestException.class},
-                {getBean(MockedTestContext.class), "andNowForSomethingCompletelyDifferent", "forbidden", ForbiddenException.class}
+                {getBean(MockedTestContext.class), "", "badRequest", BadRequestException.class,
+                        new TestCaseDescriptionBuilder()
+                        .given("using a empty string as MOCK credential name")
+                        .when("calling get access config")
+                        .then("returns with BadRequestException for MOCK")
+                },
+                {getBean(MockedTestContext.class), null, "badRequest", BadRequestException.class,
+                        new TestCaseDescriptionBuilder()
+                        .given("using a 'null' as MOCK credential name")
+                        .when("calling get access config")
+                        .then("returns with BadRequestException for MOCK")
+                },
+                {getBean(MockedTestContext.class), "andNowForSomethingCompletelyDifferent", "forbidden", ForbiddenException.class,
+                        new TestCaseDescriptionBuilder()
+                        .given("using a not existing name for MOCK credential")
+                        .when("calling get access config")
+                        .then("returns with ForbiddenException for MOCK")}
         };
     }
 
